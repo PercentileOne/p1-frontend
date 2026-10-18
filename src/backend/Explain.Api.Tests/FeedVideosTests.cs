@@ -94,6 +94,15 @@ public class FeedVideosTests
     }
 
     [Fact]
+    public void A_cached_public_list_is_served_for_thirty_seconds_and_not_after()
+    {
+        var then = new DateTime(2026, 10, 18, 12, 0, 0, DateTimeKind.Utc);
+        Assert.True(Videos.CacheFresh(then, then.AddSeconds(29), Videos.PublicCacheSeconds));
+        Assert.False(Videos.CacheFresh(then, then.AddSeconds(30), Videos.PublicCacheSeconds));
+        Assert.False(Videos.CacheFresh(then, then.AddSeconds(-5), Videos.PublicCacheSeconds));   // a clock that went backwards is never trusted
+    }
+
+    [Fact]
     public void A_good_oEmbed_answer_gives_the_title_and_channel_from_YouTube()
     {
         var r = Videos.ReadOEmbed(HttpStatusCode.OK, "{\"title\":\"A pitch\",\"author_name\":\"Shark Tank\",\"author_url\":\"https://www.youtube.com/@sharktank\"}");

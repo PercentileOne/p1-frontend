@@ -70,6 +70,7 @@ import StoriesPage from "./pages/StoriesPage";
 import StoryDetailPage from "./pages/StoryDetailPage";
 import StoryCreatePage from "./pages/StoryCreatePage";
 import FeedPage from "./pages/FeedPage";
+import PublicWatchPage from "./pages/PublicWatchPage";
 import WallsPage from "./pages/WallsPage";
 import AwardsPage from "./pages/AwardsPage";
 import ProofPage from "./pages/ProofPage";
@@ -157,7 +158,8 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/staff/greetings" element={<StaffGreetingsPage />} />   {/* staff tool: record each interviewer's greeting clip */}
       <Route path="/hello" element={<HelloPage />} />   {/* the marketing homepage's "Say hi" preview, framed there (see pages/HelloPage.tsx) */}
-      <Route path="/try" element={<TryItLivePage />} />   {/* public "Try it live" — no sign-in (see Features/TryOut) */}
+      <Route path="/try" element={<TryItLivePage />} />
+      <Route path="/watch" element={<PublicWatchPage />} />   {/* public Watch page and the landing for a shared video link — no sign-in (see Features/FeedVideos) */}   {/* public "Try it live" — no sign-in (see Features/TryOut) */}
       <Route path="/questions" element={<QuestionPackPage />} />   {/* public "Printable Interview Questions" — no sign-in (see Features/QuestionPacks) */}
       <Route path="/questions/success" element={<QuestionPackSuccessPage />} />
       <Route path="/questions/gift/:id" element={<QuestionGiftPage />} />   {/* public — recruiter-gifted client questions, no sign-in (see Features/ClientGifts) */}

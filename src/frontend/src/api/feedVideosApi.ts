@@ -74,3 +74,30 @@ export async function fetchLikedBy(userId: string): Promise<{ visible: boolean; 
     return await res.json() as { visible: boolean; videos: FeedVideo[] };
   } catch { return { visible: false, videos: [] }; }
 }
+
+/** The public Watch page's list. `enabled` is false while an admin has the public page switched off. No sign-in needed. */
+export async function fetchPublicVideos(): Promise<{ enabled: boolean; videos: FeedVideo[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/public/feed/videos`);
+    if (!res.ok) return { enabled: false, videos: [] };
+    return await res.json() as { enabled: boolean; videos: FeedVideo[] };
+  } catch { return { enabled: false, videos: [] }; }
+}
+
+/** A link that opens our Watch page with this video playing. Tagged so the Activity Log shows shares as a source. */
+export function shareUrl(id: string): string {
+  const local = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+  const origin = local ? window.location.origin : 'https://candidate.theinterviewchair.com';
+  return `${origin}/watch?v=${encodeURIComponent(id)}&utm_source=share&utm_medium=video&utm_campaign=feed-share`;
+}
+
+/** Opens the phone's own share sheet where there is one, otherwise copies the link. 'cancelled' means the person closed the sheet. */
+export async function shareVideo(v: FeedVideo): Promise<'shared' | 'copied' | 'cancelled' | 'failed'> {
+  const url = shareUrl(v.id);
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try { await navigator.share({ title: v.title, text: `${v.title} (${v.channel})`, url }); return 'shared'; }
+    catch (e) { if ((e as DOMException)?.name === 'AbortError') return 'cancelled'; /* fall through to copying */ }
+  }
+  try { await navigator.clipboard.writeText(url); return 'copied'; }
+  catch { return 'failed'; }
+}

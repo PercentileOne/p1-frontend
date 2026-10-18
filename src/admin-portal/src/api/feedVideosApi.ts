@@ -43,5 +43,7 @@ export const feedVideosApi = {
   list: (token: string) => call<FeedVideo[]>(token, '/api/admin/feed-videos'),
   add: (token: string, url: string, theme: string) => call<FeedVideo>(token, '/api/admin/feed-videos', { method: 'POST', body: JSON.stringify({ url, theme }) }),
   patch: (token: string, id: string, body: { status?: string; theme?: string }) => call<FeedVideo>(token, `/api/admin/feed-videos/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  getPublic: (token: string) => call<{ enabled: boolean }>(token, '/api/admin/feed-videos/public'),
+  setPublic: (token: string, on: boolean) => call<{ enabled: boolean }>(token, '/api/admin/feed-videos/public', { method: 'PUT', body: JSON.stringify({ on }) }),
   remove: (token: string, id: string) => call<void>(token, `/api/admin/feed-videos/${id}`, { method: 'DELETE' }),
 }

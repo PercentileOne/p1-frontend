@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Bookmark, ChevronLeft, ChevronRight, Heart, Play, X } from 'lucide-react';
+import { Bookmark, ChevronLeft, ChevronRight, Heart, Play, Share2, X } from 'lucide-react';
 import { fetchFeedVideos } from '../api/feedVideosApi';
 import type { FeedVideo } from '../api/feedVideosApi';
 import { localDate } from '../api/routinesApi';
 import { logEvent } from '../api/flowLogger';
 import { useVideoMarks } from '../hooks/useVideoMarks';
+import { useShareVideo } from '../hooks/useShareVideo';
 import { VideoPlayer, roundButton } from './VideoPlayer';
 
 // The feed's video strip (Francis, 2026-10-18), after the LinkedIn layout he showed: a heading, then a row of tall phone-shaped cards that scrolls sideways, with the next card
@@ -35,6 +36,7 @@ function hiddenToday(): boolean {
 export function VideoStrip() {
   const [videos, setVideos] = useState<FeedVideo[] | null>(null);
   const { marks, problem, toggle, setSharing } = useVideoMarks();
+  const { notice, share } = useShareVideo();
   const [view, setView] = useState<View>('all');
   const [hidden, setHidden] = useState(hiddenToday);
   const [playing, setPlaying] = useState<FeedVideo | null>(null);
@@ -117,6 +119,7 @@ export function VideoStrip() {
         </label>
       )}
 
+      {notice && <div role="status" style={{ padding: '0 16px 8px', color: GREEN, fontSize: 13 }}>{notice}</div>}
       {problem && <div role="alert" style={{ padding: '0 16px 8px', color: '#F87171', fontSize: 13 }}>{problem}</div>}
 
       {shown.length === 0 && (
@@ -146,6 +149,7 @@ export function VideoStrip() {
                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <button type="button" aria-pressed={isSaved} aria-label={isSaved ? `Remove ${v.title} from saved` : `Save ${v.title} for later`} title={isSaved ? 'Saved. Tap to remove' : 'Save for later'} onClick={() => void toggle(v, 'saved')} style={roundButton(isSaved)}><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} /></button>
                   <button type="button" aria-pressed={isLiked} aria-label={isLiked ? `Unlike ${v.title}` : `Like ${v.title}`} title={isLiked ? 'Liked. Tap to remove' : 'Like'} onClick={() => void toggle(v, 'liked')} style={roundButton(isLiked)}><Heart size={16} fill={isLiked ? 'currentColor' : 'none'} /></button>
+                  <button type="button" aria-label={`Share ${v.title}`} title="Share" onClick={() => void share(v)} style={roundButton(false)}><Share2 size={16} /></button>
                 </div>
               </li>
             );
@@ -155,7 +159,7 @@ export function VideoStrip() {
         </ul>
       </div>
 
-      {playing && <VideoPlayer video={playing} marks={marks} onToggle={(v, m) => void toggle(v, m)} onClose={closePlayer} />}
+      {playing && <VideoPlayer video={playing} marks={marks} onToggle={(v, m) => void toggle(v, m)} onShare={v => void share(v)} hint={notice} onClose={closePlayer} />}
     </section>
   );
 }

@@ -23,6 +23,7 @@ export default function FeedVideos() {
   const [links, setLinks] = useState('')
   const [theme, setTheme] = useState(THEMES[0].value)
   const [adding, setAdding] = useState(false)
+  const [publicOn, setPublicOn] = useState<boolean | null>(null)
   const [results, setResults] = useState<{ line: string; ok: boolean; text: string }[]>([])
 
   const load = useCallback(async () => {
@@ -33,6 +34,17 @@ export default function FeedVideos() {
     finally { setLoading(false) }
   }, [token])
   useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    if (!token) return
+    feedVideosApi.getPublic(token).then(r => setPublicOn(r.enabled)).catch(() => setPublicOn(false))
+  }, [token])
+
+  async function togglePublic(on: boolean) {
+    if (!token) return
+    setPublicOn(on)
+    try { setPublicOn((await feedVideosApi.setPublic(token, on)).enabled) }
+    catch (e) { setPublicOn(!on); setError((e as ApiError).error ?? 'That did not save.') }
+  }
 
   async function addAll() {
     if (!token) return
@@ -75,6 +87,21 @@ export default function FeedVideos() {
         The videos in the candidate feed&rsquo;s &ldquo;Worth a watch&rdquo; strip. Paste YouTube links, one per line, pick a theme and add them (or end a line with its own theme, such as <code>pitching</code> or <code>routines</code>, to mix themes in one paste). Each link is checked with YouTube first: it must exist, be public and allow embedding.
         Use official channels only (Shark Tank, Dragons&rsquo; Den, TED and the like). The channel is credited on every card and nothing is copied or re-hosted.
       </p>
+
+      <div style={{ ...card, marginTop: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+          <input type="checkbox" role="switch" checked={publicOn === true} disabled={publicOn === null} onChange={e => void togglePublic(e.target.checked)} style={{ marginTop: 3 }} />
+          <span>
+            <span style={{ display: 'block', fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Public Watch page</span>
+            <span style={{ display: 'block', fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.5 }}>
+              {publicOn
+                ? 'On. Anyone can watch the videos below with no sign-in at the address shown, and a Share link opens the video there.'
+                : 'Off. The videos are for signed-in members only, and a shared link shows a short message instead of the video.'}
+            </span>
+          </span>
+        </label>
+        <div style={{ fontSize: 12.5, color: 'var(--text-3)' }}>Address: <code>https://candidate.theinterviewchair.com/watch</code></div>
+      </div>
 
       <div style={{ ...card, margin: '18px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label htmlFor="fvLinks" style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-3)', letterSpacing: '0.06em' }}>YOUTUBE LINKS (ONE PER LINE)</label>

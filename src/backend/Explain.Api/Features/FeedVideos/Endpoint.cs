@@ -22,6 +22,9 @@ public static class Endpoint
     public const int MaxPublished = 200;
     public const int MaxMarks = 500;
     private const string StateDocId = "feedvideo-state";
+    private const string PublicSettingId = "publicWatch";
+    public const int PublicCacheSeconds = 30;
+    private static (DateTime At, PublicListReply Reply)? _publicCache;
 
     /// <summary>The general subjects from the feed spec, plus the motivation, business, success, productivity and routines themes Francis asked for on 18 Oct 2026. A video carries one, so each person's ranking can learn what they respond to.</summary>
     public static readonly string[] Themes = ["pitching", "rejection", "founders", "interviews", "motivation", "business", "success", "productivity", "routines", "habits", "learning", "speaking", "career-change", "software-and-cloud"];
@@ -33,6 +36,17 @@ public static class Endpoint
             var all = await ListAsync(cosmos, ct);
             return Results.Ok(all.Where(v => v.status == "published").OrderByDescending(v => v.addedAt).Take(MaxPublished).Select(ToReply));
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
+
+        // The public Watch page (Francis, 2026-10-18): the same published videos with no sign-in, for as long as an admin leaves the switch on. Off means the list is empty and the page says so.
+        // Cached for half a minute so a burst of anonymous visitors (or bots) reads Cosmos once, not once each.
+        app.MapGet("/api/public/feed/videos", async (CosmosService cosmos, CancellationToken ct) =>
+        {
+            var now = DateTime.UtcNow;
+            if (_publicCache is { } c && CacheFresh(c.At, now, PublicCacheSeconds)) return Results.Ok(c.Reply);
+            var reply = await BuildPublicAsync(cosmos, ct);
+            _publicCache = (now, reply);
+            return Results.Ok(reply);
+        }).AllowAnonymous().WithTags("FeedVideos");
 
         // A person's own saved ("watch later") and liked videos. Private to them: kept in one small document in their own partition of the "planning" container.
         app.MapGet("/api/feed/videos/me", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
@@ -88,6 +102,15 @@ public static class Endpoint
         admin.MapGet("", async (CosmosService cosmos, CancellationToken ct) =>
             Results.Ok((await ListAsync(cosmos, ct)).OrderByDescending(v => v.addedAt).Select(ToReply)));
 
+        admin.MapGet("/public", async (CosmosService cosmos, CancellationToken ct) => Results.Ok(new PublicSettingReply(await PublicEnabledAsync(cosmos, ct))));
+
+        admin.MapPut("/public", async (SharingRequest req, CosmosService cosmos, CancellationToken ct) =>
+        {
+            await cosmos.GetContainer("platformSettings").UpsertItemAsync(new PublicWatchSetting(PublicSettingId, PublicSettingId, req.On, DateTimeOffset.UtcNow.ToString("o")), new PartitionKey(PublicSettingId), cancellationToken: ct);
+            _publicCache = null;
+            return Results.Ok(new PublicSettingReply(req.On));
+        });
+
         admin.MapPost("", async (AddRequest req, HttpContext ctx, CosmosService cosmos, IHttpClientFactory factory, CancellationToken ct) =>
         {
             var id = ParseVideoId(req.Url);
@@ -104,6 +127,7 @@ public static class Endpoint
             var doc = new FeedVideo(id, Partition, check.Title!, check.Channel!, check.ChannelUrl ?? "", $"https://i.ytimg.com/vi/{id}/hqdefault.jpg",
                 theme, "published", DateTimeOffset.UtcNow.ToString("o"), ctx.User.FindFirst("sub")?.Value ?? "unknown");
             await cosmos.GetContainer(ContainerName).UpsertItemAsync(doc, new PartitionKey(Partition), cancellationToken: ct);
+            _publicCache = null;
             return Results.Ok(ToReply(doc));
         });
 
@@ -117,6 +141,7 @@ public static class Endpoint
                 theme = req.Theme is null ? doc.theme : CleanTheme(req.Theme) ?? doc.theme,
             };
             await cosmos.GetContainer(ContainerName).UpsertItemAsync(next, new PartitionKey(Partition), cancellationToken: ct);
+            _publicCache = null;
             return Results.Ok(ToReply(next));
         });
 
@@ -125,6 +150,7 @@ public static class Endpoint
             if (!IsVideoId(id)) return Results.NotFound();
             try { await cosmos.GetContainer(ContainerName).DeleteItemAsync<FeedVideo>(id, new PartitionKey(Partition), cancellationToken: ct); }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { /* already gone */ }
+            _publicCache = null;
             return Results.NoContent();
         });
     }
@@ -155,6 +181,9 @@ public static class Endpoint
         }
         return IsVideoId(candidate) ? candidate : null;
     }
+
+    /// <summary>True while a cached public list is still young enough to serve.</summary>
+    public static bool CacheFresh(DateTime cachedAt, DateTime now, int seconds) => now >= cachedAt && (now - cachedAt).TotalSeconds < seconds;
 
     /// <summary>Liked videos are visible to their owner, or to a follower of the owner while the owner has sharing switched on. Nobody else.</summary>
     public static bool CanSeeLikes(string viewer, string owner, bool ownerShares, bool viewerFollowsOwner) =>
@@ -213,6 +242,19 @@ public static class Endpoint
         }
     }
 
+    private static async Task<bool> PublicEnabledAsync(CosmosService cosmos, CancellationToken ct)
+    {
+        try { return (await cosmos.GetContainer("platformSettings").ReadItemAsync<PublicWatchSetting>(PublicSettingId, new PartitionKey(PublicSettingId), cancellationToken: ct)).Resource.enabled; }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return false; }   // never switched on = private
+    }
+
+    private static async Task<PublicListReply> BuildPublicAsync(CosmosService cosmos, CancellationToken ct)
+    {
+        if (!await PublicEnabledAsync(cosmos, ct)) return new PublicListReply(false, []);
+        var all = await ListAsync(cosmos, ct);
+        return new PublicListReply(true, all.Where(v => v.status == "published").OrderByDescending(v => v.addedAt).Take(MaxPublished).Select(ToReply).ToList());
+    }
+
     private static string? UserId(HttpContext ctx) => ctx.User.FindFirst("sub")?.Value is { Length: > 0 } s ? s : null;
 
     private static async Task<VideoState> LoadStateAsync(CosmosService cosmos, string userId, CancellationToken ct)
@@ -244,6 +286,9 @@ public static class Endpoint
     public record VideoState(string id, string userId, string type, List<Mark> saved, List<Mark> liked, string updatedAt, bool shareLikes = false);
     public record MarksReply(List<string> saved, List<string> liked, bool shareLikes);
     public record SharingRequest(bool On);
+    public record PublicWatchSetting(string id, string pk, bool enabled, string updatedAt);
+    public record PublicSettingReply(bool enabled);
+    public record PublicListReply(bool enabled, List<VideoReply> videos);
     public record LikedByReply(bool visible, List<VideoReply> videos);
     public record MarkRequest(bool On);
     public record AddRequest(string Url, string Theme);

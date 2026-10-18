@@ -5,15 +5,16 @@ import { logEvent } from '../api/flowLogger';
 
 // A person's saved ("watch later") and liked videos, and the switch that shows the liked ones to followers. Shared by the video strip and the profile's Liked Videos tab.
 // Optimistic: a button changes at once, and goes back with a short message if the save fails.
-export function useVideoMarks() {
+export function useVideoMarks(enabled = true) {
   const [marks, setMarks] = useState<VideoMarks>({ saved: [], liked: [], shareLikes: false });
   const [problem, setProblem] = useState('');
 
   useEffect(() => {
+    if (!enabled) return;
     let alive = true;
     void fetchVideoMarks().then(m => { if (alive) setMarks(m); });
     return () => { alive = false; };
-  }, []);
+  }, [enabled]);
 
   const toggle = useCallback(async (v: FeedVideo, mark: VideoMark) => {
     let was = false;

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Bookmark, Heart, X } from 'lucide-react';
+import { Bookmark, Heart, Share2, X } from 'lucide-react';
 import { embedUrl, watchUrl } from '../api/feedVideosApi';
 import type { FeedVideo, VideoMark, VideoMarks } from '../api/feedVideosApi';
 
@@ -13,8 +13,9 @@ export const roundButton = (on: boolean): React.CSSProperties => ({
   background: on ? 'rgba(52,211,153,0.9)' : 'rgba(0,0,0,0.55)', color: on ? '#04130d' : '#fff',
 });
 
-export function VideoPlayer({ video, marks, onToggle, onClose }: {
+export function VideoPlayer({ video, marks, onToggle, onClose, onShare, hint }: {
   video: FeedVideo; marks: VideoMarks; onToggle: (v: FeedVideo, mark: VideoMark) => void; onClose: () => void;
+  onShare?: (v: FeedVideo) => void; hint?: React.ReactNode;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -45,10 +46,12 @@ export function VideoPlayer({ video, marks, onToggle, onClose }: {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
+            {onShare && <button type="button" aria-label="Share this video" title="Share" onClick={() => onShare(video)} style={roundButton(false)}><Share2 size={16} /></button>}
             <button type="button" aria-pressed={saved} aria-label={saved ? 'Remove from saved' : 'Save for later'} onClick={() => onToggle(video, 'saved')} style={roundButton(saved)}><Bookmark size={16} fill={saved ? 'currentColor' : 'none'} /></button>
             <button type="button" aria-pressed={liked} aria-label={liked ? 'Unlike' : 'Like'} onClick={() => onToggle(video, 'liked')} style={roundButton(liked)}><Heart size={16} fill={liked ? 'currentColor' : 'none'} /></button>
           </div>
         </div>
+        {hint && <div role="status" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{hint}</div>}
       </div>
     </div>
   );
