@@ -93,11 +93,18 @@ describe('ReviewsTab', () => {
       { cadence: 'weekly', periodStart: '2026-10-05', periodEnd: '2026-10-11', rating: 5, wentWell: '', didntGoWell: '', learned: '', notes: '', priorities: [], updatedAt: 'x' },
     ];
     render(<ReviewsTab />);
+    fireEvent.click(await screen.findByText(/Mood by week/));
     await screen.findByText('MOOD OVER TIME');
     await screen.findByText('average over 2 weeks');
     calls.length = 0;
     fireEvent.click(screen.getByRole('button', { name: /week of 28 Sep\w* 2026: Hard/ }));
     await waitFor(() => expect(calls.some(c => c.url.includes('/api/reviews/period') && c.url.includes('date=2026-09-28'))).toBe(true));
+  });
+
+  it('shows the mood by day first', async () => {
+    render(<ReviewsTab />);
+    await screen.findByText('MOOD BY DAY');
+    expect(screen.getByLabelText('Mood view')).toBeTruthy();
   });
 
   it('cannot move forward past the current period', async () => {

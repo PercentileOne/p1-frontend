@@ -54,7 +54,7 @@ export default function RoutinesAndSystemsPage() {
             ))}
           </div>
           {tab === 'routines' && <RoutinesPage key={`r${jump.n}`} initialDate={jump.cadence ? undefined : jump.date} />}
-          {tab === 'systems' && <ReviewsTab key={`s${jump.n}`} initialCadence={jump.cadence} initialDate={jump.cadence ? jump.date : undefined} />}
+          {tab === 'systems' && <ReviewsTab key={`s${jump.n}`} initialCadence={jump.cadence} initialDate={jump.cadence ? jump.date : undefined} onOpenDay={d => { setTab('routines'); setJump(j => ({ n: j.n + 1, date: d })); }} />}
           {tab === 'goals' && <GoalsTab />}
         </>
       )}

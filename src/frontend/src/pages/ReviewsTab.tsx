@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MAX_PRIORITIES, MAX_REVIEW_NOTES, MAX_REVIEW_TEXT, periodOf, planningApi, shiftPeriod } from '../api/planningApi';
 import type { Cadence, LookBack, Review } from '../api/planningApi';
+import { DailyMoodChart } from '../components/DailyMoodChart';
 import { MoodChart } from '../components/MoodChart';
 import { localDate, routinesApi } from '../api/routinesApi';
 import type { DaySummary } from '../api/routinesApi';
@@ -54,7 +55,7 @@ function fromReview(r: Review | null): Form {
   return { rating: r.rating, wentWell: r.wentWell, didntGoWell: r.didntGoWell, learned: r.learned, notes: r.notes, priorities: p };
 }
 
-export default function ReviewsTab({ initialCadence, initialDate }: { initialCadence?: Cadence; initialDate?: string } = {}) {
+export default function ReviewsTab({ initialCadence, initialDate, onOpenDay }: { initialCadence?: Cadence; initialDate?: string; onOpenDay?: (date: string) => void } = {}) {
   const today = useMemo(() => localDate(), []);
   const [cadence, setCadence] = useState<Cadence>(initialCadence ?? 'weekly');
   const [anchor, setAnchor] = useState(initialDate ?? today);
@@ -65,6 +66,7 @@ export default function ReviewsTab({ initialCadence, initialDate }: { initialCad
   const [lookBack, setLookBack] = useState<LookBack | null>(null);
   const [history, setHistory] = useState<Review[]>([]);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [moodView, setMoodView] = useState<'days' | 'reviews'>('days');
   const [error, setError] = useState('');
   const formRef = useRef(form); formRef.current = form;
   const lookRef = useRef(lookBack); lookRef.current = lookBack;
@@ -205,7 +207,15 @@ export default function ReviewsTab({ initialCadence, initialDate }: { initialCad
       </section>
 
       {/* Mood over time: the ratings of every saved review of this rhythm, drawn as a line */}
-      <MoodChart reviews={history} cadence={cadence} currentStart={start} onOpen={d => { void send(); setAnchor(d); }} />
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Mood view">
+        {([['days', 'Mood by day'], ['reviews', `Mood by ${cfg.noun} (from your reviews)`]] as ['days' | 'reviews', string][]).map(([v, text]) => (
+          <button key={v} type="button" aria-pressed={moodView === v} onClick={() => setMoodView(v)}
+            style={{ padding: '6px 13px', borderRadius: 999, border: `1px solid ${moodView === v ? GREEN : 'var(--border)'}`, background: moodView === v ? 'rgba(52,211,153,0.14)' : 'none', color: moodView === v ? GREEN : 'var(--text-2, var(--text))', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>{text}</button>
+        ))}
+      </div>
+      {moodView === 'days'
+        ? <DailyMoodChart onOpenDay={d => { void send(); onOpenDay?.(d); }} />
+        : <MoodChart reviews={history} cadence={cadence} currentStart={start} onOpen={d => { void send(); setAnchor(d); }} />}
 
       {/* Earlier reviews */}
       {history.length > 0 && (

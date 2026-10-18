@@ -27,6 +27,7 @@ public static class Endpoint
     public const int MaxFavouriteNote = 100;
     public const int MaxDayNote = 4000;
     public const int MaxSearchResults = 60;
+    public const int MaxMoodDays = 400;
     public const int MaxInterviewText = 120;
 
     private static readonly string[] Statuses = ["active", "paused", "completed"];
@@ -303,6 +304,38 @@ public static class Endpoint
 
             return Results.Ok(results.OrderByDescending(r => r.date, StringComparer.Ordinal).Take(MaxSearchResults).ToList());
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("NotesSearch");
+
+        // Daily mood: one tap per day, 1 (Rough) to 5 (Great), the same scale as a review's rating. Stored as one small document per person per MONTH (a map of day to rating),
+        // so reading a year is twelve point reads. A rating of 0 clears the day.
+        var moods = app.MapGroup("/api/moods").RequireAuthorization(Permissions.PracticeInterview).WithTags("Moods");
+
+        moods.MapGet("", async (string from, string to, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(from, out var f) || !TryDate(to, out var t2) || t2 < f) return Results.BadRequest(new { error = "Use dates like 2026-10-18." });
+            if (t2.DayNumber - f.DayNumber >= MaxMoodDays) return Results.BadRequest(new { error = "That is too long a stretch. Ask for a year at most." });
+            var result = new List<MoodReply>();
+            foreach (var month in MoodMonths(f, t2))
+            {
+                var doc = await LoadMoodMonthAsync(cosmos, userId, month, ct);
+                result.AddRange(doc.days.Where(kv => string.CompareOrdinal(kv.Key, from) >= 0 && string.CompareOrdinal(kv.Key, to) <= 0).Select(kv => new MoodReply(kv.Key, kv.Value)));
+            }
+            return Results.Ok(result.OrderBy(m => m.date, StringComparer.Ordinal).ToList());
+        });
+
+        moods.MapPut("/{date}", async (string date, MoodRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d) || d.Year < 2000 || d.Year > 2100) return Results.BadRequest(new { error = "Use a date like 2026-10-18." });
+            var rating = req.rating ?? 0;
+            if (rating < 0 || rating > 5) return Results.BadRequest(new { error = "Choose a mood from Rough to Great." });
+            var month = date[..7];
+            var doc = await LoadMoodMonthAsync(cosmos, userId, month, ct);
+            var days = new Dictionary<string, int>(doc.days);
+            if (rating == 0) days.Remove(date); else days[date] = rating;
+            await cosmos.GetContainer("planning").UpsertItemAsync(doc with { days = days, updatedAt = DateTimeOffset.UtcNow.ToString("o") }, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(new MoodReply(date, rating));
+        });
     }
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
@@ -324,6 +357,9 @@ public static class Endpoint
     public record DayNoteDoc(string id, string userId, string type, string date, string text, string updatedAt);
     public record DayNoteReply(string date, string text);
     public record DayNoteRequest(string? text);
+    public record MoodMonthDoc(string id, string userId, string type, string month, Dictionary<string, int> days, string updatedAt);
+    public record MoodReply(string date, int rating);
+    public record MoodRequest(int? rating);
     public record FavouriteDto(string date, string note, string createdAt);
     public record FavouriteDaysDoc(string id, string userId, string type, List<FavouriteDto> days, string updatedAt);
     public record FavouriteReply(string date, string note);
@@ -474,6 +510,20 @@ public static class Endpoint
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
         return docs;
+    }
+
+    // ---- daily mood ----
+    /// <summary>The yyyy-MM months a stretch of dates touches, oldest first.</summary>
+    public static List<string> MoodMonths(DateOnly from, DateOnly to)
+    {
+        var months = new List<string>();
+        for (var m = new DateOnly(from.Year, from.Month, 1); m <= to; m = m.AddMonths(1)) months.Add(m.ToString("yyyy-MM"));
+        return months;
+    }
+    private static async Task<MoodMonthDoc> LoadMoodMonthAsync(CosmosService cosmos, string userId, string month, CancellationToken ct)
+    {
+        try { return (await cosmos.GetContainer("planning").ReadItemAsync<MoodMonthDoc>("moods:" + month, new PartitionKey(userId), cancellationToken: ct)).Resource; }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return new MoodMonthDoc("moods:" + month, userId, "moods", month, new Dictionary<string, int>(), DateTimeOffset.UtcNow.ToString("o")); }
     }
 
     // ---- favourite days ----

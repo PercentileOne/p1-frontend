@@ -31,6 +31,8 @@ export interface ReviewInput { rating: number; wentWell: string; didntGoWell: st
 export interface PeriodReply { cadence: Cadence; periodStart: string; periodEnd: string; review: Review | null }
 /** A day starred in Routines, with an optional note about why it matters. */
 export interface FavouriteDay { date: string; note: string }
+/** A day's mood: 1 (Rough) to 5 (Great). */
+export interface MoodDay { date: string; rating: number }
 /** One hit from searching the person's own notes. `date` is the day, or the start of a review's period; `id` is set for a goal. */
 export type SearchKind = 'day' | 'favourite' | 'review' | 'goal';
 export interface SearchResult { kind: SearchKind; date: string; endDate: string; cadence: string; id: string; title: string; snippet: string; field: string }
@@ -74,6 +76,9 @@ export const planningApi = {
   reviews: (cadence: Cadence) => call<Review[]>(`/reviews?cadence=${cadence}`, { headers: headers() }),
   saveReview: (cadence: Cadence, date: string, body: ReviewInput) =>
     call<Review>(`/reviews/${cadence}/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify(body) }),
+  moods: (from: string, to: string) => call<MoodDay[]>(`/moods?from=${from}&to=${to}`, { headers: headers() }),
+  /** rating 1 (Rough) to 5 (Great); 0 clears the day. */
+  setMood: (date: string, rating: number) => call<MoodDay>(`/moods/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ rating }) }),
   search: (q: string) => call<SearchResult[]>(`/notes-search?q=${encodeURIComponent(q)}`, { headers: headers() }),
   dayNote: (date: string) => call<{ date: string; text: string }>(`/day-notes/${date}`, { headers: headers() }),
   saveDayNote: (date: string, text: string) => call<{ date: string; text: string }>(`/day-notes/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ text }) }),

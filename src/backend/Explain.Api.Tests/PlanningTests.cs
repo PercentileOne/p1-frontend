@@ -97,6 +97,15 @@ public class PlanningTests
     }
 
     [Fact]
+    public void A_stretch_of_dates_names_the_months_it_touches()
+    {
+        Assert.Equal(["2026-10"], Planning.MoodMonths(new DateOnly(2026, 10, 3), new DateOnly(2026, 10, 18)));
+        Assert.Equal(["2026-09", "2026-10", "2026-11"], Planning.MoodMonths(new DateOnly(2026, 9, 30), new DateOnly(2026, 11, 1)));
+        Assert.Equal(["2025-12", "2026-01"], Planning.MoodMonths(new DateOnly(2025, 12, 31), new DateOnly(2026, 1, 1)));   // across the new year
+        Assert.Equal(13, Planning.MoodMonths(new DateOnly(2025, 10, 1), new DateOnly(2026, 10, 31)).Count);
+    }
+
+    [Fact]
     public void Planning_routes_build()
     {
         var builder = WebApplication.CreateBuilder();
@@ -107,7 +116,7 @@ public class PlanningTests
         Planning.Map(app);
         var patterns = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>().Select(r => (r.RoutePattern.RawText ?? "").TrimEnd('/')).ToList();   // a group's own route comes out as "/api/goals/"; routing treats the two alike
         foreach (var route in new[] { "/api/goals", "/api/goals/{id}", "/api/goals/{id}/updates", "/api/reviews/period", "/api/reviews/{cadence}/{date}", "/api/next-interviews",
-                                       "/api/favourite-days/{date}", "/api/day-notes/{date}", "/api/notes-search" })
+                                       "/api/favourite-days/{date}", "/api/day-notes/{date}", "/api/notes-search", "/api/moods", "/api/moods/{date}" })
             Assert.Contains(route, patterns);
     }
 }

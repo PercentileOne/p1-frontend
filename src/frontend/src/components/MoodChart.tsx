@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import type { Cadence, Review } from '../api/planningApi';
+import { MOOD_AMBER as AMBER, MOOD_COLOURS as COLOURS, MOOD_GREEN as GREEN, MOOD_LABELS as RATINGS, MOOD_RED as RED } from '../utils/mood';
 
 // Mood over time (Francis, 2026-10-18): the 1 to 5 rating from each review, drawn as a line against the calendar, so good stretches and dips show at a glance.
 // Click a point to open that review. Dates are on a real time scale, so a missed week shows as a gap. Unrated reviews are left out.
 
-const RATINGS = ['Rough', 'Hard', 'Okay', 'Good', 'Great'];
-// Traffic lights: red for Rough and Hard, amber for Okay, green for Good and Great.
-const RED = '#F87171', AMBER = '#F5B942', GREEN = '#34D399';
-const COLOURS = [RED, RED, AMBER, GREEN, GREEN];
 const W = 640, H = 230, L = 62, R = 18, T = 14, B = 36, PAD = 14;
 const DEFAULT_SHOWN = 26;
 

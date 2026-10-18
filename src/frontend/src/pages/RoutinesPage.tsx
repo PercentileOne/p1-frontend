@@ -7,6 +7,7 @@ import type { AddScope, DayItem, DaySummary, Priority, RoutineDay, RoutineKind }
 import { RoutineImport } from '../components/RoutineImport';
 import { RoutineCategories } from '../components/RoutineCategories';
 import { DayNotes } from '../components/DayNotes';
+import { DayMood } from '../components/DayMood';
 import type { CategoryEdit } from '../components/RoutineCategories';
 import { canMove, moveId, moveSection, orderByDrop, reorderWithin } from './routineOrder';
 import type { MoveTo } from './routineOrder';
@@ -319,6 +320,7 @@ export default function RoutinesPage({ initialDate }: { initialDate?: string } =
 
       <section style={{ ...card, padding: '18px 20px', minWidth: 0 }}>
         <DateBar date={date} today={today} onGo={goTo} favourites={favs} onToggleFavourite={() => void favToggle()} onNote={n => void favNote(n)} />
+        <DayMood key={date} date={date} />
         {!day && !error && <div style={{ color: 'var(--text-3)', fontSize: 14 }}>Opening your day…</div>}
         {error && <div role="alert" style={{ color: '#EF4444', fontSize: 13.5, marginBottom: 12 }}>{error}</div>}
         {day && (
