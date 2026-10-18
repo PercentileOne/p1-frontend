@@ -1,7 +1,8 @@
 import { QuestionOfTheDayCard } from '../components/QuestionOfTheDayCard';
+import { VideoStrip } from '../components/VideoStrip';
 
 // The candidate dashboard's Feed tab on WORK (Francis, 2026-10-18; design in docs/specs/agent-driven-feed.md). Built in the spec's order: the Question of the Day first,
-// then books and courses, then videos and news. Everything here is labelled as curated or written by TheInterviewChair.
+// then the video strip, then books, courses and news. Everything here is labelled as curated or written by TheInterviewChair.
 // Not to be confused with FeedPage.tsx, the older social-feed prototype with sample data that is routed at /feed.
 export default function WorkFeedPage() {
   return (
@@ -11,6 +12,7 @@ export default function WorkFeedPage() {
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-3)' }}>A little something each day to keep you sharp for the job you want.</p>
       </div>
       <QuestionOfTheDayCard />
+      <VideoStrip />
     </div>
   );
 }

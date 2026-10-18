@@ -166,6 +166,10 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("planning", "/userId"));
 
+        // The feed's video strip (2026-10-18): a short list of verified official-channel YouTube videos, one partition like interviewers. See Features/FeedVideos/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("feedVideos", "/pk"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion
