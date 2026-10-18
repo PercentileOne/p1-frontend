@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { nextInterviewApi } from '../api/nextInterviewApi';
 import { CompanyPicker } from '../components/CompanyPicker';
 import { PaywallDialog } from '../components/PaywallDialog';
 import { useInterviewGate } from '../hooks/useInterviewGate';
@@ -105,6 +106,8 @@ interface IncomingState {
   specialFocus?: string[];
   // Opened from the dashboard's Day One Ready card (2026-10-04).
   dayOneReady?: boolean;
+  // A recruiter's prep already carries the real interview's date (yyyy-MM-dd or ISO), so this screen need not ask for it.
+  interviewDate?: string;
 }
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
@@ -191,6 +194,9 @@ export default function InterviewPackStart() {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedDifficulty, setSelectedDifficulty] = useState(incoming.difficulty ?? 'Pro');
   const [selectedInterviewRound, setSelectedInterviewRound] = useState(incoming.interviewRound ?? INTERVIEW_ROUNDS[0]);
+  // "Is this for a real interview?" (2026-10-18): a yes with a date adds it to the dashboard's Next interview card.
+  const [realInterview, setRealInterview] = useState<'yes' | 'no' | null>(null);
+  const [realInterviewDate, setRealInterviewDate] = useState('');
   const [selectedSalary, setSelectedSalary] = useState(incoming.salaryExpectation ?? 'N/A');
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(incoming.questionCount ?? 10);
   // Keeps Difficulty and Salary Expectation from ever showing a contradictory combo (Francis,
@@ -363,6 +369,14 @@ export default function InterviewPackStart() {
     // BEFORE anything is logged or navigated. Being blocked shows the paywall and stops here.
     const { allowed } = await gate.begin();
     if (!allowed) return;
+    // A real interview with a date goes on the Next interview card. A failed note must never stop the practice.
+    if (authToken && realInterview === 'yes' && realInterviewDate && !incoming.interviewDate) {
+      void nextInterviewApi.create({
+        date: realInterviewDate,
+        role: jobTitle.trim() || incoming.jobTitle || '',
+        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
+      }).catch(() => { /* ignore */ });
+    }
     // Keep this CV for next time (a new one, or one that changed); the saved one is left alone when it was used as it was.
     if (authToken && cvText.trim().length > 20 && !(usingSavedCv && savedCv && savedCv.text === cvText)) void saveCv(authToken, cvFileName || 'My CV', cvText);
     logFlowEvent('START_INTERVIEW_CLICKED', {
@@ -772,6 +786,30 @@ export default function InterviewPackStart() {
             Which stage of your real process is this? Michelle and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
           </div>
         </div>
+
+        {!incoming.interviewDate && (
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '14px' }}>
+            Is this for a real interview?
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }} role="group" aria-label="Is this for a real interview?">
+            {([['yes', 'Yes, I have one coming up'], ['no', 'No, just practising']] as ['yes' | 'no', string][]).map(([v, text]) => (
+              <button key={v} type="button" aria-pressed={realInterview === v} onClick={() => setRealInterview(realInterview === v ? null : v)}
+                style={{ padding: '9px 14px', borderRadius: '999px', border: `1px solid ${realInterview === v ? '#34D399' : 'var(--border)'}`, background: realInterview === v ? 'rgba(52,211,153,0.14)' : 'none', color: realInterview === v ? '#34D399' : 'var(--text)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13.5px' }}>{text}</button>
+            ))}
+          </div>
+          {realInterview === 'yes' && (
+            <div style={{ marginTop: '14px' }}>
+              <label htmlFor="realInterviewDate" style={{ display: 'block', fontSize: '12px', color: 'var(--text-3)', fontWeight: 600, marginBottom: '6px' }}>DATE OF THE INTERVIEW</label>
+              <input id="realInterviewDate" type="date" value={realInterviewDate} onChange={e => setRealInterviewDate(e.target.value)}
+                style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 12px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit' }} />
+              <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
+                We will add it to your Next interview card on the dashboard and count down with you. You can remove it there any time.
+              </div>
+            </div>
+          )}
+        </div>
+        )}
 
         </div>
 

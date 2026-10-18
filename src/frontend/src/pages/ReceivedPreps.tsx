@@ -87,6 +87,7 @@ export default function ReceivedPreps() {
         interviewRound: prep.round ?? undefined,
         salaryExpectation: prep.salaryExpectation ?? undefined,
         specialFocus: prep.specialFocus ?? undefined,
+        interviewDate: prep.interviewDate,
       },
     });
   }

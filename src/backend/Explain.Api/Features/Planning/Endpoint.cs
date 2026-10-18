@@ -22,6 +22,8 @@ public static class Endpoint
     public const int MaxReviewText = 2000;
     public const int MaxReviewNotes = 4000;
     public const int MaxPriorities = 5;
+    public const int MaxInterviews = 50;
+    public const int MaxInterviewText = 120;
 
     private static readonly string[] Statuses = ["active", "paused", "completed"];
     private static readonly string[] Cadences = ["weekly", "monthly", "yearly"];
@@ -138,6 +140,60 @@ public static class Endpoint
             await cosmos.GetContainer("planning").UpsertItemAsync(doc, new PartitionKey(userId), cancellationToken: ct);
             return Results.Ok(ToReply(doc));
         });
+
+        // Interviews the person says are coming up (the dashboard's "Next interview"). Recruiter-sent preps already carry a date, so the portal merges those in itself.
+        var ivs = app.MapGroup("/api/next-interviews").RequireAuthorization(Permissions.PracticeInterview).WithTags("NextInterviews");
+
+        ivs.MapGet("", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var docs = await LoadInterviewsAsync(cosmos, userId, ct);
+            return Results.Ok(docs.OrderBy(i => i.date, StringComparer.Ordinal).Select(ToReply).ToList());
+        });
+
+        ivs.MapPost("", async (InterviewRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (req.date is null || !TryDate(req.date, out var d) || d.Year < 2024 || d.Year > 2100) return Results.BadRequest(new { error = "Choose the date of the interview." });
+            var role = Cut((req.role ?? "").Trim(), MaxInterviewText);
+            var company = Cut((req.company ?? "").Trim(), MaxInterviewText);
+            var existing = await LoadInterviewsAsync(cosmos, userId, ct);
+            // Starting two practice interviews for the same real interview must not list it twice.
+            var same = existing.FirstOrDefault(i => i.date == req.date && string.Equals(i.role, role, StringComparison.OrdinalIgnoreCase) && string.Equals(i.company, company, StringComparison.OrdinalIgnoreCase));
+            if (same is not null) return Results.Ok(ToReply(same));
+            if (existing.Count >= MaxInterviews) return Results.BadRequest(new { error = "That's the most interviews you can list. Remove an old one first." });
+            var now = DateTimeOffset.UtcNow.ToString("o");
+            var doc = new InterviewDoc("interview:" + NewId(), userId, "interview", req.date, role, company, now, now);
+            await cosmos.GetContainer("planning").UpsertItemAsync(doc, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(ToReply(doc));
+        });
+
+        ivs.MapPut("/{id}", async (string id, InterviewRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            InterviewDoc cur;
+            try { cur = (await cosmos.GetContainer("planning").ReadItemAsync<InterviewDoc>("interview:" + id, new PartitionKey(userId), cancellationToken: ct)).Resource; }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return Results.NotFound(new { error = "That interview was not found." }); }
+            var date = req.date ?? cur.date;
+            if (!TryDate(date, out var d) || d.Year < 2024 || d.Year > 2100) return Results.BadRequest(new { error = "Choose the date of the interview." });
+            var saved = cur with
+            {
+                date = date,
+                role = req.role is null ? cur.role : Cut(req.role.Trim(), MaxInterviewText),
+                company = req.company is null ? cur.company : Cut(req.company.Trim(), MaxInterviewText),
+                updatedAt = DateTimeOffset.UtcNow.ToString("o"),
+            };
+            await cosmos.GetContainer("planning").UpsertItemAsync(saved, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(ToReply(saved));
+        });
+
+        ivs.MapDelete("/{id}", async (string id, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            try { await cosmos.GetContainer("planning").DeleteItemAsync<InterviewDoc>("interview:" + id, new PartitionKey(userId), cancellationToken: ct); }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+            return Results.Ok(new { ok = true });
+        });
     }
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
@@ -153,6 +209,10 @@ public static class Endpoint
     public record GoalRequest(string? title, string? description, string? category, string? startDate, string? targetDate,
         string? status, string? track, List<MilestoneDto>? milestones, double? targetValue, double? currentValue, string? unit);
     public record UpdateRequest(string? note, double? value, string? date);
+
+    public record InterviewDoc(string id, string userId, string type, string date, string role, string company, string createdAt, string updatedAt);
+    public record InterviewReply(string id, string date, string role, string company);
+    public record InterviewRequest(string? date, string? role, string? company);
 
     public record LookBackDto(int essentialsDone, int essentialsTotal, int daysOpened, int daysAllEssentials, int practiceInterviews);
     public record ReviewDoc(string id, string userId, string type, string cadence, string periodStart, string periodEnd, int rating,
@@ -262,6 +322,22 @@ public static class Endpoint
     {
         try { return (await cosmos.GetContainer("planning").ReadItemAsync<ReviewDoc>("review:" + cadence + ":" + start.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct)).Resource; }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return null; }
+    }
+
+    // ---- upcoming interviews ----
+    private static InterviewReply ToReply(InterviewDoc i) => new(i.id.StartsWith("interview:") ? i.id[10..] : i.id, i.date, i.role, i.company);
+
+    private static async Task<List<InterviewDoc>> LoadInterviewsAsync(CosmosService cosmos, string userId, CancellationToken ct)
+    {
+        var q = new QueryDefinition("SELECT * FROM c WHERE c.userId = @u AND c.type = 'interview'").WithParameter("@u", userId);
+        var docs = new List<InterviewDoc>();
+        try
+        {
+            using var feed = cosmos.GetContainer("planning").GetItemQueryIterator<InterviewDoc>(q, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+            while (feed.HasMoreResults) docs.AddRange(await feed.ReadNextAsync(ct));
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+        return docs;
     }
 
     // ---- helpers ----

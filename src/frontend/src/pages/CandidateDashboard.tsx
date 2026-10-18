@@ -32,6 +32,10 @@ import CertExamsPanel from "./CertExamsPanel";
 import HelpCentre from "./HelpCentre";
 import { GettingStartedCard } from "../components/GettingStartedCard";
 import { RoutineTodayCard } from "../components/RoutineTodayCard";
+import { NextInterviewCard } from "../components/NextInterviewCard";
+import { nextInterviewApi, inNextWeek } from "../api/nextInterviewApi";
+import type { NextInterview, NextInterviewInput } from "../api/nextInterviewApi";
+import { localDate } from "../api/routinesApi";
 import RoutinesAndSystemsPage from "./RoutinesAndSystemsPage";
 import { HelpHint } from "../components/HelpHint";
 import { CANDIDATE_ARTICLES } from "../help/articles";
@@ -671,6 +675,16 @@ export default function CandidateDashboard() {
   const [businessNews, setBusinessNews] = useState<NewsItem[]>([]);
   const [openCard,     setOpenCard]     = useState<number | null>(null);
   const [recentInterviews, setRecentInterviews] = useState<RecentInterview[] | null>(null);
+  // "Next interview": the interviews the person added plus recruiter-sent preps, all with dates. null until loaded.
+  const [nextInterviews, setNextInterviews] = useState<NextInterview[] | null>(null);
+  useEffect(() => {
+    if (!authToken) return;
+    let alive = true;
+    nextInterviewApi.all().then(list => { if (alive) setNextInterviews(list); }).catch(() => { if (alive) setNextInterviews([]); });
+    return () => { alive = false; };
+  }, [authToken]);
+  const addNextInterview = async (input: NextInterviewInput) => { await nextInterviewApi.create(input); setNextInterviews(await nextInterviewApi.all()); };
+  const removeNextInterview = async (id: string) => { await nextInterviewApi.remove(id); setNextInterviews(await nextInterviewApi.all()); };
 
   useEffect(() => {
     if (!countryMenuOpen) return;
@@ -900,7 +914,7 @@ export default function CandidateDashboard() {
               {getGreeting()}, {firstName}{phone ? "" : <> — <span style={{ color: "#34D399" }}>{role}</span></>}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-3)", marginTop: 2 }}>
-              {getTodayLabel()}{phone ? "" : " · 2 interviews scheduled this week"}
+              {getTodayLabel()}{phone || !nextInterviews || inNextWeek(nextInterviews, localDate()) === 0 ? "" : ` · ${inNextWeek(nextInterviews, localDate())} interview${inNextWeek(nextInterviews, localDate()) === 1 ? "" : "s"} in the next 7 days`}
             </div>
           </div>
           {/* Quick actions only make sense on the Dashboard home view — every other panel
@@ -963,6 +977,8 @@ export default function CandidateDashboard() {
         {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings", "My Routines"].includes(activeNav) && <>
 
         <RoutineTodayCard onOpen={() => navTo("My Routines")} />
+
+        <NextInterviewCard items={nextInterviews ?? []} loaded={nextInterviews !== null} onAdd={addNextInterview} onRemove={removeNextInterview} />
 
         <GettingStartedCard token={authToken} onNavigate={navTo} />
 
