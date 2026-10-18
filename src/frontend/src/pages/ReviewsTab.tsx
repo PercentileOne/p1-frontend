@@ -148,6 +148,16 @@ export default function ReviewsTab() {
         <button type="button" aria-label={`Next ${cfg.noun}`} disabled={!canGoNext} onClick={() => { void send(); setAnchor(shiftPeriod(cadence, start, 1)); }} style={{ ...navBtn, opacity: canGoNext ? 1 : 0.35, cursor: canGoNext ? 'pointer' : 'default' }}><ChevronRight size={18} /></button>
       </div>
 
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }} role="group" aria-label="Jump to another period">
+        <input type="date" aria-label="Jump to a date" value={anchor} min="2024-01-01" max={today}
+          onChange={e => { const v = e.target.value; if (v && v >= '2024-01-01' && v <= today) { void send(); setAnchor(v); } }}
+          style={{ ...field, width: 'auto', padding: '7px 10px' }} />
+        <button type="button" aria-label={`Back to this ${cfg.noun}`} disabled={start <= today && today <= end} onClick={() => { void send(); setAnchor(today); }}
+          style={{ padding: '8px 14px', borderRadius: 9, border: `1px solid ${GREEN}`, background: 'transparent', color: GREEN, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, opacity: start <= today && today <= end ? 0.45 : 1 }}>
+          This {cfg.noun}
+        </button>
+      </div>
+
       {error && <div role="alert" style={{ ...card, padding: 12, color: '#F87171', fontSize: 14 }}>{error}</div>}
 
       {/* 1. Look back */}

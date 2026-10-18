@@ -23,6 +23,8 @@ public static class Endpoint
     public const int MaxReviewNotes = 4000;
     public const int MaxPriorities = 5;
     public const int MaxInterviews = 50;
+    public const int MaxFavourites = 200;
+    public const int MaxFavouriteNote = 100;
     public const int MaxInterviewText = 120;
 
     private static readonly string[] Statuses = ["active", "paused", "completed"];
@@ -194,6 +196,40 @@ public static class Endpoint
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             return Results.Ok(new { ok = true });
         });
+
+        // Favourite days (the star on a Routines day): a short list of dates the person wants to be able to get back to, each with an optional note.
+        // One small document per person, so listing them is one read.
+        var favs = app.MapGroup("/api/favourite-days").RequireAuthorization(Permissions.PracticeInterview).WithTags("FavouriteDays");
+
+        favs.MapGet("", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var doc = await LoadFavouritesAsync(cosmos, userId, ct);
+            return Results.Ok(doc.days.OrderByDescending(f => f.date, StringComparer.Ordinal).Select(f => new FavouriteReply(f.date, f.note)).ToList());
+        });
+
+        favs.MapPut("/{date}", async (string date, FavouriteRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!TryDate(date, out var d) || d.Year < 2000 || d.Year > 2100) return Results.BadRequest(new { error = "Use a date like 2026-10-18." });
+            var doc = await LoadFavouritesAsync(cosmos, userId, ct);
+            var note = Cut((req.note ?? "").Trim(), MaxFavouriteNote);
+            var existing = doc.days.FirstOrDefault(f => f.date == date);
+            if (existing is null && doc.days.Count >= MaxFavourites) return Results.BadRequest(new { error = "That's the most favourite days you can keep. Remove one first." });
+            var days = doc.days.Where(f => f.date != date).Append(new FavouriteDto(date, note, existing?.createdAt ?? DateTimeOffset.UtcNow.ToString("o"))).ToList();
+            await cosmos.GetContainer("planning").UpsertItemAsync(doc with { days = days, updatedAt = DateTimeOffset.UtcNow.ToString("o") }, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(new FavouriteReply(date, note));
+        });
+
+        favs.MapDelete("/{date}", async (string date, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var doc = await LoadFavouritesAsync(cosmos, userId, ct);
+            var days = doc.days.Where(f => f.date != date).ToList();
+            if (days.Count != doc.days.Count)
+                await cosmos.GetContainer("planning").UpsertItemAsync(doc with { days = days, updatedAt = DateTimeOffset.UtcNow.ToString("o") }, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(new { ok = true });
+        });
     }
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
@@ -210,6 +246,10 @@ public static class Endpoint
         string? status, string? track, List<MilestoneDto>? milestones, double? targetValue, double? currentValue, string? unit);
     public record UpdateRequest(string? note, double? value, string? date);
 
+    public record FavouriteDto(string date, string note, string createdAt);
+    public record FavouriteDaysDoc(string id, string userId, string type, List<FavouriteDto> days, string updatedAt);
+    public record FavouriteReply(string date, string note);
+    public record FavouriteRequest(string? note);
     public record InterviewDoc(string id, string userId, string type, string date, string role, string company, string createdAt, string updatedAt);
     public record InterviewReply(string id, string date, string role, string company);
     public record InterviewRequest(string? date, string? role, string? company);
@@ -322,6 +362,13 @@ public static class Endpoint
     {
         try { return (await cosmos.GetContainer("planning").ReadItemAsync<ReviewDoc>("review:" + cadence + ":" + start.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct)).Resource; }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return null; }
+    }
+
+    // ---- favourite days ----
+    private static async Task<FavouriteDaysDoc> LoadFavouritesAsync(CosmosService cosmos, string userId, CancellationToken ct)
+    {
+        try { return (await cosmos.GetContainer("planning").ReadItemAsync<FavouriteDaysDoc>("favourite-days", new PartitionKey(userId), cancellationToken: ct)).Resource; }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return new FavouriteDaysDoc("favourite-days", userId, "favourites", [], DateTimeOffset.UtcNow.ToString("o")); }
     }
 
     // ---- upcoming interviews ----

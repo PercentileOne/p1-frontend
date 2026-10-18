@@ -45,7 +45,11 @@ public static class Endpoint
         {
             var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
             if (!TryDate(date, out var d)) return Results.BadRequest(new { error = "Use a date like 2026-10-13." });
-            return Results.Ok(await LoadOrBuildDayAsync(cosmos, userId, d, ct));
+            // Browsing to an old date (a date picker can reach any day) must not store an empty day for every date looked at: that would fill the tree with grey dots and
+            // inflate "days opened" in the reviews. A day from before yesterday (UTC; the extra day covers every time zone) is built from the template for viewing only,
+            // and is stored the first time something on it is changed. Today and later are stored on opening, as before.
+            var persist = d >= DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+            return Results.Ok(await LoadOrBuildDayAsync(cosmos, userId, d, ct, persist));
         });
 
         // For the Dashboard card: today's progress WITHOUT creating the day, so people who never open My Routines are not given a stored document every morning.
@@ -547,7 +551,7 @@ public static class Endpoint
         }
     }
 
-    private static async Task<DayDoc> LoadOrBuildDayAsync(CosmosService cosmos, string userId, DateOnly d, CancellationToken ct)
+    private static async Task<DayDoc> LoadOrBuildDayAsync(CosmosService cosmos, string userId, DateOnly d, CancellationToken ct, bool persist = true)
     {
         var date = d.ToString("yyyy-MM-dd");
         var container = cosmos.GetContainer("routines");
@@ -559,7 +563,7 @@ public static class Endpoint
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 
         var day = BuildDay(userId, d, await LoadTemplateAsync(cosmos, userId, ct));
-        await container.UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
+        if (persist) await container.UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
         return day;
     }
 

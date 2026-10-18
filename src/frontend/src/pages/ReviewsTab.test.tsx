@@ -75,6 +75,17 @@ describe('ReviewsTab', () => {
     expect(calls.some(c => c.url.includes('cadence=monthly'))).toBe(true);
   });
 
+  it('jumps to the week of a picked date, and This week brings you back', async () => {
+    render(<ReviewsTab />);
+    const back = await screen.findByLabelText('Back to this week');
+    expect((back as HTMLButtonElement).disabled).toBe(true);          // already on this week
+    fireEvent.change(screen.getByLabelText('Jump to a date'), { target: { value: '2025-03-12' } });
+    await waitFor(() => expect(calls.some(c => c.url.includes('/api/reviews/period') && c.url.includes('date=2025-03-10'))).toBe(true));
+    await waitFor(() => expect((screen.getByLabelText('Back to this week') as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(screen.getByLabelText('Back to this week'));
+    await waitFor(() => expect((screen.getByLabelText('Back to this week') as HTMLButtonElement).disabled).toBe(true));
+  });
+
   it('cannot move forward past the current period', async () => {
     render(<ReviewsTab />);
     const next = await screen.findByLabelText('Next week');

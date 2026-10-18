@@ -29,6 +29,9 @@ export interface Review {
 }
 export interface ReviewInput { rating: number; wentWell: string; didntGoWell: string; learned: string; notes: string; priorities: string[]; lookBack?: LookBack | null }
 export interface PeriodReply { cadence: Cadence; periodStart: string; periodEnd: string; review: Review | null }
+/** A day starred in Routines, with an optional note about why it matters. */
+export interface FavouriteDay { date: string; note: string }
+export const MAX_FAVOURITE_NOTE = 100;
 export const MAX_REVIEW_TEXT = 2000;
 export const MAX_REVIEW_NOTES = 4000;
 export const MAX_PRIORITIES = 5;
@@ -67,6 +70,9 @@ export const planningApi = {
   reviews: (cadence: Cadence) => call<Review[]>(`/reviews?cadence=${cadence}`, { headers: headers() }),
   saveReview: (cadence: Cadence, date: string, body: ReviewInput) =>
     call<Review>(`/reviews/${cadence}/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify(body) }),
+  favourites: () => call<FavouriteDay[]>('/favourite-days', { headers: headers() }),
+  setFavourite: (date: string, note: string) => call<FavouriteDay>(`/favourite-days/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ note }) }),
+  removeFavourite: (date: string) => call<{ ok: boolean }>(`/favourite-days/${date}`, { method: 'DELETE', headers: headers() }),
   /** Every saved interview with its date, so a review can say how many practice interviews the period held. */
   interviewDates: async (): Promise<string[]> => {
     try {

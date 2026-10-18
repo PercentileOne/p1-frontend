@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, ClipboardPaste, Compass, GripVertical, ListOrdered, Pencil, Plus, Square, Sun, Trash2, Volume2, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ClipboardPaste, Compass, GripVertical, ListOrdered, Pencil, Plus, Square, Star, Sun, Trash2, Volume2, X } from 'lucide-react';
 import { localDate, routinesApi, MAX_ITEM_TEXT, MAX_READ_TEXT } from '../api/routinesApi';
+import { MAX_FAVOURITE_NOTE, planningApi } from '../api/planningApi';
+import type { FavouriteDay } from '../api/planningApi';
 import type { AddScope, DayItem, DaySummary, Priority, RoutineDay, RoutineKind } from '../api/routinesApi';
 import { RoutineImport } from '../components/RoutineImport';
 import { RoutineCategories } from '../components/RoutineCategories';
@@ -30,6 +32,10 @@ function prettyDate(date: string): string {
   const [y, m, d] = date.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
+function shortDate(date: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 function shortDay(date: string): string {
   const [y, m, d] = date.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
@@ -38,6 +44,12 @@ function dotColor(s: DaySummary | undefined): string {
   if (!s || s.total === 0) return 'rgba(255,255,255,0.18)';
   if (s.essentialsTotal > 0 ? s.essentialsDone >= s.essentialsTotal : s.done >= s.total) return GREEN;
   return s.done > 0 ? '#F59E0B' : 'rgba(255,255,255,0.18)';
+}
+const MIN_DATE = '2024-01-01';
+/** A calendar date shifted by whole days, in the person's own time zone. */
+function addDays(date: string, n: number): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return localDate(new Date(y, m - 1, d + n));
 }
 function greeting(): string {
   const h = new Date().getHours();
@@ -68,9 +80,31 @@ export default function RoutinesPage() {
   const pending = useRef<RoutineDay | null>(null);        // the latest unsaved ticks and typed text
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const applyDay = (d: RoutineDay | null) => { dayRef.current = d; setDay(d); };
+  /** Go to any day (from the date picker, the arrows or the Today button) and make sure the tree shows its month. */
+  const goTo = (d: string) => {
+    setDate(d); setOpenMonth(d.slice(0, 7));
+    setOpenYears(prev => (prev.includes(d.slice(0, 4)) ? prev : [...prev, d.slice(0, 4)]));
+  };
+  // Favourite days: the star on a day, with an optional note, and a list to jump back to them.
+  const [favs, setFavs] = useState<FavouriteDay[]>([]);
+  useEffect(() => {
+    let alive = true;
+    planningApi.favourites().then(list => { if (alive && Array.isArray(list)) setFavs(list); }).catch(() => { /* the stars are a nicety; the day still works */ });
+    return () => { alive = false; };
+  }, []);
+  const favToggle = async () => {
+    try {
+      if (favs.some(f => f.date === date)) { await planningApi.removeFavourite(date); setFavs(p => p.filter(f => f.date !== date)); }
+      else { const f = await planningApi.setFavourite(date, ''); setFavs(p => [...p.filter(x => x.date !== date), f]); }
+    } catch (e) { setError((e as Error).message || 'That did not save. Try again.'); }
+  };
+  const favNote = async (note: string) => {
+    try { const f = await planningApi.setFavourite(date, note); setFavs(p => p.map(x => (x.date === date ? f : x))); }
+    catch (e) { setError((e as Error).message || 'That did not save. Try again.'); }
+  };
   // The tree is built from the months that really have days, plus this month, grouped by year (newest year first). A new year just adds a row; earlier years stay reachable.
   const todayMonth = today.slice(0, 7);
-  const treeMonths = Array.from(new Set([...monthKeys, todayMonth])).sort();
+  const treeMonths = Array.from(new Set([...monthKeys, todayMonth, date.slice(0, 7)])).sort();   // the month being looked at is always in the tree, even if it has no opened days
   const treeYears = Array.from(new Set(treeMonths.map(k => k.slice(0, 4)))).sort().reverse();
 
   const loadMonth = useCallback(async (m: string) => {
@@ -239,7 +273,7 @@ export default function RoutinesPage() {
       <style>{`@media (max-width: 760px) { .routines-grid { grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
 
       <aside style={{ ...card, padding: 10 }}>
-        <TreeButton on={date === today} onClick={() => setDate(today)} icon={<Sun size={15} />} label="Today" />
+        <TreeButton on={date === today} onClick={() => goTo(today)} icon={<Sun size={15} />} label="Today" />
         {treeYears.map(y => {
           const yearOpen = openYears.includes(y);
           return (
@@ -283,6 +317,7 @@ export default function RoutinesPage() {
       </aside>
 
       <section style={{ ...card, padding: '18px 20px', minWidth: 0 }}>
+        <DateBar date={date} today={today} onGo={goTo} favourites={favs} onToggleFavourite={() => void favToggle()} onNote={n => void favNote(n)} />
         {!day && !error && <div style={{ color: 'var(--text-3)', fontSize: 14 }}>Opening your day…</div>}
         {error && <div role="alert" style={{ color: '#EF4444', fontSize: 13.5, marginBottom: 12 }}>{error}</div>}
         {day && (
@@ -385,6 +420,54 @@ export default function RoutinesPage() {
 }
 
 // "Where am I?": a plain-English read of the day from what is ticked, recalculated live as ticks change. Worked out in the browser; nothing is sent anywhere.
+function DateBar({ date, today, onGo, favourites, onToggleFavourite, onNote }: {
+  date: string; today: string; onGo: (d: string) => void;
+  favourites: FavouriteDay[]; onToggleFavourite: () => void; onNote: (note: string) => void;
+}) {
+  const max = addDays(today, 30);
+  const step = (n: number) => { const d = addDays(date, n); if (d >= MIN_DATE && d <= max) onGo(d); };
+  const arrow: React.CSSProperties = { display: 'inline-flex', padding: 8, borderRadius: 9, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', cursor: 'pointer' };
+  const onToday = date === today;
+  const fav = favourites.find(f => f.date === date);
+  const GOLD = '#F5B942';
+  const [note, setNote] = useState(fav?.note ?? '');
+  useEffect(() => { setNote(fav?.note ?? ''); }, [date, fav?.note]);
+  const label = (f: FavouriteDay) => `${shortDate(f.date)}${f.note ? ` · ${f.note}` : ''}`;
+  return (
+    <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div role="group" aria-label="Choose a day" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <button type="button" aria-label="Previous day" disabled={date <= MIN_DATE} onClick={() => step(-1)} style={arrow}><ChevronLeft size={16} /></button>
+        <input type="date" aria-label="Go to a date" value={date} min={MIN_DATE} max={max}
+          onChange={e => { const v = e.target.value; if (v && v >= MIN_DATE && v <= max) onGo(v); }}
+          style={{ ...field, width: 'auto', padding: '7px 10px' }} />
+        <button type="button" aria-label="Next day" disabled={date >= max} onClick={() => step(1)} style={arrow}><ChevronRight size={16} /></button>
+        <button type="button" aria-label="Back to today" onClick={() => onGo(today)} style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+          border: `1px solid ${GREEN}`, background: onToday ? 'rgba(52,211,153,0.16)' : 'transparent', color: GREEN,
+        }}><Sun size={14} /> Today</button>
+        <button type="button" aria-pressed={!!fav} aria-label={fav ? 'Remove this day from your favourites' : 'Mark this day as a favourite'} onClick={onToggleFavourite} style={{ ...arrow, color: fav ? GOLD : 'var(--text-3)', borderColor: fav ? GOLD : 'var(--border)' }}>
+          <Star size={16} fill={fav ? GOLD : 'none'} />
+        </button>
+        {favourites.length > 0 && (
+          <select aria-label="Favourite days" value="" onChange={e => { if (e.target.value) onGo(e.target.value); }} style={{ ...field, width: 'auto', padding: '7px 10px', maxWidth: '100%' }}>
+            <option value="">★ Favourite days ({favourites.length})</option>
+            {[...favourites].sort((a, b) => b.date.localeCompare(a.date)).map(f => <option key={f.date} value={f.date}>{label(f)}</option>)}
+          </select>
+        )}
+      </div>
+      {fav && (
+        <div>
+          <label htmlFor="favNote" style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, letterSpacing: '0.03em' }}>WHY IS THIS DAY SPECIAL? (OPTIONAL)</label>
+          <input id="favNote" value={note} maxLength={MAX_FAVOURITE_NOTE} onChange={e => setNote(e.target.value)} placeholder="Got the job. Met a dear friend. Bought the house."
+            onBlur={() => { if (note.trim() !== fav.note) onNote(note.trim()); }}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+            style={{ ...field, marginTop: 6 }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WhereAmI({ day, isToday, onClose }: { day: RoutineDay; isToday: boolean; onClose: () => void }) {
   const s = useMemo(() => routineStatus(day, new Date(), isToday), [day, isToday]);
   const [speaking, setSpeaking] = useState(false);
