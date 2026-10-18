@@ -12,6 +12,7 @@ import { getExamCatalogEntry, ensureExamBlueprint, type ExamCatalogEntry } from 
 import { generateExamQuestions, computeScaledScore, saveCertExamSession, type ExamQuestion } from '../api/certExamApi';
 import { ExamQuestionCard } from '../components/ExamQuestionCard';
 import { logFlowEvent } from '../api/flowLogger';
+import { speechWords } from '../utils/speechLength';
 
 interface IncomingState {
   certId?: string;
@@ -124,7 +125,7 @@ export default function CertExamRoomPage() {
 
     const plainVoice = () => new Promise<void>(resolve => {
       // A hard ceiling so a device that never lets the sound start can't hold the exam up: the briefing is also on screen.
-      const ceiling = window.setTimeout(resolve, 8000 + briefingText.split(/\s+/).length * 550);
+      const ceiling = window.setTimeout(resolve, 8000 + speechWords(briefingText) * 550);
       cancelBriefingRef.current = speak(briefingText, 'michelle', () => { window.clearTimeout(ceiling); resolve(); }, undefined, () => setMichelleSpeaking(true));
     });
     try {

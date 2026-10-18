@@ -7,6 +7,7 @@
 // any ElevenLabs credentials or voice IDs at all, only which role is speaking.
 
 import { seatInterviewerId, applyNames } from '../lib/seatInterviewers';
+import { speechWords } from '../utils/speechLength';
 
 // Phonetic substitutions so TTS pronounces tech terms correctly
 const PHONETIC: [RegExp, string][] = [
@@ -330,7 +331,7 @@ function speakWebSpeech(
   if (onStart) utterance.onstart = () => onStart();
   utterance.onend   = done;
   utterance.onerror = done;
-  safetyTimer = setTimeout(done, utterance.text.split(/\s+/).length * 480 + 6000);
+  safetyTimer = setTimeout(done, speechWords(utterance.text) * 480 + 6000);
   window.speechSynthesis.speak(utterance);
   return () => {
     if (safetyTimer) clearTimeout(safetyTimer);

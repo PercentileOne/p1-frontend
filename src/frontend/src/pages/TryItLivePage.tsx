@@ -7,6 +7,7 @@ import { speak as speakTts, unlockTTSAudio, setTTSLanguage } from '../api/ttsApi
 import { setInterviewTicket } from '../api/entitlementsApi';
 import { VoiceInput, type MicState } from '../components/VoiceInput';
 import { AnswerPrompt } from '../components/AnswerPrompt';
+import { speechWords } from '../utils/speechLength';
 import { TryImproveLoop } from '../components/TryImproveLoop';
 import { startTryOut, scoreTryOut, coachTryOut, modelAnswerTryOut, questionsSeen, rememberQuestionsSeen, lastTryScore, saveTryScore, emailTryOutScore, getVisitorCountry, type TryOutStart, type TryOutFeedback, type TryOutResult } from '../api/tryOutApi';
 import { LANGUAGES, LANGUAGE_CHOICES, DIFFICULTIES, DEFAULT_LANGUAGE_VALUE, findLanguageChoice } from '../data/interviewOptions';
@@ -374,7 +375,7 @@ export default function TryItLivePage() {
   // A hard ceiling on every spoken line: if a phone (or a bad connection) never lets the audio start or finish, the interview still
   // moves on — the question is on screen, so nothing is lost. Without this, a silent line left the page waiting forever.
   const withCeiling = (p: Promise<void>, text: string) =>
-    Promise.race([p, new Promise<void>(resolve => setTimeout(resolve, 8000 + text.split(/\s+/).length * 550))]);
+    Promise.race([p, new Promise<void>(resolve => setTimeout(resolve, 8000 + speechWords(text) * 550))]);
 
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
     if (viaAvatar) {

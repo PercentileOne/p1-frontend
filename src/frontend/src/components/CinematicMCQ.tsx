@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { speak } from '../api/ttsApi';
+import { speechWords } from '../utils/speechLength';
 
 export interface MCQQuestion {
   questionText: string;
@@ -152,7 +153,7 @@ export default function CinematicMCQ({ mcq, candidateName, questionOrdinal, onCo
   const introTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const outroTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finishedRef = useRef(false);
-  const speechBudgetMs = (text: string) => text.split(/\s+/).length * 450 + 7000;
+  const speechBudgetMs = (text: string) => speechWords(text) * 450 + 7000;
 
   const enableAnswering = useCallback(() => {
     setMcqState(s => (s === 'entering' ? 'question' : s));
