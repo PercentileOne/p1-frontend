@@ -319,11 +319,13 @@ sequenceDiagram
   A->>D: Match by email address
   A-->>CP: The recruiter's prep
   C->>CP: Review and start, role, level, job spec and CV already filled in
+  CP->>A: Report opened, started, answered and finished, counts only
+  A->>D: Update the prep's progress
   Note over CP,A: The practice interview then runs exactly as in the diagram above
-  Note over R,RP: Planned, the recruiter sees whether the candidate practised and how they scored
+  Note over R,RP: The recruiter sees opened, how many times practised and questions answered. Never answers or scores
 </pre>
     </div>
-    <p class="note">Built today: sending, editing and resending a prep, the invite email, the candidate's "received" list, and a recruiter preview of the interview. Not built yet: the recruiter's view of whether and how the candidate practised.</p>
+    <p class="note">Built today: sending, editing and resending a prep, the invite email, the candidate's "received" list, and a recruiter preview of the interview. Also built: the recruiter's view of whether the candidate opened the prep, how many times they practised and how many questions they answered. By design the recruiter never sees answers or scores, and the candidate is told exactly that before they start.</p>
   </section>
 
   <section id="backend">
@@ -587,7 +589,6 @@ flowchart TB
         <ul>
           <li>Jobs and Messaging are shown as coming soon and use sample data</li>
           <li>The signed-in portal is best on a laptop or tablet, and phone support is improving</li>
-          <li>Recruiters cannot yet see whether a candidate opened or finished a prep</li>
           <li>No native mobile app yet</li>
         </ul>
       </div>
