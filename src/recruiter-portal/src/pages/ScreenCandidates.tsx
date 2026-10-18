@@ -1,3 +1,4 @@
+import { openCandidateDemo } from '../utils/candidateDemo'
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChairSpinner } from '../components/ChairSpinner';
@@ -660,7 +661,7 @@ export default function ScreenCandidates() {
               </button>
               {overallSignal !== 'pass' && (
                 <button
-                  onClick={() => window.open('/interview-room/demo', '_blank')}
+                  onClick={() => openCandidateDemo({ from: 'recruiter-screen' })}
                   style={{
                     flex: 1, background: 'var(--blue)', color: '#fff',
                     border: 'none', borderRadius: 10,

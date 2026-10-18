@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Briefcase, User, Loader2, Play, FileText, X, ChevronUp, ChevronDown, Trash2, MailCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { interviewPrepsApi, type InterviewPrep } from '../api/interviewPrepsApi'
-import { explainApi } from '../api/explainApi'
-import { buildCVContext, buildJobSpecContext, buildSarahIntro, buildJamesIntro, buildPersonalisedQuestions, inferSpecialistTitle } from '../utils/contextBuilder'
+import { buildJobSpecContext } from '../utils/contextBuilder'
+import { openCandidateDemo } from '../utils/candidateDemo'
 import { type Career, searchCareers, reportMissingCareerTitle } from '../api/careersApi'
 import { generateHotTopics } from '../api/aiScoring'
 import { Pagination } from '../components/Pagination'
@@ -628,15 +627,12 @@ const thStyle: React.CSSProperties = {
 }
 
 export default function InterviewPreps() {
-  const navigate = useNavigate()
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const [view, setView] = useState<View>('list')
   const [editingPrep, setEditingPrep] = useState<InterviewPrep | null>(null)
   const [preps, setPreps] = useState<InterviewPrep[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [previewingId, setPreviewingId] = useState<string | null>(null)
-  const [previewError, setPreviewError] = useState('')
   const [filter,  setFilter]  = useState<FilterOpt>('All')
   const [search,  setSearch]  = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('interviewDate')
@@ -697,51 +693,9 @@ export default function InterviewPreps() {
   // currently deployed on the .NET backend (404 in production, confirmed 2026-08-24 — a
   // pre-existing gap, not new), so InterviewIntake.tsx already falls back to local heuristic
   // generation on failure. Mirror that here rather than surfacing a broken feature.
-  async function startPreview(prep: InterviewPrep) {
-    setPreviewError('')
-    setPreviewingId(prep.id)
-
-    const jobSpecText = prep.jobSpecText?.trim() || `${prep.role} — ${prep.level} level position.`
-    const preferredName = prep.firstName
-
-    try {
-      const session = await explainApi.sessionPrepare({ jobSpecText, cvText: prep.cvText ?? undefined })
-      navigate(`/interview-room/${prep.id}`, {
-        state: {
-          questions: session.questions,
-          sarahIntro: session.sarahIntro,
-          jamesIntro: session.jamesIntro,
-          specialistTitle: session.specialistTitle,
-          mikeScript: session.mikeScript,
-          companyFacts: session.companyFacts,
-          jobTitle: prep.role,
-          preferredName,
-          autoStart: true,
-        },
-      })
-    } catch {
-      try {
-        const cvCtx = buildCVContext('')
-        const jobCtx = buildJobSpecContext(jobSpecText)
-        navigate(`/interview-room/${prep.id}`, {
-          state: {
-            cvCtx, jobCtx,
-            questions: buildPersonalisedQuestions(cvCtx, jobCtx),
-            sarahIntro: buildSarahIntro(cvCtx, jobCtx),
-            jamesIntro: buildJamesIntro(cvCtx, jobCtx),
-            specialistTitle: inferSpecialistTitle(jobCtx.title),
-            mikeScript: null,
-            companyFacts: [],
-            jobTitle: prep.role,
-            preferredName,
-            autoStart: true,
-          },
-        })
-      } catch (err) {
-        setPreviewError(err instanceof Error ? err.message : 'Could not prepare the interview preview.')
-        setPreviewingId(null)
-      }
-    }
+  /** Preview opens the candidate portal's 3-question demo in a new tab, with this prep's role and level filled in. The recruiter portal runs no interviews of its own any more. */
+  function startPreview(prep: InterviewPrep) {
+    openCandidateDemo({ role: prep.role, level: prep.level, name: user?.name?.trim().split(/\s+/)[0], from: 'recruiter-preview' })
   }
 
   function toggleSort(key: SortKey) {
@@ -833,12 +787,6 @@ export default function InterviewPreps() {
                 <button onClick={() => { setEditingPrep(null); setView('form') }} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '10px 20px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <Briefcase size={14} /> Send your first prep
                 </button>
-              </div>
-            )}
-
-            {previewError && (
-              <div style={{ fontSize: 13, color: '#F87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 12 }}>
-                {previewError}
               </div>
             )}
 
@@ -971,16 +919,16 @@ export default function InterviewPreps() {
                               <td style={{ padding: '14px 16px' }}>
                                 <button
                                   type="button"
-                                  disabled={previewingId === prep.id}
+                                  title="Opens the candidate demo in a new tab: three questions, built from this role and level. It uses no job spec or CV, and nothing is recorded against the candidate."
                                   onClick={e => { e.stopPropagation(); startPreview(prep) }}
                                   style={{
                                     display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                                     background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 8,
                                     padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#4F8EF7', fontFamily: 'inherit',
-                                    cursor: previewingId === prep.id ? 'default' : 'pointer',
+                                    cursor: 'pointer',
                                   }}
                                 >
-                                  {previewingId === prep.id ? <><Loader2 size={12} className="animate-spin" /> Preparing…</> : <><Play size={12} /> Preview</>}
+                                  <Play size={12} /> Preview (3-question demo)
                                 </button>
                               </td>
                             </tr>

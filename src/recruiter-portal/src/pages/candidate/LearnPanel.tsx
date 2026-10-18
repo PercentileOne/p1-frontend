@@ -1,3 +1,4 @@
+import { openCandidateDemo } from '../../utils/candidateDemo';
 import { useState, useRef, useEffect } from 'react';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
@@ -381,10 +382,8 @@ function CourseView({ course, onBack }: { course: Course; onBack: () => void }) 
   const mins = totalMinutes(course);
 
   function handlePractice(question: string) {
-    const url = question
-      ? `/interview-room/prep?topic=${encodeURIComponent(question)}`
-      : `/interview-room/prep?course=${encodeURIComponent(course.title)}`;
-    window.open(url, '_blank');
+    // The recruiter portal runs no interviews of its own: practise in the candidate portal's demo, on this question's topic or this course's title.
+    openCandidateDemo({ role: (question || course.title).slice(0, 90), from: 'recruiter-learn' });
   }
 
   return (

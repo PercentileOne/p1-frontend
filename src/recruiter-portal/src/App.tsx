@@ -6,10 +6,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
-import InterviewRoom from './pages/InterviewRoom'
-import InterviewSummary from './pages/InterviewSummary'
-import InterviewIntake from './pages/InterviewIntake'
-import InterviewPackStart from './pages/InterviewPackStart'
 import ScreenCandidates from './pages/ScreenCandidates'
 import LeagueTable from './pages/LeagueTable'
 import FlowViewer from './pages/FlowViewer'
@@ -49,11 +45,7 @@ function AppRoutes() {
 
       {/* Protected recruiter routes */}
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-      <Route path="/interview-pack/start" element={<RequireAuth><InterviewPackStart /></RequireAuth>} />
       <Route path="/screen-candidates" element={<RequireAuth><ScreenCandidates /></RequireAuth>} />
-      <Route path="/interview-intake/:packId" element={<RequireAuth><InterviewIntake /></RequireAuth>} />
-      <Route path="/interview-room/:packId" element={<RequireAuth><InterviewRoom /></RequireAuth>} />
-      <Route path="/interview-summary/:sessionId" element={<RequireAuth><InterviewSummary /></RequireAuth>} />
       <Route path="/league" element={<RequireAuth><LeagueTable /></RequireAuth>} />
       <Route path="/flow-viewer" element={<RequireAuth><FlowViewer /></RequireAuth>} />
       <Route path="/learn" element={<RequireAuth><LearnHome /></RequireAuth>} />
