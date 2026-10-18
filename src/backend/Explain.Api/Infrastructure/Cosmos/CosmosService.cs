@@ -161,6 +161,11 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("routines", "/userId"));
 
+        // Goals and reviews (2026-10-18): one document per goal and one per saved review, per person. Private to that person; partition key = /userId.
+        // See Features/Planning/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("planning", "/userId"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion

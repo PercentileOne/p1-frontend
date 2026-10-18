@@ -32,7 +32,7 @@ import CertExamsPanel from "./CertExamsPanel";
 import HelpCentre from "./HelpCentre";
 import { GettingStartedCard } from "../components/GettingStartedCard";
 import { RoutineTodayCard } from "../components/RoutineTodayCard";
-import RoutinesPage from "./RoutinesPage";
+import RoutinesAndSystemsPage from "./RoutinesAndSystemsPage";
 import { HelpHint } from "../components/HelpHint";
 import { CANDIDATE_ARTICLES } from "../help/articles";
 import { logEvent } from "../api/flowLogger";
@@ -958,7 +958,7 @@ export default function CandidateDashboard() {
         {activeNav === "Messages"       && <MessagesPage />}
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
-        {activeNav === "My Routines"    && <RoutinesPage />}
+        {activeNav === "My Routines"    && <RoutinesAndSystemsPage />}
 
         {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings", "My Routines"].includes(activeNav) && <>
 
