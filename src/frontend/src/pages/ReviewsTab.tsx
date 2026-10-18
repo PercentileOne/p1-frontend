@@ -53,10 +53,10 @@ function fromReview(r: Review | null): Form {
   return { rating: r.rating, wentWell: r.wentWell, didntGoWell: r.didntGoWell, learned: r.learned, notes: r.notes, priorities: p };
 }
 
-export default function ReviewsTab() {
+export default function ReviewsTab({ initialCadence, initialDate }: { initialCadence?: Cadence; initialDate?: string } = {}) {
   const today = useMemo(() => localDate(), []);
-  const [cadence, setCadence] = useState<Cadence>('weekly');
-  const [anchor, setAnchor] = useState(today);
+  const [cadence, setCadence] = useState<Cadence>(initialCadence ?? 'weekly');
+  const [anchor, setAnchor] = useState(initialDate ?? today);
   const { start, end } = periodOf(cadence, anchor);
   const cfg = CADENCES[cadence];
   const [form, setForm] = useState<Form>(BLANK);

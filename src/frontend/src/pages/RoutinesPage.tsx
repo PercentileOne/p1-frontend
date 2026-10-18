@@ -57,15 +57,15 @@ function greeting(): string {
   return h < 12 ? 'Good morning. Win the first 40 minutes.' : h < 18 ? 'Good afternoon. What will you make sure you do?' : 'Good evening. How did today go?';
 }
 
-export default function RoutinesPage() {
+export default function RoutinesPage({ initialDate }: { initialDate?: string } = {}) {
   const today = useMemo(() => localDate(), []);
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(initialDate ?? today);
   const [day, setDay] = useState<RoutineDay | null>(null);
   const [error, setError] = useState('');
   const [months, setMonths] = useState<Record<string, DaySummary[]>>({});
-  const [openMonth, setOpenMonth] = useState<string | null>(today.slice(0, 7));
+  const [openMonth, setOpenMonth] = useState<string | null>((initialDate ?? today).slice(0, 7));
   const [monthKeys, setMonthKeys] = useState<string[]>([]);        // yyyy-MM months that have opened days
-  const [openYears, setOpenYears] = useState<string[]>([today.slice(0, 4)]);
+  const [openYears, setOpenYears] = useState<string[]>([(initialDate ?? today).slice(0, 4)]);
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showStatus, setShowStatus] = useState(false);

@@ -31,6 +31,9 @@ export interface ReviewInput { rating: number; wentWell: string; didntGoWell: st
 export interface PeriodReply { cadence: Cadence; periodStart: string; periodEnd: string; review: Review | null }
 /** A day starred in Routines, with an optional note about why it matters. */
 export interface FavouriteDay { date: string; note: string }
+/** One hit from searching the person's own notes. `date` is the day, or the start of a review's period; `id` is set for a goal. */
+export type SearchKind = 'day' | 'favourite' | 'review' | 'goal';
+export interface SearchResult { kind: SearchKind; date: string; endDate: string; cadence: string; id: string; title: string; snippet: string; field: string }
 export const MAX_FAVOURITE_NOTE = 100;
 export const MAX_DAY_NOTE = 4000;
 export const MAX_REVIEW_TEXT = 2000;
@@ -71,6 +74,7 @@ export const planningApi = {
   reviews: (cadence: Cadence) => call<Review[]>(`/reviews?cadence=${cadence}`, { headers: headers() }),
   saveReview: (cadence: Cadence, date: string, body: ReviewInput) =>
     call<Review>(`/reviews/${cadence}/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify(body) }),
+  search: (q: string) => call<SearchResult[]>(`/notes-search?q=${encodeURIComponent(q)}`, { headers: headers() }),
   dayNote: (date: string) => call<{ date: string; text: string }>(`/day-notes/${date}`, { headers: headers() }),
   saveDayNote: (date: string, text: string) => call<{ date: string; text: string }>(`/day-notes/${date}`, { method: 'PUT', headers: headers(true), body: JSON.stringify({ text }) }),
   /** For the moment the page is going away: keepalive lets the browser finish the request after the tab closes. Fire and forget. */

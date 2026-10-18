@@ -26,6 +26,7 @@ public static class Endpoint
     public const int MaxFavourites = 200;
     public const int MaxFavouriteNote = 100;
     public const int MaxDayNote = 4000;
+    public const int MaxSearchResults = 60;
     public const int MaxInterviewText = 120;
 
     private static readonly string[] Statuses = ["active", "paused", "completed"];
@@ -263,6 +264,45 @@ public static class Endpoint
             await container.UpsertItemAsync(new DayNoteDoc("daynote:" + date, userId, "daynote", date, text, DateTimeOffset.UtcNow.ToString("o")), new PartitionKey(userId), cancellationToken: ct);
             return Results.Ok(new DayNoteReply(date, text));
         });
+
+        // Search across the person's own words: day notes, favourite-day notes, reviews and goals. Every word typed must appear somewhere in the item (any case).
+        // Done in memory on this one person's documents (a few hundred at most), so it needs no search service. Health readings typed into Routines are not searched.
+        app.MapGet("/api/notes-search", async (string? q, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var terms = Terms(q);
+            if (terms.Count == 0) return Results.Ok(new List<SearchResult>());
+            var results = new List<SearchResult>();
+
+            foreach (var n in await LoadByTypeAsync<DayNoteDoc>(cosmos, userId, "daynote", ct))
+                if (Matches(n.text, terms)) results.Add(new SearchResult("day", n.date, "", "", "", "Notes for this day", Snip(n.text, terms), "Notes for this day"));
+
+            foreach (var f in (await LoadFavouritesAsync(cosmos, userId, ct)).days)
+                if (f.note.Length > 0 && Matches(f.note, terms)) results.Add(new SearchResult("favourite", f.date, "", "", "", "Favourite day", Snip(f.note, terms), "Why this day is special"));
+
+            foreach (var r in await LoadByTypeAsync<ReviewDoc>(cosmos, userId, "review", ct))
+            {
+                var fields = new (string label, string text)[]
+                {
+                    ("What went well", r.wentWell), ("What didn't go well", r.didntGoWell), ("What I learned", r.learned),
+                    ("In my own words", r.notes), ("Priorities", string.Join(" · ", r.priorities)),
+                };
+                if (!Matches(string.Join(" ", fields.Select(f => f.text)), terms)) continue;
+                var hit = fields.FirstOrDefault(f => ContainsAny(f.text, terms));
+                results.Add(new SearchResult("review", r.periodStart, r.periodEnd, r.cadence, "", "Review", Snip(hit.text ?? "", terms), hit.label ?? ""));
+            }
+
+            foreach (var g in await LoadGoalsAsync(cosmos, userId, ct))
+            {
+                var fields = new List<(string label, string text)> { ("Goal", g.title), ("Why it matters", g.description) };
+                fields.AddRange(g.updates.Where(u => u.note.Length > 0).Select(u => ("Progress note", u.note)));
+                if (!Matches(string.Join(" ", fields.Select(f => f.text)), terms)) continue;
+                var hit = fields.FirstOrDefault(f => ContainsAny(f.text, terms));
+                results.Add(new SearchResult("goal", g.updatedAt.Length >= 10 ? g.updatedAt[..10] : "", "", "", g.id.StartsWith("goal:") ? g.id[5..] : g.id, g.title, Snip(hit.text ?? "", terms), hit.label ?? ""));
+            }
+
+            return Results.Ok(results.OrderByDescending(r => r.date, StringComparer.Ordinal).Take(MaxSearchResults).ToList());
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("NotesSearch");
     }
 
     // ---- shapes (lower-case names on purpose: they are also the stored JSON) ----
@@ -279,6 +319,8 @@ public static class Endpoint
         string? status, string? track, List<MilestoneDto>? milestones, double? targetValue, double? currentValue, string? unit);
     public record UpdateRequest(string? note, double? value, string? date);
 
+    /// <summary>One hit. <c>kind</c> is day, favourite, review or goal; <c>date</c> is the day, or the period start for a review; <c>id</c> is set for a goal.</summary>
+    public record SearchResult(string kind, string date, string endDate, string cadence, string id, string title, string snippet, string field);
     public record DayNoteDoc(string id, string userId, string type, string date, string text, string updatedAt);
     public record DayNoteReply(string date, string text);
     public record DayNoteRequest(string? text);
@@ -398,6 +440,40 @@ public static class Endpoint
     {
         try { return (await cosmos.GetContainer("planning").ReadItemAsync<ReviewDoc>("review:" + cadence + ":" + start.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct)).Resource; }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return null; }
+    }
+
+    // ---- search helpers (public so they can be tested) ----
+    /// <summary>The words to look for: lower-cased, distinct, at most six, and nothing at all if what was typed is shorter than two characters.</summary>
+    public static List<string> Terms(string? q)
+    {
+        var words = (q ?? "").ToLowerInvariant().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Distinct().Take(6).ToList();
+        return words.Sum(w => w.Length) < 2 ? [] : words;
+    }
+    /// <summary>Every word appears somewhere in the text, in any case.</summary>
+    public static bool Matches(string? text, IReadOnlyList<string> terms) =>
+        terms.Count > 0 && !string.IsNullOrEmpty(text) && terms.All(t => text.Contains(t, StringComparison.OrdinalIgnoreCase));
+    private static bool ContainsAny(string? text, IReadOnlyList<string> terms) =>
+        !string.IsNullOrEmpty(text) && terms.Any(t => text.Contains(t, StringComparison.OrdinalIgnoreCase));
+    /// <summary>About 170 characters around the first word that matches, on one line, with an ellipsis where it was cut.</summary>
+    public static string Snip(string text, IReadOnlyList<string> terms)
+    {
+        var flat = System.Text.RegularExpressions.Regex.Replace(text ?? "", @"\s+", " ").Trim();
+        var at = terms.Select(t => flat.IndexOf(t, StringComparison.OrdinalIgnoreCase)).Where(i => i >= 0).DefaultIfEmpty(0).Min();
+        var start = Math.Max(0, at - 50);
+        var end = Math.Min(flat.Length, start + 170);
+        return (start > 0 ? "…" : "") + flat[start..end] + (end < flat.Length ? "…" : "");
+    }
+    private static async Task<List<T>> LoadByTypeAsync<T>(CosmosService cosmos, string userId, string type, CancellationToken ct)
+    {
+        var q = new QueryDefinition("SELECT * FROM c WHERE c.userId = @u AND c.type = @t").WithParameter("@u", userId).WithParameter("@t", type);
+        var docs = new List<T>();
+        try
+        {
+            using var feed = cosmos.GetContainer("planning").GetItemQueryIterator<T>(q, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+            while (feed.HasMoreResults) docs.AddRange(await feed.ReadNextAsync(ct));
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
+        return docs;
     }
 
     // ---- favourite days ----
