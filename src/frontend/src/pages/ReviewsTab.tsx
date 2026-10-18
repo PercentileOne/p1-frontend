@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MAX_PRIORITIES, MAX_REVIEW_NOTES, MAX_REVIEW_TEXT, periodOf, planningApi, shiftPeriod } from '../api/planningApi';
 import type { Cadence, LookBack, Review } from '../api/planningApi';
+import { MoodChart } from '../components/MoodChart';
 import { localDate, routinesApi } from '../api/routinesApi';
 import type { DaySummary } from '../api/routinesApi';
 
@@ -202,6 +203,9 @@ export default function ReviewsTab({ initialCadence, initialDate }: { initialCad
           <button type="button" onClick={() => change({ priorities: [...form.priorities, ''] })} style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: GREEN, cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontSize: 14 }}>+ Add another</button>
         )}
       </section>
+
+      {/* Mood over time: the ratings of every saved review of this rhythm, drawn as a line */}
+      <MoodChart reviews={history} cadence={cadence} currentStart={start} onOpen={d => { void send(); setAnchor(d); }} />
 
       {/* Earlier reviews */}
       {history.length > 0 && (

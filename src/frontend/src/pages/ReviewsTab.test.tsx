@@ -9,9 +9,10 @@ const week = periodOf('weekly', today);
 const inWeek = week.start;                                   // a Monday inside the current week
 
 const calls: { url: string; method: string; body?: string }[] = [];
+let savedReviews: unknown[] = [];
 
 beforeEach(() => {
-  calls.length = 0;
+  calls.length = 0; savedReviews = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET';
     calls.push({ url, method, body: init?.body as string | undefined });
@@ -20,7 +21,7 @@ beforeEach(() => {
       const p = periodOf(cadence, new URL(url).searchParams.get('date')!);
       return new Response(JSON.stringify({ cadence, periodStart: p.start, periodEnd: p.end, review: null }), { status: 200 });
     }
-    if (url.includes('/api/reviews?cadence=')) return new Response('[]', { status: 200 });
+    if (url.includes('/api/reviews?cadence=')) return new Response(JSON.stringify(savedReviews), { status: 200 });
     if (url.includes('/api/reviews/') && method === 'PUT') return new Response(JSON.stringify({ ...JSON.parse(init!.body as string), updatedAt: 'now' }), { status: 200 });
     if (url.includes('/api/routines/month/')) {
       return new Response(JSON.stringify([
@@ -84,6 +85,19 @@ describe('ReviewsTab', () => {
     await waitFor(() => expect((screen.getByLabelText('Back to this week') as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByLabelText('Back to this week'));
     await waitFor(() => expect((screen.getByLabelText('Back to this week') as HTMLButtonElement).disabled).toBe(true));
+  });
+
+  it('draws the mood over time once two reviews are rated, and a click opens that week', async () => {
+    savedReviews = [
+      { cadence: 'weekly', periodStart: '2026-09-28', periodEnd: '2026-10-04', rating: 2, wentWell: '', didntGoWell: '', learned: '', notes: '', priorities: [], updatedAt: 'x' },
+      { cadence: 'weekly', periodStart: '2026-10-05', periodEnd: '2026-10-11', rating: 5, wentWell: '', didntGoWell: '', learned: '', notes: '', priorities: [], updatedAt: 'x' },
+    ];
+    render(<ReviewsTab />);
+    await screen.findByText('MOOD OVER TIME');
+    await screen.findByText('average over 2 weeks');
+    calls.length = 0;
+    fireEvent.click(screen.getByRole('button', { name: /week of 28 Sep\w* 2026: Hard/ }));
+    await waitFor(() => expect(calls.some(c => c.url.includes('/api/reviews/period') && c.url.includes('date=2026-09-28'))).toBe(true));
   });
 
   it('cannot move forward past the current period', async () => {
