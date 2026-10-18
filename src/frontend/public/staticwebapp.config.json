@@ -5,6 +5,10 @@
       "redirect": "/",
       "statusCode": 301
     },
+    {
+      "route": "/watch",
+      "rewrite": "/api/share-meta/watch"
+    }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
