@@ -376,6 +376,11 @@ export default function TryItLivePage() {
   // moves on — the question is on screen, so nothing is lost. Without this, a silent line left the page waiting forever.
   const withCeiling = (p: Promise<void>, text: string) =>
     Promise.race([p, new Promise<void>(resolve => setTimeout(resolve, 8000 + speechWords(text) * 550))]);
+  // The live face is different: spatius.speak() already waits for the face's own "finished speaking" event, with a ceiling worked out from the real length of the
+  // audio (not a guess from the words). Racing a word-count estimate against that event could only ever cut the line short (Chinese, 2026-10-18), so for the face
+  // we keep just a very generous fixed cap in case the audio never even gets made.
+  const AVATAR_LINE_CAP_MS = 90_000;
+  const withAvatarCap = (p: Promise<void>) => Promise.race([p, new Promise<void>(resolve => setTimeout(resolve, AVATAR_LINE_CAP_MS))]);
 
   const speakLine = useCallback(async (text: string, s: TryOutStart, viaAvatar: boolean) => {
     if (viaAvatar) {
@@ -385,7 +390,7 @@ export default function TryItLivePage() {
           const original = isOriginalInterviewer(s.chosenInterviewer?.id);
           await withTimeout(spatius.connect(s.spatiusAvatarId, s.ticket, original ? spatiusTransformFromUrl(s.interviewer === 'technical' ? 'technical' : 'hr') : undefined, undefined, original ? false : 1), SPATIUS_CONNECT_LIMIT_MS, 'spatius reconnect');
         }
-        await withCeiling(spatius.speak(text, s.interviewer), text);
+        await withAvatarCap(spatius.speak(text, s.interviewer));
         return;
       }
       catch { setUseAvatar(false); setAvatarState('off'); /* fall through to the voice-only path */ }
