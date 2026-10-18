@@ -69,14 +69,15 @@ function videoIdFrom(req) {
 }
 
 // What the shared video's preview says. Built only from a video in our own published list, never from the address.
-function videoMeta(video, origin) {
+function videoMeta(video, origin, hd = true) {
   return {
     title: `${video.title} — TheInterviewChair.com`,
     description: `From ${video.channel} on YouTube. Watch it free on TheInterviewChair.com, then practise your next interview with an AI interviewer who talks back.`,
     url: `${origin}/watch?v=${video.id}`,
-    image: `https://i.ytimg.com/vi/${video.id}/hq720.jpg`,
-    imageWidth: 1280,
-    imageHeight: 720,
+    // Not every video has the 720p picture; the standard one always exists (it has black bars, but is better than a broken image).
+    image: `https://i.ytimg.com/vi/${video.id}/${hd ? 'hq720' : 'hqdefault'}.jpg`,
+    imageWidth: hd ? 1280 : 480,
+    imageHeight: hd ? 720 : 360,
   };
 }
 
@@ -103,7 +104,10 @@ async function patchForVideo(html, req, origin) {
   if (!dataRes.ok) return html;
   const data = await dataRes.json();
   const video = (data?.videos || []).find((v) => v.id === id);
-  return video ? patchMeta(html, videoMeta(video, origin)) : html;
+  if (!video) return html;
+  let hd = true;
+  try { hd = (await fetch(`https://i.ytimg.com/vi/${video.id}/hq720.jpg`, { method: 'HEAD' })).ok; } catch { hd = false; }
+  return patchMeta(html, videoMeta(video, origin, hd));
 }
 
 module.exports = async function (context, req) {

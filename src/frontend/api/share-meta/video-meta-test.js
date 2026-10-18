@@ -23,10 +23,11 @@ const ID = 'dQw4w9WgXcQ';
 const VIDEO = { id: ID, title: 'This Kid Turned Cardboard Boxes Into a $35K Business Deal', channel: 'Shark Tank Global' };
 
 // Runs the real handler against a fake shell and a fake API, the way Azure would.
-async function run({ token = 'watch', query = { v: ID }, headers = {}, videos = [VIDEO], apiOk = true, apiThrows = false } = {}) {
+async function run({ token = 'watch', query = { v: ID }, headers = {}, videos = [VIDEO], apiOk = true, apiThrows = false, noHd = false } = {}) {
   const realFetch = global.fetch;
   global.fetch = async (url) => {
     if (String(url).endsWith('/index.html')) return { ok: true, text: async () => SHELL };
+    if (String(url).includes('i.ytimg.com')) return { ok: noHd ? false : true };
     if (String(url).includes('/api/public/feed/videos')) {
       if (apiThrows) throw new Error('down');
       return { ok: apiOk, json: async () => ({ enabled: true, videos }) };
@@ -148,4 +149,11 @@ test('if the first address gives no page, the canonical address is tried', async
   try { await handler(context, { headers: { 'x-forwarded-host': 'candidate.explain.global' }, query: {} }); } finally { global.fetch = realFetch; }
   assert.equal(context.res.status, 200);
   assert.match(context.res.body, /<div id="root">/);
+});
+
+test('a video with no 720p picture falls back to the standard one, with its own size', async () => {
+  const res = await run({ noHd: true });
+  assert.ok(res.body.includes(`og:image" content="https://i.ytimg.com/vi/${ID}/hqdefault.jpg"`));
+  assert.match(res.body, /og:image:width" content="480"/);
+  assert.match(res.body, /og:image:height" content="360"/);
 });
