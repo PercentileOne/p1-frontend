@@ -30,6 +30,13 @@ export const HELLO_TOKEN_PATH = '/api/hello/spatius-token';
 // A full interview connects a seat before every question, so a fresh token per connect would burn the daily per-address allowance for no reason.
 // Tokens last 20 minutes server-side; one is reused for up to 12.
 const TOKEN_REUSE_MS = 12 * 60 * 1000;
+/**
+ * How long to wait for the sound system to start before giving up on the live face and falling back to the photo and voice.
+ * It was 5 seconds, written for iPhones where the start-up can hang forever; but on a slow or distant connection (a visitor in China, 2026-10-18)
+ * the start-up legitimately takes longer, and 5 seconds sent a real visitor to the photo while the face was still on its way. 20 seconds
+ * matches the other waits here (the face's own start also allows 20 s). A browser that truly hangs is still caught, just later.
+ */
+const AUDIO_START_MS = 20000;
 const tokenCache = new Map<string, { sessionToken: string; appId: string; at: number }>();
 
 // A failed connect may have been caused by a token that is no longer good, so the retry asks for a new one.
@@ -247,7 +254,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         if (!deferAudioUnlock) {
           await Promise.race([
             ctrl.initializeAudioContext(),
-            new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('audio start timed out')), 5000)),
+            new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('audio start timed out')), AUDIO_START_MS)),
           ]);
         }
         if (cancelled()) throw new Error('cancelled');
@@ -340,7 +347,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
     try { init = Promise.resolve(c.initializeAudioContext()); } catch { init = undefined; }
     const work = (async () => {
       if (init) {
-        try { await Promise.race([init, new Promise<void>(resolve => window.setTimeout(resolve, 5000))]); } catch { /* carry on; the start below will fail and speaking falls back */ }
+        try { await Promise.race([init, new Promise<void>(resolve => window.setTimeout(resolve, AUDIO_START_MS))]); } catch { /* carry on; the start below will fail and speaking falls back */ }
       }
       if (startPendingRef.current && !serviceOpenRef.current && ctrlRef.current === c) {
         await Promise.race([c.start(), new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error('spatius start timed out')), 20000))]);
