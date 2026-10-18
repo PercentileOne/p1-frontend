@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const handler = require('./index.js');
-const { patchMeta, videoIdFrom, videoMeta, originFrom } = handler.__test;
+const { patchMeta, videoIdFrom, videoMeta, originFrom, interviewTokenFrom } = handler.__test;
 
 const SHELL = `<!doctype html><html><head>
 <title>TheInterviewChair.com — The World's First Interview Broadcast Platform</title>
@@ -109,16 +109,17 @@ test('videoMeta builds the link without the share tags', () => {
 
 // The routing file that is actually deployed is public/staticwebapp.config.json (the build copies it into dist, which is what the workflows upload).
 // The copy at the project root is NOT deployed, which is how the /shared rewrite there went unnoticed. This keeps /watch in the file that ships.
-test('the deployed routing file is valid JSON and sends /watch and /shared/{token} to share-meta', () => {
+test('the deployed routing file is valid JSON and sends /watch and /shared/* to share-meta', () => {
   const fs = require('node:fs');
   const path = require('node:path');
   const config = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'staticwebapp.config.json'), 'utf8'));
   const route = config.routes.find((r) => r.route === '/watch');
   assert.ok(route, '/watch route missing from public/staticwebapp.config.json');
   assert.equal(route.rewrite, '/api/share-meta/watch');
-  const shared = config.routes.find((r) => r.route === '/shared/{token}');
-  assert.ok(shared, '/shared/{token} route missing from public/staticwebapp.config.json');
-  assert.equal(shared.rewrite, '/api/share-meta/{token}');
+  const shared = config.routes.find((r) => r.route === '/shared/*');
+  assert.ok(shared, '/shared/* route missing from public/staticwebapp.config.json');
+  assert.equal(shared.rewrite, '/api/share-meta/shared');
+  assert.ok(!config.routes.some((r) => /\{.*\}/.test(r.route)), 'Static Web Apps does not understand {param} routes; use *');
 });
 
 test('the public address comes from the original request, not the function\'s own internal host', () => {
@@ -159,4 +160,39 @@ test('a video with no 720p picture falls back to the standard one, with its own 
   assert.ok(res.body.includes(`og:image" content="https://i.ytimg.com/vi/${ID}/hqdefault.jpg"`));
   assert.match(res.body, /og:image:width" content="480"/);
   assert.match(res.body, /og:image:height" content="360"/);
+});
+
+test('the interview token is read from the original address, only for exactly /shared/<token>', () => {
+  const at = (path) => ({ headers: { 'x-ms-original-url': `https://candidate.theinterviewchair.com${path}?x=1` } });
+  assert.equal(interviewTokenFrom(at('/shared/abc123')), 'abc123');
+  assert.equal(interviewTokenFrom(at('/shared/abc123/')), 'abc123');
+  assert.equal(interviewTokenFrom(at('/shared/cv-analysis/abc123')), null);
+  assert.equal(interviewTokenFrom(at('/shared/')), null);
+  assert.equal(interviewTokenFrom(at('/shared-cert-exam/abc123')), null);
+  assert.equal(interviewTokenFrom({ headers: {} }), null);
+});
+
+test('a /shared/<token> link gets the interview preview through the rewrite', async () => {
+  const realFetch = global.fetch;
+  const asked = [];
+  global.fetch = async (url) => {
+    asked.push(String(url));
+    if (String(url).endsWith('/index.html')) return { ok: true, text: async () => SHELL };
+    return { ok: true, json: async () => ({ role: 'Nurse', overallScore: 91, cvCtx: { firstName: 'Sam', lastName: 'Jones' } }) };
+  };
+  const context = { bindingData: { token: 'shared' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
+  try { await handler(context, { headers: { 'x-ms-original-url': 'https://candidate.theinterviewchair.com/shared/tok42' }, query: {} }); } finally { global.fetch = realFetch; }
+  assert.ok(asked.some((u) => u.endsWith('/api/interviews/shared/tok42')));
+  assert.match(context.res.body, /Scored 91\/100/);
+  assert.ok(context.res.body.includes('og:url" content="https://candidate.theinterviewchair.com/shared/tok42"'));
+});
+
+test('a longer /shared/... address (another page) gets the plain shell and never asks the API', async () => {
+  const realFetch = global.fetch;
+  const asked = [];
+  global.fetch = async (url) => { asked.push(String(url)); return String(url).endsWith('/index.html') ? { ok: true, text: async () => SHELL } : { ok: true, json: async () => ({}) }; };
+  const context = { bindingData: { token: 'shared' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
+  try { await handler(context, { headers: { 'x-ms-original-url': 'https://candidate.theinterviewchair.com/shared/cv-analysis/tok42' }, query: {} }); } finally { global.fetch = realFetch; }
+  assert.equal(asked.length, 1);
+  assert.match(context.res.body, /og:title" content="Generic title"/);
 });

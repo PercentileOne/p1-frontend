@@ -6,8 +6,8 @@
       "statusCode": 301
     },
     {
-      "route": "/shared/{token}",
-      "rewrite": "/api/share-meta/{token}"
+      "route": "/shared/*",
+      "rewrite": "/api/share-meta/shared"
     },
     {
       "route": "/watch",

@@ -1,5 +1,5 @@
 // Azure Function — GET /api/share-meta/{token}, reached via staticwebapp.config.json rewrites:
-//   /shared/{token}  → /api/share-meta/{token}   a shared interview
+//   /shared/*        → /api/share-meta/shared   a shared interview (the token is read from the original address)
 //   /watch           → /api/share-meta/watch     a shared feed video (/watch?v=VIDEOID), added 2026-10-18
 // Either way it serves the SAME built index.html (so the real SPA still boots identically for humans) with just the <title>/og:*/twitter:* tags patched to describe this specific
 // interview or video — otherwise every shared link on LinkedIn, Slack, WhatsApp etc. shows the same generic homepage preview, since those crawlers never run JavaScript and only
@@ -56,6 +56,15 @@ function originFrom(req) {
   host = String(host).split(',')[0].trim();
   if (!KNOWN_HOST.test(host)) return CANONICAL_ORIGIN;
   return /^localhost/i.test(host) ? `http://${host}` : `https://${host}`;
+}
+
+// The interview token from the original address, only when it is exactly /shared/<token>. Static Web Apps cannot pass a path segment through a rewrite, so every /shared/* address reaches
+// the function as "shared" and this reads the real one. Longer addresses (/shared/cv-analysis/<token>) are other pages and get the plain app shell, untouched.
+function interviewTokenFrom(req) {
+  try {
+    const m = new URL(req.headers['x-ms-original-url']).pathname.match(/^\/shared\/([^/]+)\/?$/);
+    return m ? decodeURIComponent(m[1]) : null;
+  } catch { return null; }
 }
 
 // The video id from /watch?v=…, read from the query or, if the rewrite dropped it, from the original address Static Web Apps passes along. Anything that is not an
@@ -132,7 +141,9 @@ module.exports = async function (context, req) {
   }
 
   try {
-    html = token === 'watch' ? await patchForVideo(html, req, origin) : await patchForInterview(html, token, origin);
+    if (token === 'watch') html = await patchForVideo(html, req, origin);
+    else if (token === 'shared') { const t = interviewTokenFrom(req); if (t) html = await patchForInterview(html, t, origin); }
+    else html = await patchForInterview(html, token, origin);
   } catch (err) {
     // API unreachable — fall through and serve the generic shell.
     context.log.warn('share-meta: could not fetch data, serving generic shell', err);
@@ -146,4 +157,4 @@ module.exports = async function (context, req) {
 };
 
 // Exposed for the tests in video-meta-test.js; not used by Azure.
-module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml, originFrom };
+module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml, originFrom, interviewTokenFrom };
