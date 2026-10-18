@@ -6,6 +6,7 @@ import { MouthOverlay, MOUTH_POSITIONS, MOUTH_OVERLAY_ENABLED } from '../compone
 import { YouCamera } from '../components/YouCamera';
 import { VoiceInput, type TranscriptMeta, type MicState } from '../components/VoiceInput';
 import { AnswerPrompt } from '../components/AnswerPrompt';
+import { reportPrepProgress } from '../api/prepProgress';
 import type { InterviewQuestion } from '../api/explainApi';
 import { speak, unlockTTSAudio, elevenLabsConfigured, getStoredInterviewerVolume, setInterviewerVolume, setTTSLanguage } from '../api/ttsApi';
 import { type CVContext, type JobSpecContext } from '../utils/contextBuilder';
@@ -68,6 +69,9 @@ export interface RoomState {
   specialFocus?: string[];
   // Day One Ready practice interview (2026-10-04) — scenario questions on the five first-90-days themes. See aiScoring.ts.
   dayOneReady?: boolean;
+  // Set when the practice comes from a recruiter's prep (2026-10-18): the room tells the recruiter how far the candidate gets (started, how many questions answered, finished), never answers or scores.
+  prepId?: string;
+  prepRecruiterId?: string;
 }
 
 // Same 32 languages InterviewPackStart.tsx's intake dropdown offers (LANGUAGES there — see its
@@ -289,6 +293,13 @@ export default function InterviewRoomPage() {
   const [filterPreset, setFilterPreset] = useState<FilterPreset>('beauty');
 
   const [phase, setPhase] = useState<RoomPhase>('intro');
+  // Read through refs, so the callbacks that report progress never go stale and never change identity.
+  const prepInfoRef = useRef<{ id: string; recruiterId: string } | null>(null);
+  prepInfoRef.current = ctx.prepId && ctx.prepRecruiterId ? { id: ctx.prepId, recruiterId: ctx.prepRecruiterId } : null;
+  const prepTotalRef = useRef(0);
+  const prepAnsweredRef = useRef(0);
+  const prepStartedRef = useRef(false);
+  const prepFinishedRef = useRef(false);
   const [qIndex, setQIndex] = useState(0);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [useVoice, setUseVoice] = useState(true);
@@ -837,6 +848,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     const name = resolvedPreferredName ? `, ${resolvedPreferredName}` : '';
     const closingLine = `Well${name}, that brings us to the end of your interview — thank you so much for your time today. I'm going to have a quick word with Wayne, and then your agent Michelle will be in touch shortly with some feedback. In the meantime, you can watch your full interview replay on the next screen, and retake it anytime you like. Best of luck!`;
     cancelSpeakRef.current?.();
+    if (prepInfoRef.current && !prepFinishedRef.current) {
+      prepFinishedRef.current = true;
+      reportPrepProgress(prepInfoRef.current, 'finished', { answered: prepAnsweredRef.current, total: prepTotalRef.current });
+    }
     // Chapter marker for the goodbye itself (Francis, 2026-09-28: "when she says... that's the
     // end of the interview... and Wayne says Take Care Francis... that is currently not in the
     // summary video"). It genuinely IS in the recording — this fires before uploadRecording's
@@ -1146,6 +1161,10 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
     setPhase('scoring');
     setHrState('thinking'); setTechState('thinking');
     logFlowEvent('ANSWER_RECEIVED', { questionId: q?.questionId, wordCount: text.trim().split(/\s+/).length, byVoice });
+    if (prepInfoRef.current && q?.questionType !== 'Follow-up') {
+      prepAnsweredRef.current += 1;
+      reportPrepProgress(prepInfoRef.current, 'answered', { answered: prepAnsweredRef.current, total: prepTotalRef.current });
+    }
 
     const goDeeperLimits = GO_DEEPER_LIMITS[selectedDifficulty] ?? GO_DEEPER_LIMITS.Standard;
     const goDeeperEligible = goDeeperEnabled && q?.questionType !== 'Follow-up' && goDeeperFiredRef.current < goDeeperLimits.max;
@@ -1191,6 +1210,17 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
   const activeSeat: 'hr' | 'technical' = techState === 'speaking' ? 'technical' : hrState === 'speaking' ? 'hr' : (questionLive && !isHrQuestion ? 'technical' : 'hr');
   const seatWrap = (seat: 'hr' | 'technical'): React.CSSProperties =>
     !phone ? { display: 'contents' } : activeSeat === seat ? { width: '100%' } : { width: '100%', height: 0, overflow: 'hidden' };
+  // The practice has really begun (past Michelle's briefing): tell the recruiter once, with how many questions there are.
+  prepTotalRef.current = questions.filter(x => x.questionType !== 'Follow-up').length;
+  useEffect(() => {
+    if (!prepInfoRef.current || prepStartedRef.current) return;
+    if (phase === 'interviewer-intro' || phase === 'asking' || phase === 'answering') {
+      prepStartedRef.current = true;
+      reportPrepProgress(prepInfoRef.current, 'started', { total: prepTotalRef.current });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reported once, the first time the phase gets here
+  }, [phase]);
+
   const showInterviewers = phase !== 'intro' && phase !== 'mike';
   tilesVisibleRef.current = showInterviewers;
 

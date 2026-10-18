@@ -20,6 +20,15 @@ export interface InterviewPrep {
   specialFocus:  string[] | null;
   status:        string;
   createdAt:     string; // ISO
+  // How far the candidate has got (2026-10-18). Opened, started, how many times they practised and how many questions they answered on the latest go. Never answers or scores.
+  openedAt?:          string | null;
+  startedAt?:         string | null;
+  finishedAt?:        string | null;
+  lastActivityAt?:    string | null;
+  attempts?:          number;
+  completedAttempts?: number;
+  answered?:          number;
+  totalQuestions?:    number;
 }
 
 export interface SendPrepRequest {

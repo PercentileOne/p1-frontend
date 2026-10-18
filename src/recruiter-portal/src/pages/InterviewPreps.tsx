@@ -590,7 +590,21 @@ function SendPrepForm({ existing, onSent, onCancel }: { existing?: InterviewPrep
 // two lists visually consistent. ──────────────────────────────────────────────────────
 
 function statusColor(status: string) {
-  return status === 'sent' ? '#F59E0B' : status === 'opened' ? '#4F8EF7' : status === 'completed' ? '#34D399' : 'var(--text-3)'
+  return status === 'sent' ? '#F59E0B' : status === 'opened' ? '#4F8EF7' : status === 'started' ? '#A78BFA' : (status === 'finished' || status === 'completed') ? '#34D399' : 'var(--text-3)'
+}
+
+/** What the candidate has done with a prep, in words a recruiter can act on. Never answers or scores: those stay with the candidate. */
+function practiceSummary(p: InterviewPrep): { headline: string; detail: string } {
+  const attempts = p.attempts ?? 0
+  if (attempts === 0) {
+    return p.openedAt ? { headline: 'Opened', detail: 'Not started yet' } : { headline: 'Not opened yet', detail: '' }
+  }
+  const times = attempts === 1 ? 'once' : attempts + ' times'
+  const done = p.completedAttempts ?? 0
+  const total = p.totalQuestions ?? 0
+  const latest = total > 0 ? Math.min(p.answered ?? 0, total) + ' of ' + total + ' questions on the latest go' : ''
+  const completed = done === 0 ? 'none finished yet' : done === attempts ? (attempts === 1 ? 'finished' : 'all finished') : done + ' finished'
+  return { headline: 'Practised ' + times, detail: [completed, latest].filter(Boolean).join(' · ') }
 }
 
 function levelColor(level: string) {
@@ -888,6 +902,7 @@ export default function InterviewPreps() {
                           {sortableTh('Candidate', 'lastName')}
                           {sortableTh('Role', 'role')}
                           {sortableTh('Status', 'status')}
+                          <th style={thStyle}>Practice</th>
                           <th style={thStyle}>CV</th>
                           <th style={thStyle} />
                         </tr>
@@ -925,6 +940,18 @@ export default function InterviewPreps() {
                                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: statusClr, background: `${statusClr}18`, padding: '4px 10px', borderRadius: 20 }}>
                                   {prep.status}
                                 </span>
+                              </td>
+                              <td style={{ padding: '14px 16px', minWidth: 170 }}>
+                                {(() => {
+                                  const s = practiceSummary(prep)
+                                  return (
+                                    <>
+                                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{s.headline}</div>
+                                      {s.detail && <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>{s.detail}</div>}
+                                      {prep.lastActivityAt && <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>Last active {fmtDate(prep.lastActivityAt)}</div>}
+                                    </>
+                                  )
+                                })()}
                               </td>
                               <td style={{ padding: '14px 16px' }}>
                                 {prep.cvFileUrl

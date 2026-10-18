@@ -108,6 +108,10 @@ interface IncomingState {
   dayOneReady?: boolean;
   // A recruiter's prep already carries the real interview's date (yyyy-MM-dd or ISO), so this screen need not ask for it.
   interviewDate?: string;
+  // Set when this practice comes from a recruiter's prep (2026-10-18): who sent it, so the room can report how far the candidate gets (never answers or scores).
+  prepId?: string;
+  prepRecruiterId?: string;
+  recruiterName?: string;
 }
 
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
@@ -419,6 +423,8 @@ export default function InterviewPackStart() {
         salaryExpectation: companyMode ? 'N/A' : selectedSalary,
         questionCount: dayOne ? 10 : selectedQuestionCount,
         autoStart: true,
+        prepId: incoming.prepId,
+        prepRecruiterId: incoming.prepRecruiterId,
         consentToRecord,
         specialFocus: !companyMode && specialFocusChips.length > 0 ? specialFocusChips : undefined,
         dayOneReady: incoming.dayOneReady && !companyMode ? true : undefined,
@@ -786,6 +792,13 @@ export default function InterviewPackStart() {
             Which stage of your real process is this? Michelle and the panel will reference it naturally — e.g. congratulating you on reaching a later round.
           </div>
         </div>
+
+        {incoming.prepId && (
+        <div role="note" style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.4)', borderRadius: '16px', padding: phone ? '14px' : '18px 24px', marginBottom: '16px', fontSize: '13.5px', lineHeight: 1.55, color: 'var(--text)' }}>
+          <b>Your recruiter{incoming.recruiterName ? `, ${incoming.recruiterName},` : ''} will see that you practised.</b> They can see that you opened this, how many times you practise and how many questions you answer.
+          They <b>cannot</b> see your answers or your scores. Those stay private to you.
+        </div>
+        )}
 
         {!incoming.interviewDate && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '16px', padding: phone ? '18px 14px' : '24px 28px', marginBottom: '16px' }}>

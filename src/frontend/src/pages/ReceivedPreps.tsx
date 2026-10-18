@@ -1,3 +1,4 @@
+import { reportPrepProgress } from '../api/prepProgress';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ChevronUp, ChevronDown, Gift, FileText } from 'lucide-react';
@@ -10,6 +11,7 @@ import { useIsPhone } from '../hooks/useIsPhone';
 // claim against every recruiter's sent preps — see Explain.Api.Features.InterviewPreps.
 interface ReceivedPrep {
   id:            string;
+  recruiterId:   string;
   recruiterName: string;
   title:         string | null;
   firstName:     string;
@@ -76,6 +78,7 @@ export default function ReceivedPreps() {
   // candidate gets a last look at role/CV/difficulty (and can change any of it) before
   // clicking Start themselves, same principle as the recruiter side not auto-launching.
   function reviewAndStart(prep: ReceivedPrep) {
+    reportPrepProgress({ id: prep.id, recruiterId: prep.recruiterId }, 'opened');   // the recruiter can see that the prep was opened
     navigate('/interview-pack/start', {
       state: {
         jobTitle: prep.role,
@@ -88,6 +91,9 @@ export default function ReceivedPreps() {
         salaryExpectation: prep.salaryExpectation ?? undefined,
         specialFocus: prep.specialFocus ?? undefined,
         interviewDate: prep.interviewDate,
+        prepId: prep.id,
+        prepRecruiterId: prep.recruiterId,
+        recruiterName: prep.recruiterName,
       },
     });
   }

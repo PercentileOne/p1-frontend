@@ -238,6 +238,65 @@ public static class Endpoint
 
             return Results.Ok(preps.OrderByDescending(p => p.createdAt).Select(p => WithCvFileUrl(p, cvFiles)));
         }).RequireAuthorization(Permissions.PracticeInterview);
+
+        // POST /api/interview-preps/{id}/progress — the candidate's own app reports how far they have got with a prep a recruiter sent them: opened, started,
+        // answered (a count) and finished. Only the candidate the prep was sent to may report on it (their JWT email must match the prep's). The recruiter reads the
+        // result from GET /api/interview-preps. Scores and answers are never sent here and never stored on the prep.
+        app.MapPost("/api/interview-preps/{id}/progress", async (string id, ProgressRequest req, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var email = ctx.User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+            if (string.IsNullOrWhiteSpace(req.RecruiterId)) return Results.BadRequest(new { error = "Say which recruiter sent the prep." });
+
+            var container = cosmos.GetContainer("interview-preps");
+            InterviewPrep prep;
+            try { prep = (await container.ReadItemAsync<InterviewPrep>(id, new PartitionKey(req.RecruiterId))).Resource; }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return Results.NotFound(new { error = "Interview prep not found." }); }
+            // Someone else's prep looks exactly like a missing one.
+            if (!string.Equals(prep.email, email.Trim(), StringComparison.OrdinalIgnoreCase)) return Results.NotFound(new { error = "Interview prep not found." });
+
+            var updated = ApplyProgress(prep, req.Step, req.Answered, req.Total, DateTimeOffset.UtcNow);
+            if (!ReferenceEquals(updated, prep)) await container.UpsertItemAsync(updated, new PartitionKey(req.RecruiterId));
+            return Results.Ok(new { ok = true });
+        }).RequireAuthorization(Permissions.PracticeInterview);
+    }
+
+    /// <summary>What the candidate's step does to a prep. Unknown steps change nothing. The first time something happens is kept; within one go a count only ever goes up and never
+    /// past the total; each new start is another go (attempts), and each finished go counts once (completedAttempts), however many times "finished" is reported.</summary>
+    public static InterviewPrep ApplyProgress(InterviewPrep p, string? step, int? answered, int? total, DateTimeOffset now)
+    {
+        var t = Math.Clamp(total ?? p.totalQuestions, 0, 200);
+        switch (step)
+        {
+            case "opened":
+                return p with { openedAt = p.openedAt ?? now, lastActivityAt = now, status = p.status == "sent" ? "opened" : p.status };
+            case "started":
+                // A new go: the count of questions answered starts over, and the prep is "in progress" again (earlier finished goals stay counted).
+                return p with
+                {
+                    openedAt = p.openedAt ?? now, startedAt = p.startedAt ?? now, lastActivityAt = now,
+                    attempts = p.attempts + 1, answered = 0, totalQuestions = t > 0 ? t : p.totalQuestions, status = "started",
+                };
+            case "answered":
+                var a = Math.Clamp(answered ?? 0, 0, t > 0 ? t : 200);
+                return p with
+                {
+                    openedAt = p.openedAt ?? now, startedAt = p.startedAt ?? now, lastActivityAt = now,
+                    attempts = Math.Max(p.attempts, 1), answered = Math.Max(p.answered, a), totalQuestions = t > 0 ? t : p.totalQuestions,
+                    status = p.status == "finished" ? p.status : "started",
+                };
+            case "finished":
+                if (p.status == "finished") return p with { lastActivityAt = now };     // reported twice for the same go: counted once
+                return p with
+                {
+                    openedAt = p.openedAt ?? now, startedAt = p.startedAt ?? now, finishedAt = now, lastActivityAt = now,
+                    attempts = Math.Max(p.attempts, 1), completedAttempts = p.completedAttempts + 1,
+                    totalQuestions = t > 0 ? t : p.totalQuestions,
+                    answered = t > 0 ? Math.Min(Math.Max(p.answered, answered ?? p.answered), t) : p.answered, status = "finished",
+                };
+            default:
+                return p;
+        }
     }
 
     /// <summary>Decodes and uploads req.CvFileBase64 (when present) against this prep's own
@@ -387,6 +446,9 @@ public static class Endpoint
 
 public record DeleteRequest(List<string>? Ids);
 
+/// <summary><c>Step</c> is opened, started, answered or finished. <c>Answered</c> and <c>Total</c> are counts of questions.</summary>
+public record ProgressRequest(string? RecruiterId, string? Step, int? Answered, int? Total);
+
 public record InterviewPrep(
     string id,
     string recruiterId,
@@ -415,4 +477,15 @@ public record InterviewPrep(
     // behalf" pattern as level/specialFocus.
     string? round = null,
     // See Request.SalaryExpectation above — added 2026-09-18.
-    string? salaryExpectation = null);
+    string? salaryExpectation = null,
+    // How far the candidate has got (2026-10-18). The recruiter sees THAT the prep was opened, started and finished, and how many questions were answered —
+    // never the answers or the scores (Francis's decision), so none of that is stored here. Null / 0 on any prep from before this date.
+    DateTimeOffset? openedAt = null,
+    DateTimeOffset? startedAt = null,
+    int answered = 0,
+    int totalQuestions = 0,
+    DateTimeOffset? finishedAt = null,
+    DateTimeOffset? lastActivityAt = null,
+    // How many times they have practised with this prep, and how many of those they finished. answered / totalQuestions describe the LATEST go.
+    int attempts = 0,
+    int completedAttempts = 0);
