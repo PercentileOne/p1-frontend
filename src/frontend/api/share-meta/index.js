@@ -5,7 +5,9 @@
 // interview or video — otherwise every shared link on LinkedIn, Slack, WhatsApp etc. shows the same generic homepage preview, since those crawlers never run JavaScript and only
 // ever see whatever static HTML index.html always contains.
 // This is the one Node.js function the project allows (see CLAUDE.md section 2). The video mode extends it rather than adding a second one: Francis chose that on 2026-10-18.
-const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://explain-api.azurewebsites.net';
+// The real backend address, the same one every portal uses. The old default here, explain-api.azurewebsites.net, does not exist, so this function could never reach the API unless
+// an app setting overrode it (found 2026-10-18). The EXPLAIN_API_URL app setting still wins if one is set.
+const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://api.explain.global';
 const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/social-card.png';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 const CANONICAL_ORIGIN = 'https://candidate.theinterviewchair.com';
