@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bookmark, ChevronLeft, ChevronRight, Heart, Play, X } from 'lucide-react';
-import { embedUrl, fetchFeedVideos, fetchVideoMarks, setVideoMark, watchUrl } from '../api/feedVideosApi';
-import type { FeedVideo, VideoMark, VideoMarks } from '../api/feedVideosApi';
+import { fetchFeedVideos } from '../api/feedVideosApi';
+import type { FeedVideo } from '../api/feedVideosApi';
 import { localDate } from '../api/routinesApi';
 import { logEvent } from '../api/flowLogger';
+import { useVideoMarks } from '../hooks/useVideoMarks';
+import { VideoPlayer, roundButton } from './VideoPlayer';
 
 // The feed's video strip (Francis, 2026-10-18), after the LinkedIn layout he showed: a heading, then a row of tall phone-shaped cards that scrolls sideways, with the next card
 // peeking in at the edge so people know to swipe. Every video is from an official channel and checked with YouTube when it was added. A card shows YouTube's own thumbnail and credits
 // the channel; tapping plays it in YouTube's own privacy-enhanced player. Nothing is copied or re-hosted.
-// Save ("watch later", Francis's "Save in my Videos") and Like are private to the person. The app hides scrollbars everywhere, so the row has arrow buttons for a mouse.
-// The X folds the strip down to one line until tomorrow, and the Saved and Liked lists stay one tap away.
+// Save ("watch later", Francis's "Save in my Videos") and Like are private to the person, unless they switch on sharing their likes with the people who follow them (the switch sits on the
+// Liked view). The app hides scrollbars everywhere, so the row has arrow buttons for a mouse. The X folds the strip down to one line until tomorrow; Saved and Liked stay one tap away.
 
 const HIDE_KEY = 'tic_video_strip_hidden';
 const CARD_W = 176;
@@ -30,35 +32,20 @@ function hiddenToday(): boolean {
   try { return localStorage.getItem(HIDE_KEY) === localDate(); } catch { return false; }
 }
 
-const round = (on: boolean): React.CSSProperties => ({
-  width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
-  background: on ? 'rgba(52,211,153,0.9)' : 'rgba(0,0,0,0.55)', color: on ? '#04130d' : '#fff',
-});
-
 export function VideoStrip() {
   const [videos, setVideos] = useState<FeedVideo[] | null>(null);
-  const [marks, setMarks] = useState<VideoMarks>({ saved: [], liked: [] });
+  const { marks, problem, toggle, setSharing } = useVideoMarks();
   const [view, setView] = useState<View>('all');
   const [hidden, setHidden] = useState(hiddenToday);
   const [playing, setPlaying] = useState<FeedVideo | null>(null);
-  const [problem, setProblem] = useState('');
   const [edges, setEdges] = useState({ left: false, right: false });
-  const closeRef = useRef<HTMLButtonElement>(null);
   const rowRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     let alive = true;
-    void Promise.all([fetchFeedVideos(), fetchVideoMarks()]).then(([v, m]) => { if (alive) { setVideos(v); setMarks(m); } });
+    void fetchFeedVideos().then(v => { if (alive) setVideos(v); });
     return () => { alive = false; };
   }, []);
-
-  useEffect(() => {
-    if (!playing) return;
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPlaying(null); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [playing]);
 
   const measure = useCallback(() => {
     const el = rowRef.current;
@@ -70,6 +57,8 @@ export function VideoStrip() {
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, [measure, videos, view, hidden]);
+
+  const closePlayer = useCallback(() => setPlaying(null), []);
 
   if (!videos || videos.length === 0) return null;
 
@@ -83,19 +72,6 @@ export function VideoStrip() {
   function show(next: View = 'all') { try { localStorage.removeItem(HIDE_KEY); } catch { /* fine */ } setHidden(false); setView(next); }
   function play(v: FeedVideo) { logEvent('feed_video_play', { metadata: { id: v.id, theme: v.theme, channel: v.channel } }); setPlaying(v); }
   function scrollBy(dir: 1 | -1) { rowRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: 'smooth' }); }
-
-  // Optimistic: the button changes at once, and goes back with a short message if the save fails.
-  async function toggle(v: FeedVideo, mark: VideoMark) {
-    const was = marks[mark].includes(v.id);
-    setProblem('');
-    setMarks(m => ({ ...m, [mark]: was ? m[mark].filter(id => id !== v.id) : [v.id, ...m[mark]] }));
-    if (!was) logEvent(mark === 'saved' ? 'feed_video_save' : 'feed_video_like', { metadata: { id: v.id, theme: v.theme } });
-    try { setMarks(await setVideoMark(v.id, mark, !was)); }
-    catch (e) {
-      setMarks(m => ({ ...m, [mark]: was ? [v.id, ...m[mark].filter(id => id !== v.id)] : m[mark].filter(id => id !== v.id) }));
-      setProblem((e as Error).message);
-    }
-  }
 
   const tab = (id: View, text: string, count?: number) => (
     <button key={id} type="button" role="tab" aria-selected={view === id} onClick={() => setView(id)}
@@ -128,6 +104,19 @@ export function VideoStrip() {
       <div role="tablist" aria-label="Which videos" style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
         {tab('all', 'All')}{tab('saved', 'Saved', savedCount)}{tab('liked', 'Liked', likedCount)}
       </div>
+
+      {view === 'liked' && (
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '0 16px 12px', cursor: 'pointer' }}>
+          <input type="checkbox" role="switch" checked={marks.shareLikes} onChange={e => void setSharing(e.target.checked)} style={{ marginTop: 3, accentColor: GREEN }} />
+          <span>
+            <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>Show my liked videos to people who follow me</span>
+            <span style={{ display: 'block', fontSize: 12.5, color: 'var(--text-3)' }}>
+              {marks.shareLikes ? 'On. People who follow you can see these on your profile, under Liked Videos.' : 'Off. Only you can see them. Nobody else sees anything unless you switch this on.'}
+            </span>
+          </span>
+        </label>
+      )}
+
       {problem && <div role="alert" style={{ padding: '0 16px 8px', color: '#F87171', fontSize: 13 }}>{problem}</div>}
 
       {shown.length === 0 && (
@@ -155,8 +144,8 @@ export function VideoStrip() {
                   </span>
                 </button>
                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <button type="button" aria-pressed={isSaved} aria-label={isSaved ? `Remove ${v.title} from saved` : `Save ${v.title} for later`} title={isSaved ? 'Saved. Tap to remove' : 'Save for later'} onClick={() => void toggle(v, 'saved')} style={round(isSaved)}><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} /></button>
-                  <button type="button" aria-pressed={isLiked} aria-label={isLiked ? `Unlike ${v.title}` : `Like ${v.title}`} title={isLiked ? 'Liked. Tap to remove' : 'Like'} onClick={() => void toggle(v, 'liked')} style={round(isLiked)}><Heart size={16} fill={isLiked ? 'currentColor' : 'none'} /></button>
+                  <button type="button" aria-pressed={isSaved} aria-label={isSaved ? `Remove ${v.title} from saved` : `Save ${v.title} for later`} title={isSaved ? 'Saved. Tap to remove' : 'Save for later'} onClick={() => void toggle(v, 'saved')} style={roundButton(isSaved)}><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} /></button>
+                  <button type="button" aria-pressed={isLiked} aria-label={isLiked ? `Unlike ${v.title}` : `Like ${v.title}`} title={isLiked ? 'Liked. Tap to remove' : 'Like'} onClick={() => void toggle(v, 'liked')} style={roundButton(isLiked)}><Heart size={16} fill={isLiked ? 'currentColor' : 'none'} /></button>
                 </div>
               </li>
             );
@@ -166,33 +155,7 @@ export function VideoStrip() {
         </ul>
       </div>
 
-      {playing && (
-        <div role="dialog" aria-modal="true" aria-label={playing.title} onClick={() => setPlaying(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(100%, 760px)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button ref={closeRef} type="button" onClick={() => setPlaying(null)} aria-label="Close video" style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff', borderRadius: 999, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
-            </div>
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: '#000', borderRadius: 12, overflow: 'hidden' }}>
-              <iframe src={embedUrl(playing.id)} title={playing.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }} />
-            </div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', color: '#fff', fontSize: 14, lineHeight: 1.45 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700 }}>{playing.title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-                  From {playing.channelUrl ? <a href={playing.channelUrl} target="_blank" rel="noopener noreferrer" style={{ color: GREEN }}>{playing.channel}</a> : playing.channel} on YouTube
-                  {' · '}<a href={watchUrl(playing.id)} target="_blank" rel="noopener noreferrer" style={{ color: GREEN }}>Watch on YouTube</a>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" aria-pressed={marks.saved.includes(playing.id)} aria-label={marks.saved.includes(playing.id) ? 'Remove from saved' : 'Save for later'} onClick={() => void toggle(playing, 'saved')} style={round(marks.saved.includes(playing.id))}><Bookmark size={16} fill={marks.saved.includes(playing.id) ? 'currentColor' : 'none'} /></button>
-                <button type="button" aria-pressed={marks.liked.includes(playing.id)} aria-label={marks.liked.includes(playing.id) ? 'Unlike' : 'Like'} onClick={() => void toggle(playing, 'liked')} style={round(marks.liked.includes(playing.id))}><Heart size={16} fill={marks.liked.includes(playing.id) ? 'currentColor' : 'none'} /></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {playing && <VideoPlayer video={playing} marks={marks} onToggle={(v, m) => void toggle(v, m)} onClose={closePlayer} />}
     </section>
   );
 }

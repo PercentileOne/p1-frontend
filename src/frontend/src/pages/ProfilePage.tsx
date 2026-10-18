@@ -26,6 +26,8 @@ import {
 } from "../lib/profileData";
 import { profileApi, type Profile, type PublicProfile, type ProfileProject, type BlockedUserRef } from "../api/profileApi";
 import { reactionsApi } from "../api/reactionsApi";
+import { followsApi } from "../api/followsApi";
+import { LikedVideosPanel } from "../components/LikedVideosPanel";
 import { commentsApi, type ProfileComment } from "../api/commentsApi";
 import { WEEKLY_WINNERS, MONTHLY_WINNERS } from "../lib/awardsData";
 import { STORIES } from "../lib/storiesData";
@@ -34,7 +36,7 @@ import { STORIES } from "../lib/storiesData";
    P1 PROFILE PAGE 2.0
    ══════════════════════════════════════════════════════════════ */
 
-type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests" | "video";
+type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests" | "video" | "likedVideos";
 
 const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
   { key: "overview",      label: "Overview",      emoji: "🏠" },
@@ -46,6 +48,7 @@ const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
   { key: "awards",        label: "Awards",        emoji: "🏆" },
   { key: "interests",     label: "Interests",     emoji: "✨" },
   { key: "video",         label: "Profile Video", emoji: "🎥" },
+  { key: "likedVideos",   label: "Liked Videos",  emoji: "❤️" },
 ];
 
 // Hidden until their real backend exists (Francis, 2026-09-22 — see this session's build order:
@@ -1414,6 +1417,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reaction, setReaction] = useState<{ liked: boolean; count: number }>({ liked: false, count: 0 });
+  // Following is saved on the server (2026-10-18); before this the Follow button only changed what was on screen.
+  const [followInfo, setFollowInfo] = useState<{ following: boolean; followers: number }>({ following: false, followers: 0 });
 
   useEffect(() => {
     if (!authToken || !isOwnProfile) return;
@@ -1430,6 +1435,7 @@ export default function ProfilePage() {
     reactionsApi.get(authToken, 'profile', routeUserId)
       .then(setReaction)
       .catch(() => { /* keep default */ });
+    void followsApi.get(routeUserId).then(setFollowInfo);
   }, [authToken, isOwnProfile, routeUserId]);
 
   function startEditing() {
@@ -1479,6 +1485,14 @@ export default function ProfilePage() {
     } catch {
       setSaveError('Failed to upload banner.');
     }
+  }
+
+  async function toggleFollow() {
+    if (!routeUserId) return;
+    const was = followInfo.following;
+    setFollowInfo(f => ({ following: !was, followers: Math.max(0, f.followers + (was ? -1 : 1)) }));
+    try { setFollowInfo(await followsApi.set(routeUserId, !was)); }
+    catch { setFollowInfo(f => ({ following: was, followers: Math.max(0, f.followers + (was ? 1 : -1)) })); }
   }
 
   async function toggleLike() {
@@ -1552,7 +1566,7 @@ export default function ProfilePage() {
     interests: publicProfile?.interests ?? [],
     avatarUrl: publicProfile?.avatar ?? undefined,
     bannerUrl: publicProfile?.banner ?? undefined,
-    followers: 0, following: 0, storiesPublished: 0, chaptersWritten: 0,
+    followers: followInfo.followers, following: 0, storiesPublished: 0, chaptersWritten: 0,
     savesReceived: 0, awardsWon: 0, postsPublished: 0, wallsFollowed: 0, groupsJoined: 0,
     achievements: [], walls: [], groups: [], posts: [],
     isOwnProfile: false,
@@ -1561,11 +1575,11 @@ export default function ProfilePage() {
   const profile = isOwnProfile ? ownProfile : otherProfile;
   const commentsEnabled = isOwnProfile ? (real?.commentsEnabled ?? false) : (publicProfile?.commentsEnabled ?? false);
   const targetUserId = isOwnProfile ? (authUser?.id ?? '') : (routeUserId ?? '');
-  const visibleTabs = (isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests"))
+  const visibleTabs = (isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests" || t.key === "likedVideos"))
     .filter(t => !HIDDEN_TABS.includes(t.key));
 
   const [tab, setTab] = useState<ProfileTab>("overview");
-  const [followed, setFollowed] = useState(false);
+  const followed = followInfo.following;
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-slate-200 flex flex-col">
@@ -1615,7 +1629,7 @@ export default function ProfilePage() {
               <ProfileHeader
                 profile={profile}
                 followed={followed}
-                onFollow={() => setFollowed(v => !v)}
+                onFollow={() => void toggleFollow()}
                 editing={editing}
                 canEdit={isOwnProfile && !!authToken}
                 onEditClick={() => (editing ? cancelEditing() : startEditing())}
@@ -1772,6 +1786,13 @@ export default function ProfilePage() {
                     />
                   </SectionCard>
                 </div>
+              )}
+
+              {tab === "likedVideos" && (
+                <SectionCard>
+                  <SectionHeading emoji="❤️" title="Liked Videos" />
+                  <LikedVideosPanel userId={targetUserId} name={isOwnProfile ? "You" : otherName} isOwn={isOwnProfile} following={followed} />
+                </SectionCard>
               )}
 
               {tab === "video" && (

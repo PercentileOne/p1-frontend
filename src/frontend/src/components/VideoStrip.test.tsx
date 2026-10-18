@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { VideoStrip } from './VideoStrip';
-import { fetchFeedVideos, fetchVideoMarks, setVideoMark } from '../api/feedVideosApi';
+import { fetchFeedVideos, fetchVideoMarks, setLikesShared, setVideoMark } from '../api/feedVideosApi';
 import type { FeedVideo } from '../api/feedVideosApi';
 
 vi.mock('../api/feedVideosApi', async () => {
   const actual = await vi.importActual<typeof import('../api/feedVideosApi')>('../api/feedVideosApi');
-  return { ...actual, fetchFeedVideos: vi.fn(), fetchVideoMarks: vi.fn(), setVideoMark: vi.fn() };
+  return { ...actual, fetchFeedVideos: vi.fn(), fetchVideoMarks: vi.fn(), setVideoMark: vi.fn(), setLikesShared: vi.fn() };
 });
 vi.mock('../api/flowLogger', () => ({ logEvent: vi.fn() }));
 const fetchVideos = vi.mocked(fetchFeedVideos);
 const fetchMarks = vi.mocked(fetchVideoMarks);
 const setMark = vi.mocked(setVideoMark);
+const setShared = vi.mocked(setLikesShared);
 
 const clip = (id: string, over: Partial<FeedVideo> = {}): FeedVideo => ({
   id, title: `Title ${id}`, channel: 'Shark Tank', channelUrl: 'https://www.youtube.com/@sharktank', thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, theme: 'pitching', ...over,
@@ -20,7 +21,7 @@ const A = 'aaaaaaaaaaa', B = 'bbbbbbbbbbb';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  fetchMarks.mockResolvedValue({ saved: [], liked: [] });
+  fetchMarks.mockResolvedValue({ saved: [], liked: [], shareLikes: false });
   try { localStorage.clear(); } catch { /* fine */ }
 });
 afterEach(() => cleanup());
@@ -55,7 +56,7 @@ describe('VideoStrip', () => {
 
   it('folds the strip away for the rest of the day, keeps Saved reachable, and can be opened again', async () => {
     fetchVideos.mockResolvedValue([clip(A), clip(B)]);
-    fetchMarks.mockResolvedValue({ saved: [B], liked: [] });
+    fetchMarks.mockResolvedValue({ saved: [B], liked: [], shareLikes: false });
     const { unmount } = render(<VideoStrip />);
     fireEvent.click(await screen.findByLabelText('Hide videos until tomorrow'));
     expect(screen.queryByLabelText(`Play Title ${A}, from Shark Tank`)).toBeNull();
@@ -71,7 +72,7 @@ describe('VideoStrip', () => {
 
   it('saves a video for later and puts the button back if the save fails', async () => {
     fetchVideos.mockResolvedValue([clip(A)]);
-    setMark.mockResolvedValueOnce({ saved: [A], liked: [] });
+    setMark.mockResolvedValueOnce({ saved: [A], liked: [], shareLikes: false });
     render(<VideoStrip />);
     fireEvent.click(await screen.findByLabelText(`Save Title ${A} for later`));
     await waitFor(() => expect(setMark).toHaveBeenCalledWith(A, 'saved', true));
@@ -86,7 +87,7 @@ describe('VideoStrip', () => {
 
   it('likes a video and lists it under Liked', async () => {
     fetchVideos.mockResolvedValue([clip(A), clip(B)]);
-    setMark.mockResolvedValueOnce({ saved: [], liked: [B] });
+    setMark.mockResolvedValueOnce({ saved: [], liked: [B], shareLikes: false });
     render(<VideoStrip />);
     fireEvent.click(await screen.findByLabelText(`Like Title ${B}`));
     await waitFor(() => expect(setMark).toHaveBeenCalledWith(B, 'liked', true));
@@ -104,10 +105,42 @@ describe('VideoStrip', () => {
 
   it('shows saved videos that were saved earlier, in the order they were saved', async () => {
     fetchVideos.mockResolvedValue([clip(A), clip(B)]);
-    fetchMarks.mockResolvedValue({ saved: [B, A], liked: [] });
+    fetchMarks.mockResolvedValue({ saved: [B, A], liked: [], shareLikes: false });
     render(<VideoStrip />);
     fireEvent.click(await screen.findByText('Saved (2)'));
     const cards = screen.getAllByLabelText(/^Play Title/);
     expect(cards.map(c => c.getAttribute('aria-label'))).toEqual([`Play Title ${B}, from Shark Tank`, `Play Title ${A}, from Shark Tank`]);
+  });
+
+  it('keeps likes private until the switch is turned on, and says what each setting means', async () => {
+    fetchVideos.mockResolvedValue([clip(A)]);
+    setShared.mockResolvedValueOnce({ saved: [], liked: [], shareLikes: true });
+    render(<VideoStrip />);
+    fireEvent.click(await screen.findByText('Liked (0)'));
+    const sw = screen.getByRole('switch') as HTMLInputElement;
+    expect(sw.checked).toBe(false);
+    expect(screen.getByText(/Only you can see them/)).toBeTruthy();
+    fireEvent.click(sw);
+    await waitFor(() => expect(setShared).toHaveBeenCalledWith(true));
+    expect(await screen.findByText(/People who follow you can see these/)).toBeTruthy();
+  });
+
+  it('puts the switch back with a message if turning sharing on fails', async () => {
+    fetchVideos.mockResolvedValue([clip(A)]);
+    setShared.mockRejectedValueOnce(new Error('That did not save. Try again.'));
+    render(<VideoStrip />);
+    fireEvent.click(await screen.findByText('Liked (0)'));
+    fireEvent.click(screen.getByRole('switch'));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/did not save/);
+    expect((screen.getByRole('switch') as HTMLInputElement).checked).toBe(false);
+  });
+
+  it('does not show the sharing switch on the All or Saved views', async () => {
+    fetchVideos.mockResolvedValue([clip(A)]);
+    render(<VideoStrip />);
+    await screen.findByText('Worth a watch');
+    expect(screen.queryByRole('switch')).toBeNull();
+    fireEvent.click(screen.getByText('Saved (0)'));
+    expect(screen.queryByRole('switch')).toBeNull();
   });
 });

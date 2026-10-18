@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Azure.Cosmos;
 using Explain.Api.Common;
 using Explain.Api.Infrastructure.Cosmos;
+using Explain.Api.Infrastructure.Sql;
 
 namespace Explain.Api.Features.FeedVideos;
 
@@ -38,7 +39,30 @@ public static class Endpoint
         {
             var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
             var state = await LoadStateAsync(cosmos, userId, ct);
-            return Results.Ok(new MarksReply(state.saved.Select(m => m.id).ToList(), state.liked.Select(m => m.id).ToList()));
+            return Results.Ok(Marks(state));
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
+
+        // The opt-in switch: show my liked videos to the people who follow me. Off for everyone until they turn it on.
+        app.MapPut("/api/feed/videos/sharing", async (SharingRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var state = await LoadStateAsync(cosmos, userId, ct);
+            var next = state with { shareLikes = req.On, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
+            await cosmos.GetContainer("planning").UpsertItemAsync(next, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(Marks(next));
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
+
+        // Someone else's liked videos: only if they have switched sharing on AND the person asking follows them. Otherwise the same plain "not visible" answer,
+        // so it never reveals whether they have liked anything.
+        app.MapGet("/api/feed/videos/liked-by/{userId}", async (string userId, HttpContext ctx, CosmosService cosmos, AppDbContext db, CancellationToken ct) =>
+        {
+            var me = UserId(ctx); if (me is null) return Results.Unauthorized();
+            var owner = await LoadStateAsync(cosmos, userId, ct);
+            var follows = me != userId && owner.shareLikes && await Follows.Endpoint.FollowsAsync(db, me, userId, ct);
+            if (!CanSeeLikes(me, userId, owner.shareLikes, follows)) return Results.Ok(new LikedByReply(false, []));
+            var published = (await ListAsync(cosmos, ct)).Where(v => v.status == "published").ToDictionary(v => v.id);
+            var videos = owner.liked.Select(m => published.GetValueOrDefault(m.id)).Where(v => v is not null).Select(v => ToReply(v!)).ToList();
+            return Results.Ok(new LikedByReply(true, videos));
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
 
         app.MapPut("/api/feed/videos/{id}/{mark:regex(^(saved|liked)$)}", async (string id, string mark, MarkRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
@@ -56,7 +80,7 @@ public static class Endpoint
             var next = mark == "saved" ? state with { saved = SetMark(state.saved, id, req.On, now, MaxMarks), updatedAt = now }
                                        : state with { liked = SetMark(state.liked, id, req.On, now, MaxMarks), updatedAt = now };
             await cosmos.GetContainer("planning").UpsertItemAsync(next, new PartitionKey(userId), cancellationToken: ct);
-            return Results.Ok(new MarksReply(next.saved.Select(m => m.id).ToList(), next.liked.Select(m => m.id).ToList()));
+            return Results.Ok(Marks(next));
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
 
         var admin = app.MapGroup("/api/admin/feed-videos").RequireAuthorization(Permissions.ViewSystemSettings).WithTags("FeedVideos");
@@ -131,6 +155,12 @@ public static class Endpoint
         }
         return IsVideoId(candidate) ? candidate : null;
     }
+
+    /// <summary>Liked videos are visible to their owner, or to a follower of the owner while the owner has sharing switched on. Nobody else.</summary>
+    public static bool CanSeeLikes(string viewer, string owner, bool ownerShares, bool viewerFollowsOwner) =>
+        viewer == owner || (ownerShares && viewerFollowsOwner);
+
+    private static MarksReply Marks(VideoState s) => new(s.saved.Select(m => m.id).ToList(), s.liked.Select(m => m.id).ToList(), s.shareLikes);
 
     /// <summary>Adds or removes one mark, newest first, with no duplicates, keeping at most `cap` (the oldest drop off).</summary>
     public static List<Mark> SetMark(List<Mark> marks, string id, bool on, string now, int cap)
@@ -211,8 +241,10 @@ public static class Endpoint
     public record FeedVideo(string id, string pk, string title, string channel, string channelUrl, string thumbnail, string theme, string status, string addedAt, string addedBy);
     public record VideoReply(string id, string title, string channel, string channelUrl, string thumbnail, string theme, string status, string addedAt);
     public record Mark(string id, string at);
-    public record VideoState(string id, string userId, string type, List<Mark> saved, List<Mark> liked, string updatedAt);
-    public record MarksReply(List<string> saved, List<string> liked);
+    public record VideoState(string id, string userId, string type, List<Mark> saved, List<Mark> liked, string updatedAt, bool shareLikes = false);
+    public record MarksReply(List<string> saved, List<string> liked, bool shareLikes);
+    public record SharingRequest(bool On);
+    public record LikedByReply(bool visible, List<VideoReply> videos);
     public record MarkRequest(bool On);
     public record AddRequest(string Url, string Theme);
     public record PatchRequest(string? Status, string? Theme);

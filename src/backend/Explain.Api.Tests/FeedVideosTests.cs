@@ -66,6 +66,33 @@ public class FeedVideosTests
         Assert.Equal(["ccccccccccc", "bbbbbbbbbbb"], marks.Select(m => m.id));
     }
 
+    [Theory]
+    [InlineData("me", "me", false, false, true)]      // your own, always
+    [InlineData("me", "me", true, true, true)]
+    [InlineData("fan", "owner", true, true, true)]    // a follower, with sharing on
+    [InlineData("fan", "owner", false, true, false)]  // a follower, but sharing is off (the default)
+    [InlineData("stranger", "owner", true, false, false)]   // sharing is on, but they do not follow
+    [InlineData("stranger", "owner", false, false, false)]
+    public void Liked_videos_are_visible_only_to_the_owner_or_a_follower_while_sharing_is_on(string viewer, string owner, bool shares, bool follows, bool expected)
+    {
+        Assert.Equal(expected, Videos.CanSeeLikes(viewer, owner, shares, follows));
+    }
+
+    [Fact]
+    public void Sharing_is_off_unless_it_was_switched_on()
+    {
+        var fresh = new Videos.VideoState("feedvideo-state", "u", "feedvideo-state", [], [], "t");
+        Assert.False(fresh.shareLikes);
+    }
+
+    [Fact]
+    public void Nobody_can_follow_themselves_or_nobody()
+    {
+        Assert.False(Explain.Api.Features.Follows.Endpoint.CanFollow("a", "a"));
+        Assert.False(Explain.Api.Features.Follows.Endpoint.CanFollow("a", ""));
+        Assert.True(Explain.Api.Features.Follows.Endpoint.CanFollow("a", "b"));
+    }
+
     [Fact]
     public void A_good_oEmbed_answer_gives_the_title_and_channel_from_YouTube()
     {

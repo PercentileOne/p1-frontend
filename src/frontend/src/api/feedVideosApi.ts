@@ -34,7 +34,7 @@ export function watchUrl(id: string): string {
 }
 
 // A person's own saved ("watch later") and liked videos: private to them.
-export interface VideoMarks { saved: string[]; liked: string[] }
+export interface VideoMarks { saved: string[]; liked: string[]; shareLikes: boolean }
 export type VideoMark = 'saved' | 'liked';
 
 function authHeaders(json = false): Record<string, string> {
@@ -47,9 +47,9 @@ function authHeaders(json = false): Record<string, string> {
 export async function fetchVideoMarks(): Promise<VideoMarks> {
   try {
     const res = await fetch(`${API_BASE}/api/feed/videos/me`, { headers: authHeaders() });
-    if (!res.ok) return { saved: [], liked: [] };
+    if (!res.ok) return { saved: [], liked: [], shareLikes: false };
     return await res.json() as VideoMarks;
-  } catch { return { saved: [], liked: [] }; }
+  } catch { return { saved: [], liked: [], shareLikes: false }; }
 }
 
 /** Saves or un-saves, likes or un-likes. Returns the person's full lists; throws if it did not save, so the screen can put the button back. */
@@ -57,4 +57,20 @@ export async function setVideoMark(id: string, mark: VideoMark, on: boolean): Pr
   const res = await fetch(`${API_BASE}/api/feed/videos/${encodeURIComponent(id)}/${mark}`, { method: 'PUT', headers: authHeaders(true), body: JSON.stringify({ on }) });
   if (!res.ok) throw new Error(res.status === 404 ? 'That video is no longer available.' : 'That did not save. Try again.');
   return await res.json() as VideoMarks;
+}
+
+/** The opt-in switch: show my liked videos to the people who follow me. Off until it is switched on. Throws if it did not save. */
+export async function setLikesShared(on: boolean): Promise<VideoMarks> {
+  const res = await fetch(`${API_BASE}/api/feed/videos/sharing`, { method: 'PUT', headers: authHeaders(true), body: JSON.stringify({ on }) });
+  if (!res.ok) throw new Error('That did not save. Try again.');
+  return await res.json() as VideoMarks;
+}
+
+/** Someone's liked videos. `visible` is false unless they share them and the person asking follows them (or it is their own). */
+export async function fetchLikedBy(userId: string): Promise<{ visible: boolean; videos: FeedVideo[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/feed/videos/liked-by/${encodeURIComponent(userId)}`, { headers: authHeaders() });
+    if (!res.ok) return { visible: false, videos: [] };
+    return await res.json() as { visible: boolean; videos: FeedVideo[] };
+  } catch { return { visible: false, videos: [] }; }
 }
