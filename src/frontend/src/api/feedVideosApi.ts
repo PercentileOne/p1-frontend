@@ -32,3 +32,29 @@ export function embedUrl(id: string): string {
 export function watchUrl(id: string): string {
   return `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
 }
+
+// A person's own saved ("watch later") and liked videos: private to them.
+export interface VideoMarks { saved: string[]; liked: string[] }
+export type VideoMark = 'saved' | 'liked';
+
+function authHeaders(json = false): Record<string, string> {
+  const token = useAuthStore.getState().token;
+  const h: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
+
+export async function fetchVideoMarks(): Promise<VideoMarks> {
+  try {
+    const res = await fetch(`${API_BASE}/api/feed/videos/me`, { headers: authHeaders() });
+    if (!res.ok) return { saved: [], liked: [] };
+    return await res.json() as VideoMarks;
+  } catch { return { saved: [], liked: [] }; }
+}
+
+/** Saves or un-saves, likes or un-likes. Returns the person's full lists; throws if it did not save, so the screen can put the button back. */
+export async function setVideoMark(id: string, mark: VideoMark, on: boolean): Promise<VideoMarks> {
+  const res = await fetch(`${API_BASE}/api/feed/videos/${encodeURIComponent(id)}/${mark}`, { method: 'PUT', headers: authHeaders(true), body: JSON.stringify({ on }) });
+  if (!res.ok) throw new Error(res.status === 404 ? 'That video is no longer available.' : 'That did not save. Try again.');
+  return await res.json() as VideoMarks;
+}

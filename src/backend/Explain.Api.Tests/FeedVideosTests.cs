@@ -46,6 +46,27 @@ public class FeedVideosTests
     }
 
     [Fact]
+    public void Marks_go_on_the_front_without_duplicates_and_come_off_cleanly()
+    {
+        var marks = Videos.SetMark([], "aaaaaaaaaaa", true, "t1", 500);
+        marks = Videos.SetMark(marks, "bbbbbbbbbbb", true, "t2", 500);
+        Assert.Equal(["bbbbbbbbbbb", "aaaaaaaaaaa"], marks.Select(m => m.id));
+        marks = Videos.SetMark(marks, "aaaaaaaaaaa", true, "t3", 500);   // marking again moves it to the front, not twice
+        Assert.Equal(["aaaaaaaaaaa", "bbbbbbbbbbb"], marks.Select(m => m.id));
+        marks = Videos.SetMark(marks, "aaaaaaaaaaa", false, "t4", 500);
+        Assert.Equal(["bbbbbbbbbbb"], marks.Select(m => m.id));
+        Assert.Equal(["bbbbbbbbbbb"], Videos.SetMark(marks, "zzzzzzzzzzz", false, "t5", 500).Select(m => m.id));   // removing what is not there changes nothing
+    }
+
+    [Fact]
+    public void Only_the_newest_marks_are_kept_when_the_cap_is_reached()
+    {
+        var marks = new List<Videos.Mark>();
+        foreach (var id in new[] { "aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc" }) marks = Videos.SetMark(marks, id, true, "t", 2);
+        Assert.Equal(["ccccccccccc", "bbbbbbbbbbb"], marks.Select(m => m.id));
+    }
+
+    [Fact]
     public void A_good_oEmbed_answer_gives_the_title_and_channel_from_YouTube()
     {
         var r = Videos.ReadOEmbed(HttpStatusCode.OK, "{\"title\":\"A pitch\",\"author_name\":\"Shark Tank\",\"author_url\":\"https://www.youtube.com/@sharktank\"}");

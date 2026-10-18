@@ -18,7 +18,9 @@ public static class Endpoint
 {
     public const string ContainerName = "feedVideos";
     public const string Partition = "video";
-    public const int MaxPublished = 60;
+    public const int MaxPublished = 200;
+    public const int MaxMarks = 500;
+    private const string StateDocId = "feedvideo-state";
 
     /// <summary>The general subjects from the feed spec, plus the motivation, business, success, productivity and routines themes Francis asked for on 18 Oct 2026. A video carries one, so each person's ranking can learn what they respond to.</summary>
     public static readonly string[] Themes = ["pitching", "rejection", "founders", "interviews", "motivation", "business", "success", "productivity", "routines", "habits", "learning", "speaking", "career-change", "software-and-cloud"];
@@ -29,6 +31,32 @@ public static class Endpoint
         {
             var all = await ListAsync(cosmos, ct);
             return Results.Ok(all.Where(v => v.status == "published").OrderByDescending(v => v.addedAt).Take(MaxPublished).Select(ToReply));
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
+
+        // A person's own saved ("watch later") and liked videos. Private to them: kept in one small document in their own partition of the "planning" container.
+        app.MapGet("/api/feed/videos/me", async (HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            var state = await LoadStateAsync(cosmos, userId, ct);
+            return Results.Ok(new MarksReply(state.saved.Select(m => m.id).ToList(), state.liked.Select(m => m.id).ToList()));
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
+
+        app.MapPut("/api/feed/videos/{id}/{mark:regex(^(saved|liked)$)}", async (string id, string mark, MarkRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
+        {
+            var userId = UserId(ctx); if (userId is null) return Results.Unauthorized();
+            if (!IsVideoId(id)) return Results.NotFound();
+            // Adding needs a video that is still showing; taking a mark off always works, so nobody is stuck holding a video that was pulled.
+            if (req.On)
+            {
+                var video = await GetAsync(cosmos, id, ct);
+                if (video is null || video.status != "published") return Results.NotFound();
+            }
+            var state = await LoadStateAsync(cosmos, userId, ct);
+            var now = DateTimeOffset.UtcNow.ToString("o");
+            var next = mark == "saved" ? state with { saved = SetMark(state.saved, id, req.On, now, MaxMarks), updatedAt = now }
+                                       : state with { liked = SetMark(state.liked, id, req.On, now, MaxMarks), updatedAt = now };
+            await cosmos.GetContainer("planning").UpsertItemAsync(next, new PartitionKey(userId), cancellationToken: ct);
+            return Results.Ok(new MarksReply(next.saved.Select(m => m.id).ToList(), next.liked.Select(m => m.id).ToList()));
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedVideos");
 
         var admin = app.MapGroup("/api/admin/feed-videos").RequireAuthorization(Permissions.ViewSystemSettings).WithTags("FeedVideos");
@@ -104,6 +132,15 @@ public static class Endpoint
         return IsVideoId(candidate) ? candidate : null;
     }
 
+    /// <summary>Adds or removes one mark, newest first, with no duplicates, keeping at most `cap` (the oldest drop off).</summary>
+    public static List<Mark> SetMark(List<Mark> marks, string id, bool on, string now, int cap)
+    {
+        var rest = marks.Where(m => m.id != id).ToList();
+        if (!on) return rest;
+        rest.Insert(0, new Mark(id, now));
+        return rest.Count > cap ? rest.Take(cap).ToList() : rest;
+    }
+
     public static string? CleanTheme(string? theme)
     {
         var t = (theme ?? "").Trim().ToLowerInvariant();
@@ -146,6 +183,14 @@ public static class Endpoint
         }
     }
 
+    private static string? UserId(HttpContext ctx) => ctx.User.FindFirst("sub")?.Value is { Length: > 0 } s ? s : null;
+
+    private static async Task<VideoState> LoadStateAsync(CosmosService cosmos, string userId, CancellationToken ct)
+    {
+        try { return (await cosmos.GetContainer("planning").ReadItemAsync<VideoState>(StateDocId, new PartitionKey(userId), cancellationToken: ct)).Resource; }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return new VideoState(StateDocId, userId, StateDocId, [], [], DateTimeOffset.UtcNow.ToString("o")); }
+    }
+
     private static async Task<FeedVideo?> GetAsync(CosmosService cosmos, string id, CancellationToken ct)
     {
         try { return (await cosmos.GetContainer(ContainerName).ReadItemAsync<FeedVideo>(id, new PartitionKey(Partition), cancellationToken: ct)).Resource; }
@@ -165,6 +210,10 @@ public static class Endpoint
 
     public record FeedVideo(string id, string pk, string title, string channel, string channelUrl, string thumbnail, string theme, string status, string addedAt, string addedBy);
     public record VideoReply(string id, string title, string channel, string channelUrl, string thumbnail, string theme, string status, string addedAt);
+    public record Mark(string id, string at);
+    public record VideoState(string id, string userId, string type, List<Mark> saved, List<Mark> liked, string updatedAt);
+    public record MarksReply(List<string> saved, List<string> liked);
+    public record MarkRequest(bool On);
     public record AddRequest(string Url, string Theme);
     public record PatchRequest(string? Status, string? Theme);
 }
