@@ -21,13 +21,15 @@ function hiddenToday(): boolean {
   try { return localStorage.getItem(HIDE_KEY) === localDate(); } catch { return false; }
 }
 
-export function QuestionOfTheDayCard({ hideWhenDone = false, onOpenFeed, spaced = false }: {
+export function QuestionOfTheDayCard({ hideWhenDone = false, onOpenFeed, spaced = false, onData }: {
   /** The Dashboard version: once answered and hidden, show nothing at all. */
   hideWhenDone?: boolean;
   /** When given, the footer carries a "More in your Feed" link (the Dashboard uses it). */
   onOpenFeed?: () => void;
   /** Leave a gap under the card, for stacking on the Dashboard. */
   spaced?: boolean;
+  /** Told whenever today's question (or its answer) loads, so the Feed's side panels can show the streak and topic without asking again. */
+  onData?: (q: QuestionOfTheDay) => void;
 }) {
   const [hidden, setHidden] = useState(hiddenToday);
   const [q, setQ] = useState<QuestionOfTheDay | null>(null);
@@ -43,6 +45,7 @@ export function QuestionOfTheDayCard({ hideWhenDone = false, onOpenFeed, spaced 
     catch (e) { setProblem((e as Error).message || 'Today\'s question did not load.'); }
   }, []);
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (q) onData?.(q); }, [q, onData]);
 
   async function pick(choice: number) {
     if (!q || q.answered || busy) return;
@@ -112,9 +115,9 @@ export function QuestionOfTheDayCard({ hideWhenDone = false, onOpenFeed, spaced 
     if (hideWhenDone) return null;
     return (
       <div style={{ ...shell, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '12px 20px' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--text-2, var(--text))' }}>
-          <Lightbulb size={16} color={GREEN} /> <strong style={{ color: GREEN }}>Question of the Day</strong> done
-          {q.streak > 0 && <span style={{ color: 'var(--text-3)' }}>· <Flame size={14} color="#F59E0B" style={{ verticalAlign: '-2px' }} /> {daysText(q.streak)} in a row</span>}
+        <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 8px', fontSize: 13.5, color: 'var(--text-2, var(--text))' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><Lightbulb size={16} color={GREEN} /><strong style={{ color: GREEN }}>Question of the Day</strong><span>done</span></span>
+          {q.streak > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', color: 'var(--text-3)' }}><Flame size={14} color="#F59E0B" />{daysText(q.streak)} in a row</span>}
         </span>
         <button type="button" onClick={showAgain} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}>Show again</button>
       </div>

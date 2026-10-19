@@ -976,7 +976,7 @@ export default function CandidateDashboard() {
         {activeNav === "Demo"           && <DemoPanel />}
         {activeNav === "Settings"       && <SettingsPage />}
         {activeNav === "My Routines"    && <RoutinesAndSystemsPage />}
-        {activeNav === "Feed"           && <WorkFeedPage />}
+        {activeNav === "Feed"           && <WorkFeedPage onNavigate={navTo} />}
 
         {!["My Career Coach", "Learn", "Careers Explorer", "Job Interviews", "Certifications & Exams", "CV Analysis", "Question Bank", "My Talks", "Learn Alerts", "Interview Preps", "Interview Gifts", "My Profile", "Jobs", "Messages", "Demo", "Help", "Settings", "My Routines", "Feed"].includes(activeNav) && <>
 
