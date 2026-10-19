@@ -77,6 +77,9 @@
 
   function decorate(meta) {
     var m = { src: touch.src, dev: device };
+    // The medium and campaign travel on every event (2026-10-19), so any row in the Activity Log shows the tag, not just the first page view.
+    if (touch.med) m.med = touch.med;
+    if (touch.camp) m.camp = touch.camp;
     if (meta) for (var k in meta) if (Object.prototype.hasOwnProperty.call(meta, k)) m[k] = meta[k];
     return m;
   }

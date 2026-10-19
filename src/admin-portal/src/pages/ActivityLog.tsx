@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { eventTag, tagLabel, tagTitle } from '../lib/eventTag'
 import { Search, Loader2, ChevronUp, ChevronDown, RefreshCw, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { eventsApi, type SystemEvent, type ApiError } from '../api/eventsApi'
@@ -278,13 +279,14 @@ export default function ActivityLog() {
             <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 13 }}>
               <colgroup>
                 <col style={{ width: 40 }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '16%' }} />
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '12%' }} />
                 <col style={{ width: '10%' }} />
-                <col style={{ width: '19%' }} />
-                <col style={{ width: '20%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '8%' }} />
+                <col style={{ width: '7%' }} />
                 <col style={{ width: '10%' }} />
-                <col style={{ width: '11%' }} />
+                <col style={{ width: '10%' }} />
                 <col style={{ width: '8%' }} />
               </colgroup>
               <thead>
@@ -300,6 +302,7 @@ export default function ActivityLog() {
                   <SortableHeader label="Signed in as" sortKeyName="email" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Event" sortKeyName="eventType" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Page" sortKeyName="page" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
+                  <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Tag</th>
                   <SortableHeader label="Portal" sortKeyName="portal" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <SortableHeader label="Location" sortKeyName="country" sortKey={sortKey} sortDir={sortDir} onToggle={toggleSort} />
                   <th style={{ textAlign: 'left', padding: '10px 16px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)' }}>Device</th>
@@ -333,6 +336,7 @@ export default function ActivityLog() {
                     >
                       {e.page ?? '—'}
                     </td>
+                    <td title={tagTitle(eventTag(e.metadata))} style={{ padding: '12px 16px', color: eventTag(e.metadata)?.campaign ? 'var(--green, #34D399)' : 'var(--text-3)', fontWeight: eventTag(e.metadata)?.campaign ? 700 : 400, overflowWrap: 'anywhere', cursor: 'help' }}>{tagLabel(eventTag(e.metadata))}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', textTransform: 'capitalize', overflowWrap: 'anywhere' }}>{e.portal ?? '—'}</td>
                     <td style={{ padding: '12px 16px', color: 'var(--text-3)', overflowWrap: 'anywhere' }}>
                       {describeCityAndCountry(e)}
@@ -420,6 +424,7 @@ function EventDetailModal({ event, onClose, onDelete }: { event: SystemEvent; on
         <DetailRow label="Role" value={event.role ?? '—'} />
         <DetailRow label="Portal" value={event.portal ?? '—'} />
         <DetailRow label="Page" value={event.page ?? '—'} mono />
+        <DetailRow label="Campaign tag" value={tagTitle(eventTag(event.metadata))} />
         <DetailRow label="Country" value={describeLocation(event)} />
         <DetailRow label="City guess" value={<span style={{ color: 'var(--text-3)' }}>{describeCityGuess(event)}</span>} />
         <DetailRow label="IP address" value={event.ipAddress ?? '—'} mono />
