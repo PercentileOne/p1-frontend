@@ -8,6 +8,7 @@ import { useVideoMarks } from '../hooks/useVideoMarks';
 import { useShareVideo } from '../hooks/useShareVideo';
 import { VideoGrid } from '../components/VideoGrid';
 import { VideoPlayer } from '../components/VideoPlayer';
+import { ThemeChips } from '../components/ThemeChips';
 
 // The public Watch page (Francis, 2026-10-18): the feed's videos with no sign-in, for as long as an admin leaves the public switch on, and the page a shared video link lands on.
 // A link like /watch?v=VIDEOID opens straight onto that video, playing. Save and Like need an account, so anyone who is not signed in is invited to make one; Share works for everyone.
@@ -23,6 +24,7 @@ export default function PublicWatchPage() {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [playing, setPlaying] = useState<FeedVideo | null>(null);
   const [hint, setHint] = useState(false);
+  const [theme, setTheme] = useState<string | null>(null);
   const { marks, toggle } = useVideoMarks(signedIn);
   const { notice, share } = useShareVideo();
 
@@ -80,7 +82,12 @@ export default function PublicWatchPage() {
           </div>
         )}
         {state.kind === 'on' && state.videos.length === 0 && <div style={{ color: 'var(--text-3, #8b98a8)' }}>No videos yet. Check back soon.</div>}
-        {state.kind === 'on' && state.videos.length > 0 && <VideoGrid videos={state.videos} onPlay={play} />}
+        {state.kind === 'on' && state.videos.length > 0 && (
+          <>
+            <div style={{ marginBottom: 14 }}><ThemeChips videos={state.videos} value={theme} onChange={setTheme} /></div>
+            <VideoGrid videos={theme ? state.videos.filter(v => v.theme === theme) : state.videos} onPlay={play} />
+          </>
+        )}
 
         {state.kind === 'on' && (
           <section aria-label="Try an interview" style={{ marginTop: 36, padding: '22px 22px', borderRadius: 16, border: '1px solid rgba(52,211,153,0.35)', background: 'rgba(52,211,153,0.06)' }}>

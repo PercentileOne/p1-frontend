@@ -33,6 +33,7 @@ import HelpCentre from "./HelpCentre";
 import { GettingStartedCard } from "../components/GettingStartedCard";
 import { RoutineTodayCard } from "../components/RoutineTodayCard";
 import { NextInterviewCard } from "../components/NextInterviewCard";
+import { QuestionOfTheDayCard } from "../components/QuestionOfTheDayCard";
 import { nextInterviewApi, inNextWeek } from "../api/nextInterviewApi";
 import type { NextInterview, NextInterviewInput } from "../api/nextInterviewApi";
 import { localDate } from "../api/routinesApi";
@@ -982,6 +983,9 @@ export default function CandidateDashboard() {
         <RoutineTodayCard onOpen={() => navTo("My Routines")} />
 
         <NextInterviewCard items={nextInterviews ?? []} loaded={nextInterviews !== null} onAdd={addNextInterview} onRemove={removeNextInterview} />
+
+        {/* From your feed (Francis, 2026-10-19): today's Question of the Day, with a way into the Feed. Once answered it can be hidden until tomorrow. */}
+        <QuestionOfTheDayCard hideWhenDone spaced onOpenFeed={() => navTo("Feed")} />
 
         <GettingStartedCard token={authToken} onNavigate={navTo} />
 

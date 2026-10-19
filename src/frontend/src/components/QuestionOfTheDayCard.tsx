@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Flame, Lightbulb, Pencil } from 'lucide-react';
+import { ArrowRight, Flame, Lightbulb, Pencil, X } from 'lucide-react';
 import { questionOfTheDayApi, daysText } from '../api/questionOfTheDayApi';
 import type { QuestionOfTheDay } from '../api/questionOfTheDayApi';
+import { localDate } from '../api/routinesApi';
 
 // The feed's first card (Francis, 2026-10-18): one question a day about the person's own career, tap an answer, see the right one, keep a streak.
 // The questions are written by TheInterviewChair and the card says so. A wrong answer still keeps the daily streak going: the habit is turning up.
+// Once answered, right or wrong, the card can be tucked away until tomorrow (Francis, 2026-10-19). On the Feed it folds to one line with a "Show again"; on the Dashboard (hideWhenDone) it goes entirely.
+// Only an answered card can be hidden, and the choice is remembered for the day on this device only.
 
 const GREEN = '#34D399';
 const RED = '#F87171';
@@ -13,7 +16,20 @@ const field: React.CSSProperties = {
   color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
 };
 
-export function QuestionOfTheDayCard() {
+const HIDE_KEY = 'tic_qotd_hidden';
+function hiddenToday(): boolean {
+  try { return localStorage.getItem(HIDE_KEY) === localDate(); } catch { return false; }
+}
+
+export function QuestionOfTheDayCard({ hideWhenDone = false, onOpenFeed, spaced = false }: {
+  /** The Dashboard version: once answered and hidden, show nothing at all. */
+  hideWhenDone?: boolean;
+  /** When given, the footer carries a "More in your Feed" link (the Dashboard uses it). */
+  onOpenFeed?: () => void;
+  /** Leave a gap under the card, for stacking on the Dashboard. */
+  spaced?: boolean;
+}) {
+  const [hidden, setHidden] = useState(hiddenToday);
   const [q, setQ] = useState<QuestionOfTheDay | null>(null);
   const [problem, setProblem] = useState('');
   const [busy, setBusy] = useState(false);
@@ -51,7 +67,10 @@ export function QuestionOfTheDayCard() {
     finally { setBusy(false); }
   }
 
-  const shell: React.CSSProperties = { padding: '18px 20px', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--bg2)', display: 'flex', flexDirection: 'column', gap: 14 };
+  function hide() { try { localStorage.setItem(HIDE_KEY, localDate()); } catch { /* it will just show again */ } setHidden(true); }
+  function showAgain() { try { localStorage.removeItem(HIDE_KEY); } catch { /* fine */ } setHidden(false); }
+
+  const shell: React.CSSProperties = { padding: '18px 20px', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--bg2)', display: 'flex', flexDirection: 'column', gap: 14, marginBottom: spaced ? 20 : 0 };
   const head = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(52,211,153,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: GREEN, flexShrink: 0 }}><Lightbulb size={18} /></div>
@@ -89,6 +108,19 @@ export function QuestionOfTheDayCard() {
     return <div style={shell}>{head}{topicForm}{problem && <div role="alert" style={{ color: RED, fontSize: 13 }}>{problem}</div>}</div>;
   }
 
+  if (q.answered && hidden) {
+    if (hideWhenDone) return null;
+    return (
+      <div style={{ ...shell, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', padding: '12px 20px' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--text-2, var(--text))' }}>
+          <Lightbulb size={16} color={GREEN} /> <strong style={{ color: GREEN }}>Question of the Day</strong> done
+          {q.streak > 0 && <span style={{ color: 'var(--text-3)' }}>· <Flame size={14} color="#F59E0B" style={{ verticalAlign: '-2px' }} /> {daysText(q.streak)} in a row</span>}
+        </span>
+        <button type="button" onClick={showAgain} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}>Show again</button>
+      </div>
+    );
+  }
+
   return (
     <div style={shell}>
       {head}
@@ -113,8 +145,13 @@ export function QuestionOfTheDayCard() {
             })}
           </div>
           {q.answered && (
-            <div style={{ fontSize: 14.5, color: 'var(--text)' }}>
-              {q.isCorrect ? 'Nailed it.' : 'Not this time, and that is how it sticks.'} Back tomorrow for the next one.
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 14.5, color: 'var(--text)' }}>
+                {q.isCorrect ? 'Nailed it.' : 'Not this time, and that is how it sticks.'} Back tomorrow for the next one.
+              </div>
+              <button type="button" onClick={hide} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px', color: 'var(--text-2, var(--text))', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700 }}>
+                <X size={13} /> Hide until tomorrow
+              </button>
             </div>
           )}
           {problem && <div role="alert" style={{ color: RED, fontSize: 13 }}>{problem}</div>}
@@ -127,6 +164,11 @@ export function QuestionOfTheDayCard() {
           {q.streak > 0 ? `${daysText(q.streak)} in a row` : 'Answer today to start a streak'}
           {q.answeredTotal > 0 ? ` · ${q.correctTotal} of ${q.answeredTotal} right` : ''}
         </span>
+        {onOpenFeed && !editing && (
+          <button type="button" onClick={onOpenFeed} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', color: GREEN, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, padding: 0 }}>
+            More in your Feed <ArrowRight size={13} />
+          </button>
+        )}
         {!editing && (
           <button type="button" onClick={() => { setEditing(true); setTopic(q.topic ?? ''); setNote(''); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, padding: 0 }}>
             <Pencil size={13} /> Change topic

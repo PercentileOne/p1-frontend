@@ -7,6 +7,7 @@ import { logEvent } from '../api/flowLogger';
 import { useVideoMarks } from '../hooks/useVideoMarks';
 import { useShareVideo } from '../hooks/useShareVideo';
 import { VideoPlayer, roundButton } from './VideoPlayer';
+import { ThemeChips } from './ThemeChips';
 
 // The feed's video strip (Francis, 2026-10-18), after the LinkedIn layout he showed: a heading, then a row of tall phone-shaped cards that scrolls sideways, with the next card
 // peeking in at the edge so people know to swipe. Every video is from an official channel and checked with YouTube when it was added. A card shows YouTube's own thumbnail and credits
@@ -38,6 +39,7 @@ export function VideoStrip() {
   const { marks, problem, toggle, setSharing } = useVideoMarks();
   const { notice, share } = useShareVideo();
   const [view, setView] = useState<View>('all');
+  const [theme, setTheme] = useState<string | null>(null);
   const [hidden, setHidden] = useState(hiddenToday);
   const [playing, setPlaying] = useState<FeedVideo | null>(null);
   const [edges, setEdges] = useState({ left: false, right: false });
@@ -68,11 +70,13 @@ export function VideoStrip() {
   const likedCount = videos.filter(v => marks.liked.includes(v.id)).length;
   const shown = view === 'saved' ? marks.saved.map(id => videos.find(v => v.id === id)).filter((v): v is FeedVideo => !!v)
     : view === 'liked' ? marks.liked.map(id => videos.find(v => v.id === id)).filter((v): v is FeedVideo => !!v)
-    : videos;
+    : theme ? videos.filter(v => v.theme === theme) : videos;
 
   function hide() { try { localStorage.setItem(HIDE_KEY, localDate()); } catch { /* it will just show again */ } setHidden(true); setView('all'); }
   function show(next: View = 'all') { try { localStorage.removeItem(HIDE_KEY); } catch { /* fine */ } setHidden(false); setView(next); }
   function play(v: FeedVideo) { logEvent('feed_video_play', { metadata: { id: v.id, theme: v.theme, channel: v.channel } }); setPlaying(v); }
+  // Choosing a theme starts the row again from its first card.
+  function pickTheme(t: string | null) { setTheme(t); rowRef.current?.scrollTo?.({ left: 0 }); }
   function scrollBy(dir: 1 | -1) { rowRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: 'smooth' }); }
 
   const tab = (id: View, text: string, count?: number) => (
@@ -106,6 +110,8 @@ export function VideoStrip() {
       <div role="tablist" aria-label="Which videos" style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
         {tab('all', 'All')}{tab('saved', 'Saved', savedCount)}{tab('liked', 'Liked', likedCount)}
       </div>
+
+      {view === 'all' && <div style={{ padding: '0 16px 12px' }}><ThemeChips videos={videos} value={theme} onChange={pickTheme} /></div>}
 
       {view === 'liked' && (
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '0 16px 12px', cursor: 'pointer' }}>
