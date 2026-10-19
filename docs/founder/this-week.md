@@ -14,7 +14,7 @@ Kept short on purpose. Three things at the top; everything else waits. Updated b
 
 | What | From | Then |
 |---|---|---|
-| New WhatsApp number switched on | You | I add it to the LinkedIn banners, the WhatsApp cover and the Contact page (it still shows +44-(0)7515-112345) |
+| New WhatsApp number: subscription **paid 19 Oct 2026** (Vodafone Mobile 1GB, £9.00 a month including £1.50 VAT, period 19 Oct to 19 Nov; receipt #2385-0217 from plus447). Waiting for the SIM to be switched on and WhatsApp set up | You | Tell me when it answers; then I add it to the LinkedIn banners and the WhatsApp cover. The Contact page already shows +44-(0)7515-112345 |
 | IPO examination report | UK IPO | Pay the balance (about half of £370) within 28 days |
 | Reply to the direct message about interview coaches | Amney Mounir (sent 10 Oct) | Nothing to do until he replies |
 | Specialist introduction, plus a screenshot of her search | Chinaza (optional) | Add the screenshot to the evidence folder |
