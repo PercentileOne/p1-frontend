@@ -243,3 +243,34 @@ export async function fetchSharedCvAnalysis(shareToken: string): Promise<SharedC
   if (!res.ok) throw new Error(res.status === 404 ? 'This shared analysis link is no longer available.' : `Failed to load (${res.status})`);
   return res.json();
 }
+
+// The CV Analysis tab on a profile (2026-10-19). `visible` is false unless the owner switched it on (or it is your own profile); the server never sends weaknesses for it.
+export interface ProfileCvReply {
+  enabled: boolean;
+  visible: boolean;
+  view: SharedCvView | null;
+  recordId: string | null;
+}
+
+export async function fetchProfileCv(userId: string, authToken: string): Promise<ProfileCvReply> {
+  try {
+    const res = await fetch(`${API_BASE}/api/cv-analysis/profile/${encodeURIComponent(userId)}`, { headers: { Authorization: `Bearer ${authToken}` } });
+    if (!res.ok) return { enabled: false, visible: false, view: null, recordId: null };
+    return await res.json() as ProfileCvReply;
+  } catch { return { enabled: false, visible: false, view: null, recordId: null }; }
+}
+
+/** Switches the profile tab on or off, and chooses which saved analysis it shows (the newest if none is named). Throws the server's own message if it cannot. */
+export async function setProfileCv(on: boolean, authToken: string, recordId?: string): Promise<{ enabled: boolean; recordId: string | null }> {
+  const res = await fetch(`${API_BASE}/api/cv-analysis/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+    body: JSON.stringify({ on, recordId: recordId ?? null }),
+  });
+  if (!res.ok) {
+    let msg = 'That did not save. Try again.';
+    try { const b = await res.json() as { error?: string }; if (b.error) msg = b.error; } catch { /* keep the default */ }
+    throw new Error(msg);
+  }
+  return res.json();
+}

@@ -369,6 +369,7 @@ Explain.Api.Features.Spatius.Endpoint.Map(app);
 Explain.Api.Features.CareerNews.Endpoint.Map(app);
 Explain.Api.Features.CareerCoach.Endpoint.Map(app);
 Explain.Api.Features.CvAnalysis.Endpoint.Map(app);
+Explain.Api.Features.CvAnalysis.ProfileEndpoint.Map(app);
 Explain.Api.Features.LearnTopics.Endpoint.Map(app);
 Explain.Api.Features.RoleActivity.Endpoint.Map(app);
 Explain.Api.Features.SubjectsAdmin.Endpoint.Map(app);

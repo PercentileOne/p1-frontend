@@ -28,6 +28,7 @@ import { profileApi, type Profile, type PublicProfile, type ProfileProject, type
 import { reactionsApi } from "../api/reactionsApi";
 import { followsApi } from "../api/followsApi";
 import { LikedVideosPanel } from "../components/LikedVideosPanel";
+import { ProfileCvPanel } from "../components/ProfileCvPanel";
 import { commentsApi, type ProfileComment } from "../api/commentsApi";
 import { WEEKLY_WINNERS, MONTHLY_WINNERS } from "../lib/awardsData";
 import { STORIES } from "../lib/storiesData";
@@ -36,7 +37,7 @@ import { STORIES } from "../lib/storiesData";
    P1 PROFILE PAGE 2.0
    ══════════════════════════════════════════════════════════════ */
 
-type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests" | "video" | "likedVideos";
+type ProfileTab = "overview" | "story" | "posts" | "achievements" | "walls" | "groups" | "awards" | "interests" | "video" | "likedVideos" | "cvAnalysis";
 
 const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
   { key: "overview",      label: "Overview",      emoji: "🏠" },
@@ -49,6 +50,7 @@ const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
   { key: "interests",     label: "Interests",     emoji: "✨" },
   { key: "video",         label: "Profile Video", emoji: "🎥" },
   { key: "likedVideos",   label: "Liked Videos",  emoji: "❤️" },
+  { key: "cvAnalysis",    label: "CV Analysis",   emoji: "📄" },
 ];
 
 // Hidden until their real backend exists (Francis, 2026-09-22 — see this session's build order:
@@ -1575,7 +1577,7 @@ export default function ProfilePage() {
   const profile = isOwnProfile ? ownProfile : otherProfile;
   const commentsEnabled = isOwnProfile ? (real?.commentsEnabled ?? false) : (publicProfile?.commentsEnabled ?? false);
   const targetUserId = isOwnProfile ? (authUser?.id ?? '') : (routeUserId ?? '');
-  const visibleTabs = (isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests" || t.key === "likedVideos"))
+  const visibleTabs = (isOwnProfile ? TABS : TABS.filter(t => t.key === "overview" || t.key === "interests" || t.key === "likedVideos" || t.key === "cvAnalysis"))
     .filter(t => !HIDDEN_TABS.includes(t.key));
 
   const [tab, setTab] = useState<ProfileTab>("overview");
@@ -1786,6 +1788,13 @@ export default function ProfilePage() {
                     />
                   </SectionCard>
                 </div>
+              )}
+
+              {tab === "cvAnalysis" && (
+                <SectionCard>
+                  <SectionHeading emoji="📄" title="CV Analysis" />
+                  <ProfileCvPanel userId={targetUserId} name={isOwnProfile ? "You" : otherName} isOwn={isOwnProfile} />
+                </SectionCard>
               )}
 
               {tab === "likedVideos" && (

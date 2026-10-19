@@ -4,7 +4,7 @@ import { X, Sparkles, TrendingUp, AlertTriangle, Mic, Flame, Share2, Check } fro
 import { FileUpload } from './FileUpload';
 import { ChairSpinner } from './ChairSpinner';
 import { CvAnalysisVoiceOverlay } from './CvAnalysisVoiceOverlay';
-import { analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
+import { analyzeCv, matchRolesToCareers, saveCvAnalysisHistory, shareCvAnalysisHistory, setProfileCv, type CvAnalysisResult, type CvRoleMatch } from '../api/cvAnalysisApi';
 import { generateHotTopicsWithReasons, type HotTopicWithReason } from '../api/aiScoring';
 import { useAuthStore } from '../auth/authStore';
 
@@ -91,6 +91,9 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
   const [sharing, setSharing] = useState(false);
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [profileShown, setProfileShown] = useState(false);
+  const [profileError, setProfileError] = useState('');
   const [shareCopied, setShareCopied] = useState(false);
   const [shareError, setShareError] = useState('');
 
@@ -142,6 +145,23 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
       setShareError(e instanceof Error ? e.message : 'Failed to create a share link — please try again.');
     } finally {
       setSharing(false);
+    }
+  }
+
+  // "Show on my profile": saves the analysis (with its What's Hot snapshot) if it is not saved yet, then switches the profile's CV Analysis tab on for it. Only the positives are ever shown there.
+  async function handleShowOnProfile() {
+    if (!result || !authToken) return;
+    setProfileBusy(true); setProfileError('');
+    try {
+      const snapshot = hotTopics.length > 0 && hotTopicsRole ? { role: hotTopicsRole, topics: hotTopics.map(t => ({ name: t.name, reason: t.reason })) } : null;
+      const recordId = savedRecordId ?? (await saveCvAnalysisHistory(result, roleMatches, authToken, snapshot)).id;
+      setSavedRecordId(recordId);
+      await setProfileCv(true, authToken, recordId);
+      setProfileShown(true);
+    } catch (e) {
+      setProfileError(e instanceof Error ? e.message : 'That did not save. Try again.');
+    } finally {
+      setProfileBusy(false);
     }
   }
 
@@ -358,6 +378,19 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
                       </div>
                     )}
                     {shareError && <div style={{ fontSize: 11, color: '#EF4444', marginTop: 8 }}>{shareError}</div>}
+                    <button
+                      onClick={handleShowOnProfile}
+                      disabled={profileBusy || profileShown}
+                      style={{
+                        width: '100%', marginTop: 10, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 10,
+                        padding: '11px 16px', fontSize: 12.5, fontWeight: 700, color: ACCENT,
+                        cursor: profileBusy || profileShown ? 'default' : 'pointer', opacity: profileBusy ? 0.6 : 1,
+                      }}
+                    >
+                      {profileShown ? '✓ Showing on your profile (positives only)' : profileBusy ? 'Adding…' : 'Show on my profile'}
+                    </button>
+                    <div style={{ fontSize: 11, color: '#8080b0', marginTop: 6 }}>Shows your skills, the roles that fit and what is hot. Your weaknesses are never shown. You can switch it off any time on your profile.</div>
+                    {profileError && <div role="alert" style={{ fontSize: 11, color: '#EF4444', marginTop: 8 }}>{profileError}</div>}
                   </section>
                 )}
               </div>
