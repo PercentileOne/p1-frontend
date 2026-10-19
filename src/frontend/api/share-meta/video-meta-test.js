@@ -232,6 +232,10 @@ test('a shared CV analysis link gets the person\'s name, top skills and roles, a
   assert.match(res.body, /<title>CV Analysis for Francis Cobbinah — TheInterviewChair\.com<\/title>/);
   assert.match(res.body, /og:description" content="Top skills: C# and .NET development, Software architecture and design and WPF\. Fits 3 roles, including Software Architect\. Get your own free CV analysis at TheInterviewChair\.com\."/);
   assert.ok(res.body.includes('og:url" content="https://candidate.theinterviewchair.com/shared/cv-analysis/BdcingBzRA"'));
+  assert.ok(res.body.includes('og:image" content="https://api.theinterviewchair.com/cv-card/BdcingBzRA.png"'));
+  assert.ok(res.body.includes('twitter:image" content="https://api.theinterviewchair.com/cv-card/BdcingBzRA.png"'));
+  assert.match(res.body, /og:image:width" content="1200"/);
+  assert.match(res.body, /og:image:height" content="630"/);
   assert.match(res.body, /<div id="root"><\/div>/);
 });
 

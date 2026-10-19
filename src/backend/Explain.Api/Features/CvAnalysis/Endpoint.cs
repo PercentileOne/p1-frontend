@@ -224,17 +224,27 @@ public static class Endpoint
         // there's no ownerId to scope by from a bare token).
         app.MapGet("/api/cv-analysis/history/shared/{shareToken}", async (string shareToken, CosmosService cosmos) =>
         {
-            var container = cosmos.GetContainer("cvAnalysisHistory");
-            var query = new QueryDefinition("SELECT * FROM c WHERE c.shareToken = @token AND c.isShared = true")
-                .WithParameter("@token", shareToken);
-            using var feed = container.GetItemQueryIterator<CvAnalysisHistoryRecord>(query);
-            if (feed.HasMoreResults)
+            var record = await FindSharedAsync(cosmos, shareToken);
+            return record is null ? Results.NotFound() : Results.Ok(ToPublicView(record));
+        }).AllowAnonymous();
+
+        // GET /cv-card/{token}.png — the picture shown when a shared CV analysis link is pasted on LinkedIn, WhatsApp or Slack (2026-10-19). Made from the positives-only public view only,
+        // so it can never show a weakness, and only for a candidate's or anonymous share that is still shared (a revoked link, an unknown token or a recruiter's share is a 404).
+        app.MapGet("/cv-card/{file}", async (string file, HttpContext ctx, CosmosService cosmos) =>
+        {
+            var token = ParseCardToken(file);
+            if (token is null) return Results.NotFound();
+            var record = await FindSharedAsync(cosmos, token);
+            if (record is null || !PositivesOnly(record.portal)) return Results.NotFound();
+
+            if (!CardCache.TryGetValue(token, out var png))
             {
-                var page = await feed.ReadNextAsync();
-                var record = page.FirstOrDefault();
-                if (record is not null) return Results.Ok(ToPublicView(record));
+                png = CvCardImage.Build(ToPublicView(record));
+                if (CardCache.Count >= MaxCachedCards) CardCache.Clear();
+                CardCache[token] = png;
             }
-            return Results.NotFound();
+            ctx.Response.Headers.CacheControl = "public, max-age=86400";
+            return Results.File(png, "image/png");
         }).AllowAnonymous();
 
         // POST /api/cv-analysis/public-share — the anonymous marketing-page version (Francis,
@@ -534,6 +544,26 @@ Return JSON:
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
     public const int MaxHotTopics = 8;
+    public const int MaxCachedCards = 200;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte[]> CardCache = new();
+
+    /// <summary>The share token from "{token}.png". Anything that is not a plain 6 to 40 letter-or-digit token, or has no .png, is refused before the database is asked.</summary>
+    public static string? ParseCardToken(string? file)
+    {
+        if (string.IsNullOrEmpty(file) || !file.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) return null;
+        var token = file[..^4];
+        return System.Text.RegularExpressions.Regex.IsMatch(token, "^[A-Za-z0-9]{6,40}$") ? token : null;
+    }
+
+    private static async Task<CvAnalysisHistoryRecord?> FindSharedAsync(CosmosService cosmos, string shareToken)
+    {
+        var container = cosmos.GetContainer("cvAnalysisHistory");
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.shareToken = @token AND c.isShared = true").WithParameter("@token", shareToken);
+        using var feed = container.GetItemQueryIterator<CvAnalysisHistoryRecord>(query);
+        if (!feed.HasMoreResults) return null;
+        var page = await feed.ReadNextAsync();
+        return page.FirstOrDefault();
+    }
 
     /// <summary>Candidate and public shares show only the positives: skills, the roles that fit, and what is hot. A recruiter's share is a hiring-fit assessment for colleagues and keeps everything.</summary>
     public static bool PositivesOnly(string? portal) => portal is "candidate" or "public";

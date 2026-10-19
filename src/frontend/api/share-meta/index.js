@@ -11,6 +11,8 @@ const EXPLAIN_API_URL = process.env.EXPLAIN_API_URL || 'https://api.explain.glob
 const FALLBACK_IMAGE = 'https://www.theinterviewchair.com/social-card.png';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 const CANONICAL_ORIGIN = 'https://candidate.theinterviewchair.com';
+// Where the generated CV card pictures are served from (Features/CvAnalysis, GET /cv-card/{token}.png).
+const CARD_IMAGE_BASE = 'https://api.theinterviewchair.com';
 // Only our own candidate-portal addresses (and localhost for development) may be used to fetch the app shell.
 const KNOWN_HOST = /^(candidate\.(theinterviewchair\.com|explain\.global|interviewme\.global)|localhost(:\d+)?)$/i;
 
@@ -88,7 +90,10 @@ function cvMeta(view, token, origin) {
     title: view.candidateName ? `CV Analysis for ${view.candidateName} — TheInterviewChair.com` : 'A CV Analysis — TheInterviewChair.com',
     description: parts.join(' '),
     url: `${origin}/shared/cv-analysis/${encodeURIComponent(token)}`,
-    image: FALLBACK_IMAGE,
+    // The person's own card: their name, top skills and roles, drawn on the server from the same positives-only view (1200 x 630).
+    image: `${CARD_IMAGE_BASE}/cv-card/${encodeURIComponent(token)}.png`,
+    imageWidth: 1200,
+    imageHeight: 630,
   };
 }
 
