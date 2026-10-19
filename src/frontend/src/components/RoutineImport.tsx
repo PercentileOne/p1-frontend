@@ -10,7 +10,7 @@ import type { ParsedItem } from '../pages/routineListParser';
 
 const GREEN = '#34D399';
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const KIND_LABEL: Record<RoutineKind, string> = { check: 'A tick box', number: 'A number', text: 'A note to write', read: 'Read aloud' };
+const KIND_LABEL: Record<RoutineKind, string> = { check: 'A tick box', number: 'A number', text: 'A note to write', read: 'Read aloud', qotd: 'My Question of the Day (ticks itself)' };
 const field: React.CSSProperties = {
   width: '100%', background: 'var(--bg3, rgba(255,255,255,0.04))', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px',
   color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',

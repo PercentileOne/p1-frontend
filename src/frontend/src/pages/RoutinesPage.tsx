@@ -574,7 +574,7 @@ function ItemRow(p: {
           style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: p.dragging ? 'grabbing' : 'grab', padding: '2px 0', margin: '0 -2px 0 -4px', display: 'flex', touchAction: 'none', flexShrink: 0 }}>
           <GripVertical size={16} />
         </button>
-        {!note && !read && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
+        {!note && !read && <input type="checkbox" checked={!!day.checked[item.id]} onChange={p.onTick} disabled={item.kind === 'qotd'} title={item.kind === 'qotd' ? 'This ticks itself when you answer your Question of the Day' : undefined} aria-label={item.text} style={{ marginTop: 3, width: 17, height: 17, accentColor: GREEN, flexShrink: 0, cursor: 'pointer' }} />}
         <div style={{ flex: 1, minWidth: 0 }}>
           {editing ? (
             <div>
@@ -602,6 +602,9 @@ function ItemRow(p: {
             <div style={{ fontSize: 14.5, color: done ? 'var(--text-3)' : 'var(--text)', textDecoration: done ? 'line-through' : 'none', overflowWrap: 'anywhere' }}>
               {item.text}
               {tags}
+              {item.kind === 'qotd' && (done
+                ? <span style={{ marginLeft: 8, fontSize: 12.5, color: GREEN }}>Answered</span>
+                : <a href="/dashboard?tab=feed" style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: GREEN }}>Answer it →</a>)}
             </div>
           )}
           {!editing && item.kind === 'number' && (
@@ -702,11 +705,12 @@ function AddItem({ sections, onAdd, onCancel }: {
           <input value={newSection} onChange={e => { setNewSection(e.target.value); setProblem(''); }} placeholder="Name the section" aria-label="New section name" maxLength={60}
             style={{ ...field, width: 'auto', minWidth: 160 }} />
         )}
-        <select value={kind} onChange={e => setKind(e.target.value as RoutineKind)} aria-label="Type of item" style={{ ...field, width: 'auto', minWidth: 140 }}>
+        <select value={kind} onChange={e => { const k = e.target.value as RoutineKind; setKind(k); if (k === 'qotd' && !text.trim()) setText('Answer my Question of the Day'); }} aria-label="Type of item" style={{ ...field, width: 'auto', minWidth: 140 }}>
           <option value="check">A tick box</option>
           <option value="number">A number to enter</option>
           <option value="text">A note to write</option>
           <option value="read">Something to read aloud</option>
+          <option value="qotd">My Question of the Day (ticks itself)</option>
         </select>
         {kind !== 'text' && (
           <select value={priority} onChange={e => setPriority(e.target.value as Priority)} aria-label="Priority" style={{ ...field, width: 'auto', minWidth: 140 }}>

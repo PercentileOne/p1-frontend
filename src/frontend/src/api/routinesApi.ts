@@ -3,8 +3,8 @@ import { useAuthStore } from '../auth/authStore';
 // My Routines (2026-10-13). Absolute URL on purpose: this SWA's own Functions runtime would 404 a relative /api/routines (see CLAUDE.md).
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
 
-/** check = tick box, number = tick plus a value, text = a note to write, read = a passage to read aloud with one tick. */
-export type RoutineKind = 'check' | 'number' | 'text' | 'read';
+/** check = tick box, number = tick plus a value, text = a note to write, read = a passage to read aloud with one tick, qotd = ticks itself when today's Question of the Day is answered (2026-10-19). */
+export type RoutineKind = 'check' | 'number' | 'text' | 'read' | 'qotd';
 export type Priority = 'essential' | 'standard' | 'low';
 export interface RoutineRule { weekdays?: number[] | null; lastDayOfMonth?: boolean | null; label?: string | null }
 export interface TemplateItem { id: string; text: string; section: string; kind: RoutineKind; essential: boolean; rule?: RoutineRule | null; priority?: Priority | null }

@@ -60,11 +60,11 @@ public static class Endpoint
             try
             {
                 var r = await cosmos.GetContainer("routines").ReadItemAsync<DayDoc>("day:" + d.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct);
-                return Results.Ok(new SummaryReply(true, Summary(r.Resource)));
+                return Results.Ok(new SummaryReply(true, Summary(await ApplyAutoTicksAsync(cosmos, userId, d, r.Resource, ct, persistIfChanged: false))));
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
             var t = await LoadTemplateAsync(cosmos, userId, ct);
-            return Results.Ok(new SummaryReply(false, Summary(BuildDay(userId, d, t))));
+            return Results.Ok(new SummaryReply(false, Summary(await ApplyAutoTicksAsync(cosmos, userId, d, BuildDay(userId, d, t), ct, persistIfChanged: false))));
         });
 
         group.MapPut("/day/{date}/state", async (string date, StateRequest req, HttpContext ctx, CosmosService cosmos, CancellationToken ct) =>
@@ -77,7 +77,8 @@ public static class Endpoint
             var checkedMap = (req.@checked ?? new()).Where(kv => ids.Contains(kv.Key) && kv.Value).ToDictionary(kv => kv.Key, kv => true);
             var values = (req.values ?? new()).Where(kv => ids.Contains(kv.Key) && !string.IsNullOrWhiteSpace(kv.Value))
                 .ToDictionary(kv => kv.Key, kv => kv.Value.Length > MaxValue ? kv.Value[..MaxValue] : kv.Value);
-            var saved = day with { @checked = checkedMap, values = values, updatedAt = DateTimeOffset.UtcNow.ToString("o") };
+            var saved = WithAutoTicks(day with { @checked = checkedMap, values = values, updatedAt = DateTimeOffset.UtcNow.ToString("o") },
+                HasAutoItems(day) && await QotdAnsweredAsync(cosmos, userId, d, ct));
             await cosmos.GetContainer("routines").UpsertItemAsync(saved, new PartitionKey(userId), cancellationToken: ct);
             return Results.Ok(Summary(saved));
         });
@@ -309,7 +310,10 @@ public static class Endpoint
     public record SectionsRequest(List<SectionEdit>? sections, List<SectionRemoval>? removed);
 
     /// <summary>check = a tick box, number = a tick plus a value, text = a note to write, read = a passage to read aloud with one tick.</summary>
-    public static string NormaliseKind(string? kind) => kind is "number" or "text" or "read" ? kind : "check";
+    public static string NormaliseKind(string? kind) => kind is "number" or "text" or "read" or QotdKind ? kind : "check";
+
+    /// <summary>An item that ticks itself when the person answers their Question of the Day (Francis, 2026-10-19). It cannot be ticked by hand: the tick is the answer.</summary>
+    public const string QotdKind = "qotd";
     public static int TextLimit(string? kind) => kind == "read" ? MaxReadText : MaxText;
 
     /// <summary>essential, standard or low. A missing priority is essential when the old essential flag says so, otherwise standard.</summary>
@@ -558,11 +562,11 @@ public static class Endpoint
         try
         {
             var r = await container.ReadItemAsync<DayDoc>("day:" + date, new PartitionKey(userId), cancellationToken: ct);
-            return r.Resource;
+            return await ApplyAutoTicksAsync(cosmos, userId, d, r.Resource, ct, persistIfChanged: true);
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { }
 
-        var day = BuildDay(userId, d, await LoadTemplateAsync(cosmos, userId, ct));
+        var day = await ApplyAutoTicksAsync(cosmos, userId, d, BuildDay(userId, d, await LoadTemplateAsync(cosmos, userId, ct)), ct, persistIfChanged: false);
         if (persist) await container.UpsertItemAsync(day, new PartitionKey(userId), cancellationToken: ct);
         return day;
     }
@@ -574,6 +578,46 @@ public static class Endpoint
         var items = t.items.Where(i => Applies(i.rule, d))
             .Select(i => new DayItem(i.id, i.text, i.section, i.kind, i.essential, i.rule?.label, "template", PriorityOf(i.essential, i.priority))).ToList();
         return new DayDoc("day:" + date, userId, "day", date, t.sections, items, new(), new(), DateTimeOffset.UtcNow.ToString("o"));
+    }
+
+    // ---- the self-ticking "answer my Question of the Day" item ----
+
+    public static bool HasAutoItems(DayDoc d) => d.items.Any(i => i.kind == QotdKind);
+
+    /// <summary>
+    /// A day where every self-ticking item matches the real answer: ticked once today's Question of the Day has been answered, not ticked until then. A hand tick (or a stale one) never stands.
+    /// Returns the same day object when nothing changes.
+    /// </summary>
+    public static DayDoc WithAutoTicks(DayDoc d, bool qotdAnswered)
+    {
+        var ids = d.items.Where(i => i.kind == QotdKind).Select(i => i.id).ToList();
+        if (ids.Count == 0) return d;
+        var ticks = new Dictionary<string, bool>(d.@checked);
+        foreach (var id in ids) { if (qotdAnswered) ticks[id] = true; else ticks.Remove(id); }
+        var same = ticks.Count == d.@checked.Count && ticks.Keys.All(d.@checked.ContainsKey);
+        return same ? d : d with { @checked = ticks };
+    }
+
+    private record QotdProbe(string id, string? answeredAt);
+
+    /// <summary>Whether the person has answered the Question of the Day for this date (the answer lives in the feed's own document: container "planning", id "qotd:{date}").</summary>
+    private static async Task<bool> QotdAnsweredAsync(CosmosService cosmos, string userId, DateOnly d, CancellationToken ct)
+    {
+        try
+        {
+            var r = await cosmos.GetContainer("planning").ReadItemAsync<QotdProbe>("qotd:" + d.ToString("yyyy-MM-dd"), new PartitionKey(userId), cancellationToken: ct);
+            return r.Resource.answeredAt is not null;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) { return false; }
+    }
+
+    private static async Task<DayDoc> ApplyAutoTicksAsync(CosmosService cosmos, string userId, DateOnly d, DayDoc day, CancellationToken ct, bool persistIfChanged)
+    {
+        if (!HasAutoItems(day)) return day;   // only people who added the item pay for the extra read
+        var updated = WithAutoTicks(day, await QotdAnsweredAsync(cosmos, userId, d, ct));
+        if (persistIfChanged && !ReferenceEquals(updated, day))
+            await cosmos.GetContainer("routines").UpsertItemAsync(updated, new PartitionKey(userId), cancellationToken: ct);
+        return updated;
     }
 
     public static DaySummary Summary(DayDoc d)
