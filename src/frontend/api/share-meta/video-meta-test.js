@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const handler = require('./index.js');
-const { patchMeta, videoIdFrom, videoMeta, originFrom, interviewTokenFrom } = handler.__test;
+const { patchMeta, videoIdFrom, videoMeta, originFrom, interviewTokenFrom, cvTokenFrom, cvMeta } = handler.__test;
 
 const SHELL = `<!doctype html><html><head>
 <title>TheInterviewChair.com — The World's First Interview Broadcast Platform</title>
@@ -187,12 +187,72 @@ test('a /shared/<token> link gets the interview preview through the rewrite', as
   assert.ok(context.res.body.includes('og:url" content="https://candidate.theinterviewchair.com/shared/tok42"'));
 });
 
-test('a longer /shared/... address (another page) gets the plain shell and never asks the API', async () => {
+test('a longer /shared/... address that is not a CV analysis (another page) gets the plain shell and never asks the API', async () => {
   const realFetch = global.fetch;
   const asked = [];
   global.fetch = async (url) => { asked.push(String(url)); return String(url).endsWith('/index.html') ? { ok: true, text: async () => SHELL } : { ok: true, json: async () => ({}) }; };
   const context = { bindingData: { token: 'shared' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
-  try { await handler(context, { headers: { 'x-ms-original-url': 'https://candidate.theinterviewchair.com/shared/cv-analysis/tok42' }, query: {} }); } finally { global.fetch = realFetch; }
+  try { await handler(context, { headers: { 'x-ms-original-url': 'https://candidate.theinterviewchair.com/shared/other/page/tok42' }, query: {} }); } finally { global.fetch = realFetch; }
   assert.equal(asked.length, 1);
   assert.match(context.res.body, /og:title" content="Generic title"/);
+});
+
+// ---- shared CV analysis previews (2026-10-19)
+const CV_VIEW = {
+  candidateName: 'Francis Cobbinah',
+  positivesOnly: true,
+  analysis: { skills: [{ name: 'Azure', level: 6 }, { name: 'C# and .NET development', level: 9 }, { name: 'Software architecture and design', level: 9 }, { name: 'WPF', level: 8 }, { name: 'SQL', level: 8 }] },
+  roleMatches: [{ careerTitle: 'Software Architect' }, { careerTitle: 'Senior Software Engineer' }, { careerTitle: 'Senior .NET Developer' }],
+};
+
+async function runCv({ view = CV_VIEW, path = '/shared/cv-analysis/BdcingBzRA', apiOk = true } = {}) {
+  const realFetch = global.fetch;
+  const asked = [];
+  global.fetch = async (url) => {
+    asked.push(String(url));
+    if (String(url).endsWith('/index.html')) return { ok: true, text: async () => SHELL };
+    return { ok: apiOk, json: async () => view };
+  };
+  const context = { bindingData: { token: 'shared' }, log: Object.assign(() => {}, { error() {}, warn() {} }) };
+  try { await handler(context, { headers: { 'x-ms-original-url': `https://candidate.theinterviewchair.com${path}?utm_source=share` }, query: {} }); } finally { global.fetch = realFetch; }
+  return { res: context.res, asked };
+}
+
+test('cvTokenFrom reads only /shared/cv-analysis/<token>', () => {
+  const at = (path) => ({ headers: { 'x-ms-original-url': `https://candidate.theinterviewchair.com${path}` } });
+  assert.equal(cvTokenFrom(at('/shared/cv-analysis/abc')), 'abc');
+  assert.equal(cvTokenFrom(at('/shared/abc')), null);
+  assert.equal(cvTokenFrom(at('/shared/cv-analysis/abc/extra')), null);
+  assert.equal(cvTokenFrom({ headers: {} }), null);
+});
+
+test('a shared CV analysis link gets the person\'s name, top skills and roles, and the call to action', async () => {
+  const { res, asked } = await runCv();
+  assert.ok(asked.some((u) => u.endsWith('/api/cv-analysis/history/shared/BdcingBzRA')));
+  assert.match(res.body, /<title>CV Analysis for Francis Cobbinah — TheInterviewChair\.com<\/title>/);
+  assert.match(res.body, /og:description" content="Top skills: C# and .NET development, Software architecture and design and WPF\. Fits 3 roles, including Software Architect\. Get your own free CV analysis at TheInterviewChair\.com\."/);
+  assert.ok(res.body.includes('og:url" content="https://candidate.theinterviewchair.com/shared/cv-analysis/BdcingBzRA"'));
+  assert.match(res.body, /<div id="root"><\/div>/);
+});
+
+test('a recruiter\'s shared analysis gets no public preview', async () => {
+  const { res } = await runCv({ view: { ...CV_VIEW, positivesOnly: false } });
+  assert.match(res.body, /og:title" content="Generic title"/);
+});
+
+test('an unknown CV share, or the API being down, gets the plain shell', async () => {
+  const { res } = await runCv({ apiOk: false });
+  assert.match(res.body, /og:title" content="Generic title"/);
+});
+
+test('cvMeta copes with no name, one skill and one role', () => {
+  const m = cvMeta({ candidateName: null, analysis: { skills: [{ name: 'Nursing', level: 8 }] }, roleMatches: [{ careerTitle: 'Ward Manager' }] }, 'tok', 'https://x.test');
+  assert.equal(m.title, 'A CV Analysis — TheInterviewChair.com');
+  assert.match(m.description, /^Top skills: Nursing\. Fits 1 role, including Ward Manager\./);
+});
+
+test('a name with markup or dollar patterns cannot break the tags', async () => {
+  const { res } = await runCv({ view: { ...CV_VIEW, candidateName: "<b>Sam</b> $& O'Neil" } });
+  assert.ok(!res.body.includes('<b>Sam'));
+  assert.ok(res.body.includes('CV Analysis for &lt;b&gt;Sam&lt;/b&gt; $&amp; O&#39;Neil'));
 });

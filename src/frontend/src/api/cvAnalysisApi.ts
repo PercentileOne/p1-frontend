@@ -53,6 +53,24 @@ export interface CvAnalysisHistoryRecord {
   shareToken: string | null;
 }
 
+// A snapshot of "What's hot" for the top role, kept with a saved or shared analysis so a shared page can show it without another AI call.
+export interface SavedHotTopics {
+  role: string;
+  topics: { name: string; reason: string }[];
+}
+
+// What an anonymous visitor with a share link gets (2026-10-19). For a candidate's or anonymous share, `positivesOnly` is true and the server has already removed the weaknesses,
+// inconsistencies, strengths and the spoken script; no ids or owner are sent.
+export interface SharedCvView {
+  candidateName: string | null;
+  createdAt: string;
+  analysis: CvAnalysisResult;
+  roleMatches: SavedRoleMatch[];
+  hotTopics: SavedHotTopics | null;
+  portal: string;
+  positivesOnly: boolean;
+}
+
 export interface CvAnalysisCappedError {
   capped: true;
   message: string;
@@ -193,7 +211,7 @@ function toSavedRoleMatches(roleMatches: CvRoleMatch[]): SavedRoleMatch[] {
 // portal: 'candidate' so the generated link points at candidate.theinterviewchair.com, not the
 // recruiter domain (see Endpoint.cs's CandidatePortalUrl/RecruiterPortalUrl split).
 export async function saveCvAnalysisHistory(
-  result: CvAnalysisResult, roleMatches: CvRoleMatch[], authToken: string,
+  result: CvAnalysisResult, roleMatches: CvRoleMatch[], authToken: string, hotTopics: SavedHotTopics | null = null,
 ): Promise<CvAnalysisHistoryRecord> {
   const res = await fetch(`${API_BASE}/api/cv-analysis/history`, {
     method: 'POST',
@@ -203,6 +221,7 @@ export async function saveCvAnalysisHistory(
       analysis: result,
       roleMatches: toSavedRoleMatches(roleMatches),
       portal: 'candidate',
+      hotTopics,
     }),
   });
   if (!res.ok) throw new Error(`Failed to save (${res.status})`);
@@ -219,7 +238,7 @@ export async function shareCvAnalysisHistory(id: string, authToken: string): Pro
 }
 
 // Public, anonymous — powers the shared-view page. No Authorization header at all.
-export async function fetchSharedCvAnalysis(shareToken: string): Promise<CvAnalysisHistoryRecord> {
+export async function fetchSharedCvAnalysis(shareToken: string): Promise<SharedCvView> {
   const res = await fetch(`${API_BASE}/api/cv-analysis/history/shared/${encodeURIComponent(shareToken)}`);
   if (!res.ok) throw new Error(res.status === 404 ? 'This shared analysis link is no longer available.' : `Failed to load (${res.status})`);
   return res.json();

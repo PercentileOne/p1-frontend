@@ -550,7 +550,8 @@
           candidateName: lastResult.candidateName,
           analysis: lastResult,
           roleMatches: toSavedRoleMatches(lastRoleMatches),
-          portal: 'public'
+          portal: 'public',
+          hotTopics: lastHotTopics.length ? { role: document.getElementById('hot-topics-role').textContent, topics: lastHotTopics } : null
         })
       });
       if (!res.ok) throw new Error('Failed to create share link (' + res.status + ')');

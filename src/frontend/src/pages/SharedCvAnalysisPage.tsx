@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mic, Sparkles, TrendingUp } from 'lucide-react';
+import { Flame, Mic, Sparkles, TrendingUp } from 'lucide-react';
 import { CvAnalysisVoiceOverlay } from '../components/CvAnalysisVoiceOverlay';
-import { fetchSharedCvAnalysis, type CvAnalysisHistoryRecord } from '../api/cvAnalysisApi';
+import { fetchSharedCvAnalysis, type SharedCvView } from '../api/cvAnalysisApi';
+import { logEvent } from '../api/flowLogger';
 
 const ACCENT = '#34D399';
+// The free tool anyone can use without an account. Tagged so the Activity Log shows people who arrive from someone's shared card.
+const OWN_ANALYSIS_URL = 'https://www.theinterviewchair.com/cv-salary.html?utm_source=share&utm_medium=cv-page&utm_campaign=cv-analysis';
 
 function levelColor(level: number) {
   if (level >= 7) return '#34D399';
@@ -22,7 +25,7 @@ function fmtK(n: number) {
 // needing an account. Same shape as SharedInterviewPage.tsx: no nav chrome, fetched by token.
 export default function SharedCvAnalysisPage() {
   const { token } = useParams<{ token: string }>();
-  const [record, setRecord] = useState<CvAnalysisHistoryRecord | null>(null);
+  const [record, setRecord] = useState<SharedCvView | null>(null);
   const [state, setState] = useState<'loading' | 'done' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const [showVoice, setShowVoice] = useState(false);
@@ -30,7 +33,7 @@ export default function SharedCvAnalysisPage() {
   useEffect(() => {
     if (!token) { setState('error'); return; }
     fetchSharedCvAnalysis(token)
-      .then(r => { setRecord(r); setState('done'); })
+      .then(r => { setRecord(r); setState('done'); logEvent('cv_share_view', { metadata: { positivesOnly: r.positivesOnly } }); })
       .catch(e => { setErrorMsg(e instanceof Error ? e.message : 'This shared analysis link is no longer available.'); setState('error'); });
   }, [token]);
 
@@ -70,7 +73,7 @@ export default function SharedCvAnalysisPage() {
           Shared from TheInterviewChair.com — no account needed to view.
         </p>
 
-        <button
+        {analysis.narrativeScript && <button
           onClick={() => setShowVoice(true)}
           style={{
             width: '100%', marginBottom: 24,
@@ -81,7 +84,7 @@ export default function SharedCvAnalysisPage() {
           }}
         >
           <Mic size={15} /> Talk Me Through This CV
-        </button>
+        </button>}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <section>
@@ -127,12 +130,38 @@ export default function SharedCvAnalysisPage() {
             )}
           </section>
 
+          {record.hotTopics && record.hotTopics.topics.length > 0 && (
+            <section aria-label="What's hot">
+              <SectionHeading icon={<Flame size={13} />}>What's Hot for {record.hotTopics.role}</SectionHeading>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {record.hotTopics.topics.map(t => (
+                  <div key={t.name} style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t.name}</div>
+                    {t.reason && <div style={{ fontSize: 12, color: '#8080b0', lineHeight: 1.5, marginTop: 2 }}>{t.reason}</div>}
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: '#8080b0', marginTop: 8 }}>Courses for any gaps here are available on our Learn platform.</div>
+            </section>
+          )}
+
           <NarrativeList title="Strengths" items={analysis.strengths} color="#34D399" />
           <NarrativeList title="Weaknesses" items={analysis.weaknesses} color="#F59E0B" />
           {analysis.inconsistencies.length > 0 && (
             <NarrativeList title="Inconsistencies Worth Addressing" items={analysis.inconsistencies} color="#EF4444" />
           )}
         </div>
+
+        <section aria-label="Get your own CV analysis" style={{ marginTop: 32, padding: '20px 20px', borderRadius: 14, border: '1px solid rgba(52,211,153,0.35)', background: 'rgba(52,211,153,0.06)' }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: '#fff' }}>Get your own free CV analysis</div>
+          <p style={{ margin: '6px 0 14px', fontSize: 13.5, color: '#c0bcd0', lineHeight: 1.55 }}>
+            See the roles you could apply for and what they really pay, with your skills laid out and what is hot in your field. Free, no account needed.
+          </p>
+          <a href={OWN_ANALYSIS_URL} onClick={() => logEvent('cv_share_cta_click')}
+            style={{ display: 'inline-block', background: ACCENT, color: '#04130d', fontWeight: 800, fontSize: 14, borderRadius: 10, padding: '10px 18px', textDecoration: 'none' }}>
+            Analyse my CV free
+          </a>
+        </section>
       </div>
 
       {showVoice && (

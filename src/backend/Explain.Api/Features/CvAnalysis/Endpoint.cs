@@ -37,6 +37,8 @@ public static class Endpoint
     private const string RecruiterPortalUrl = "https://recruiter.interviewme.global";
     private const string CandidatePortalUrl = "https://candidate.theinterviewchair.com";
     private const string MarketingSiteUrl = "https://www.theinterviewchair.com";
+    // Tags every link a person shares from their own analysis, so the Activity Log shows shared CV cards as a source (the same naming as shared videos).
+    private const string ShareTags = "utm_source=share&utm_medium=cv&utm_campaign=cv-analysis";
 
     public static void Map(WebApplication app)
     {
@@ -125,7 +127,8 @@ public static class Endpoint
                 DateTimeOffset.UtcNow.ToString("O"),
                 req.Analysis,
                 req.RoleMatches,
-                portal: req.Portal == "candidate" ? "candidate" : "recruiter");
+                portal: req.Portal == "candidate" ? "candidate" : "recruiter",
+                hotTopics: CleanHotTopics(req.HotTopics));
 
             var container = cosmos.GetContainer("cvAnalysisHistory");
             await container.CreateItemAsync(record, new PartitionKey(ownerId));
@@ -195,7 +198,7 @@ public static class Endpoint
             await container.UpsertItemAsync(updated, new PartitionKey(ownerId));
 
             var portalUrl = record.portal == "candidate" ? CandidatePortalUrl : RecruiterPortalUrl;
-            var shareUrl = $"{portalUrl}/shared/cv-analysis/{shareToken}";
+            var shareUrl = $"{portalUrl}/shared/cv-analysis/{shareToken}" + (record.portal == "candidate" ? "?" + ShareTags : "");
             return Results.Ok(new { shareToken, shareUrl });
         }).RequireAuthorization();
 
@@ -229,7 +232,7 @@ public static class Endpoint
             {
                 var page = await feed.ReadNextAsync();
                 var record = page.FirstOrDefault();
-                if (record is not null) return Results.Ok(record);
+                if (record is not null) return Results.Ok(ToPublicView(record));
             }
             return Results.NotFound();
         }).AllowAnonymous();
@@ -249,12 +252,14 @@ public static class Endpoint
             var shareToken = GenerateShareToken();
             var record = new CvAnalysisHistoryRecord(
                 Guid.NewGuid().ToString(), ownerId, req.CandidateName, DateTimeOffset.UtcNow.ToString("O"),
-                req.Analysis, req.RoleMatches, portal: "public", isShared: true, shareToken: shareToken);
+                req.Analysis, req.RoleMatches, portal: "public", isShared: true, shareToken: shareToken, hotTopics: CleanHotTopics(req.HotTopics));
 
             var container = cosmos.GetContainer("cvAnalysisHistory");
             await container.CreateItemAsync(record, new PartitionKey(ownerId));
 
-            var shareUrl = $"{MarketingSiteUrl}/shared-cv-analysis.html?token={shareToken}";
+            // The candidate portal page, not the marketing site's static one: only the portal can serve a link preview made from this person's own analysis
+            // (the static page has one fixed description for every link). Older links to the static page keep working.
+            var shareUrl = $"{CandidatePortalUrl}/shared/cv-analysis/{shareToken}?{ShareTags}";
             return Results.Ok(new { shareToken, shareUrl });
         }).AllowAnonymous();
 
@@ -527,6 +532,38 @@ Return JSON:
     }
 
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
+
+    public const int MaxHotTopics = 8;
+
+    /// <summary>Candidate and public shares show only the positives: skills, the roles that fit, and what is hot. A recruiter's share is a hiring-fit assessment for colleagues and keeps everything.</summary>
+    public static bool PositivesOnly(string? portal) => portal is "candidate" or "public";
+
+    /// <summary>
+    /// What an anonymous visitor with a share link is allowed to see. For a candidate or public share the weaknesses, inconsistencies, strengths and the spoken script are removed here, on the server,
+    /// so they never leave it (the spoken script is built from the weaknesses too, so it goes as well). The internal id, owner id and token are never sent either.
+    /// </summary>
+    public static SharedCvView ToPublicView(CvAnalysisHistoryRecord r)
+    {
+        var positives = PositivesOnly(r.portal);
+        var analysis = positives
+            ? r.analysis with { Strengths = [], Weaknesses = [], Inconsistencies = [], NarrativeScript = "" }
+            : r.analysis;
+        return new SharedCvView(r.candidateName, r.createdAt, analysis, r.roleMatches, r.hotTopics, r.portal, positives);
+    }
+
+    /// <summary>Keeps the "what's hot" snapshot small and plain: at most 8 topics, each with a name and a reason, and nothing at all if there is no usable role.</summary>
+    public static SavedHotTopics? CleanHotTopics(SavedHotTopics? hot)
+    {
+        if (hot is null || string.IsNullOrWhiteSpace(hot.role)) return null;
+        var topics = (hot.topics ?? [])
+            .Where(t => !string.IsNullOrWhiteSpace(t.Name))
+            .Take(MaxHotTopics)
+            .Select(t => new HotTopicItem(Cut(t.Name.Trim(), 80), Cut((t.Reason ?? "").Trim(), 300)))
+            .ToList();
+        return topics.Count == 0 ? null : new SavedHotTopics(Cut(hot.role.Trim(), 80), topics);
+    }
+
+    private static string Cut(string s, int max) => s.Length > max ? s[..max] : s;
 }
 
 public record Request(string CvText, string? Audience);
@@ -569,7 +606,23 @@ public record SaveHistoryRequest(
     [property: JsonPropertyName("roleMatches")] List<SavedRoleMatch> RoleMatches,
     // "recruiter" (default) or "candidate" — which portal this was saved from, so a share link
     // points at the right live domain. See Endpoint.cs's CandidatePortalUrl/RecruiterPortalUrl.
-    [property: JsonPropertyName("portal")] string? Portal = null);
+    [property: JsonPropertyName("portal")] string? Portal = null,
+    // A snapshot of "What's hot" for the top role, taken from the results screen when the analysis is saved or shared, so a shared page can show it without another AI call.
+    [property: JsonPropertyName("hotTopics")] SavedHotTopics? HotTopics = null);
+
+public record SavedHotTopics(
+    [property: JsonPropertyName("role")] string role,
+    [property: JsonPropertyName("topics")] List<HotTopicItem> topics);
+
+/// <summary>The public, no-login view of a shared analysis. No ids, no owner, no token. `positivesOnly` tells the page the person chose to show only the positives.</summary>
+public record SharedCvView(
+    [property: JsonPropertyName("candidateName")] string? candidateName,
+    [property: JsonPropertyName("createdAt")] string createdAt,
+    [property: JsonPropertyName("analysis")] AnalysisResult analysis,
+    [property: JsonPropertyName("roleMatches")] List<SavedRoleMatch> roleMatches,
+    [property: JsonPropertyName("hotTopics")] SavedHotTopics? hotTopics,
+    [property: JsonPropertyName("portal")] string portal,
+    [property: JsonPropertyName("positivesOnly")] bool positivesOnly);
 
 public record CvAnalysisHistoryRecord(
     string id,
@@ -580,4 +633,5 @@ public record CvAnalysisHistoryRecord(
     List<SavedRoleMatch> roleMatches,
     string portal = "recruiter",
     bool isShared = false,
-    string? shareToken = null);
+    string? shareToken = null,
+    SavedHotTopics? hotTopics = null);

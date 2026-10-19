@@ -1,5 +1,5 @@
 // Azure Function — GET /api/share-meta/{token}, reached via staticwebapp.config.json rewrites:
-//   /shared/*        → /api/share-meta/shared   a shared interview (the token is read from the original address)
+//   /shared/*        → /api/share-meta/shared   a shared interview, or a shared CV analysis (/shared/cv-analysis/<token>); the token is read from the original address
 //   /watch           → /api/share-meta/watch     a shared feed video (/watch?v=VIDEOID), added 2026-10-18
 // Either way it serves the SAME built index.html (so the real SPA still boots identically for humans) with just the <title>/og:*/twitter:* tags patched to describe this specific
 // interview or video — otherwise every shared link on LinkedIn, Slack, WhatsApp etc. shows the same generic homepage preview, since those crawlers never run JavaScript and only
@@ -67,6 +67,31 @@ function interviewTokenFrom(req) {
   } catch { return null; }
 }
 
+// The token of a shared CV analysis, only when the address is exactly /shared/cv-analysis/<token>.
+function cvTokenFrom(req) {
+  try {
+    const m = new URL(req.headers['x-ms-original-url']).pathname.match(/^\/shared\/cv-analysis\/([^/]+)\/?$/);
+    return m ? decodeURIComponent(m[1]) : null;
+  } catch { return null; }
+}
+
+// What a shared CV analysis says when its link is pasted somewhere: the person's name, their top skills and the roles that fit, from the same positives-only view the page shows.
+// Weaknesses are never in it, because the server never sends them for a candidate's or anonymous share.
+function cvMeta(view, token, origin) {
+  const skills = [...(view.analysis?.skills || [])].sort((a, b) => b.level - a.level).slice(0, 3).map((s) => s.name);
+  const roles = view.roleMatches || [];
+  const parts = [];
+  if (skills.length) parts.push(`Top skills: ${skills.length > 1 ? skills.slice(0, -1).join(', ') + ' and ' + skills[skills.length - 1] : skills[0]}.`);
+  if (roles.length) parts.push(`Fits ${roles.length} role${roles.length === 1 ? '' : 's'}, including ${roles[0].careerTitle}.`);
+  parts.push('Get your own free CV analysis at TheInterviewChair.com.');
+  return {
+    title: view.candidateName ? `CV Analysis for ${view.candidateName} — TheInterviewChair.com` : 'A CV Analysis — TheInterviewChair.com',
+    description: parts.join(' '),
+    url: `${origin}/shared/cv-analysis/${encodeURIComponent(token)}`,
+    image: FALLBACK_IMAGE,
+  };
+}
+
 // The video id from /watch?v=…, read from the query or, if the rewrite dropped it, from the original address Static Web Apps passes along. Anything that is not an
 // 11-character YouTube id is ignored, so nothing else can reach the page's tags.
 function videoIdFrom(req) {
@@ -103,6 +128,15 @@ async function patchForInterview(html, token, origin) {
     url: `${origin}/shared/${encodeURIComponent(token)}`,
     image: FALLBACK_IMAGE,
   });
+}
+
+async function patchForCvAnalysis(html, token, origin) {
+  const dataRes = await fetch(`${EXPLAIN_API_URL}/api/cv-analysis/history/shared/${encodeURIComponent(token)}`);
+  if (!dataRes.ok) return html;
+  const view = await dataRes.json();
+  // A recruiter's share is a hiring assessment of a named candidate, passed between colleagues. It gets no public preview.
+  if (!view || view.positivesOnly !== true) return html;
+  return patchMeta(html, cvMeta(view, token, origin));
 }
 
 async function patchForVideo(html, req, origin) {
@@ -142,7 +176,12 @@ module.exports = async function (context, req) {
 
   try {
     if (token === 'watch') html = await patchForVideo(html, req, origin);
-    else if (token === 'shared') { const t = interviewTokenFrom(req); if (t) html = await patchForInterview(html, t, origin); }
+    else if (token === 'shared') {
+      const cv = cvTokenFrom(req);
+      const t = cv ? null : interviewTokenFrom(req);
+      if (cv) html = await patchForCvAnalysis(html, cv, origin);
+      else if (t) html = await patchForInterview(html, t, origin);
+    }
     else html = await patchForInterview(html, token, origin);
   } catch (err) {
     // API unreachable — fall through and serve the generic shell.
@@ -157,4 +196,4 @@ module.exports = async function (context, req) {
 };
 
 // Exposed for the tests in video-meta-test.js; not used by Azure.
-module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml, originFrom, interviewTokenFrom };
+module.exports.__test = { patchMeta, videoIdFrom, videoMeta, replaceMetaContent, escapeHtml, originFrom, interviewTokenFrom, cvTokenFrom, cvMeta };

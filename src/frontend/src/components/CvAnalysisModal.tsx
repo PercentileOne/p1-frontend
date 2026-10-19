@@ -133,7 +133,8 @@ export function CvAnalysisModal({ onClose, audience = 'self', onStudyTopic }: Pr
     setSharing(true);
     setShareError('');
     try {
-      const recordId = savedRecordId ?? (await saveCvAnalysisHistory(result, roleMatches, authToken)).id;
+      const snapshot = hotTopics.length > 0 && hotTopicsRole ? { role: hotTopicsRole, topics: hotTopics.map(t => ({ name: t.name, reason: t.reason })) } : null;
+      const recordId = savedRecordId ?? (await saveCvAnalysisHistory(result, roleMatches, authToken, snapshot)).id;
       setSavedRecordId(recordId);
       const { shareUrl: url } = await shareCvAnalysisHistory(recordId, authToken);
       setShareUrl(url);
