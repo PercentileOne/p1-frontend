@@ -46,13 +46,26 @@ describe('BookStrip', () => {
     expect(screen.getByText(`Why ${A}`)).toBeTruthy();
   });
 
-  it('says the note is ours and links nowhere but Open Library', async () => {
+  it('says the note is ours and discloses the Amazon affiliate links', async () => {
     fetchBooks.mockResolvedValue([book(A)]);
     render(<BookStrip />);
     await screen.findByText('Worth a read');
     expect(screen.getByText(/The note under each one is ours/)).toBeTruthy();
-    const hosts = screen.getAllByRole('link').map(a => new URL(a.getAttribute('href')!).host);
-    expect(hosts.every(h => h === 'openlibrary.org')).toBe(true);
+    expect(screen.getByText(/As an Amazon Associate we earn from qualifying purchases/)).toBeTruthy();
+  });
+
+  it('links each book to Amazon UK with the Associates tag, marked sponsored, and only Open Library and Amazon UK are linked', async () => {
+    fetchBooks.mockResolvedValue([book('9781449373320'), book('9798664653403')]);
+    render(<BookStrip />);
+    await screen.findByText('Worth a read');
+    const amazon = screen.getAllByText('Amazon UK') as HTMLAnchorElement[];
+    expect(amazon.map(a => a.getAttribute('href'))).toEqual([
+      'https://www.amazon.co.uk/dp/1449373321?tag=theinterviewc-21',
+      'https://www.amazon.co.uk/s?k=9798664653403&tag=theinterviewc-21',
+    ]);
+    amazon.forEach(a => { expect(a.getAttribute('rel')).toContain('sponsored'); expect(a.getAttribute('target')).toBe('_blank'); });
+    const hosts = new Set(screen.getAllByRole('link').map(a => new URL(a.getAttribute('href')!).host));
+    expect([...hosts].sort()).toEqual(['openlibrary.org', 'www.amazon.co.uk']);
   });
 
   it('filters by theme and starts the row again', async () => {

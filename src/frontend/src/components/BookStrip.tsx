@@ -7,10 +7,11 @@ import { logEvent } from '../api/flowLogger';
 import { useBookMarks } from '../hooks/useBookMarks';
 import { roundButton } from './VideoPlayer';
 import { ThemeChips } from './ThemeChips';
+import { amazonUkUrl, AMAZON_DISCLOSURE } from '../utils/amazonLink';
 
 // The feed's books strip (Francis, 2026-10-19), styled like the video strip: a heading, then a row of tall cards (book-cover shaped) that scrolls sideways with the next card peeking in.
 // Every book was checked against Open Library when it was added. A card shows Open Library's own cover and links to the book's own page there, where it can often be borrowed free.
-// The one-line reason under each card is ours, and the strip says so. No shop links and no affiliate code. The bookmark keeps a book on a private "Reading list" (Want to read).
+// The one-line reason under each card is ours, and the strip says so. Each card also has an Amazon UK link carrying Francis's Associates tag (rel="sponsored"), and the strip carries Amazon's required disclosure. The bookmark keeps a book on a private "Reading list" (Want to read).
 // The app hides scrollbars everywhere, so the row has arrow buttons for a mouse. The X folds the strip down to one line until tomorrow; the Reading list stays one tap away.
 
 const HIDE_KEY = 'tic_book_strip_hidden';
@@ -85,7 +86,7 @@ export function BookStrip() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '0 16px 10px' }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>Worth a read</div>
-          <div style={{ fontSize: 12.5, color: 'var(--text-3)' }}>Books we think are worth your time. The note under each one is ours; the cover and page are Open Library's, where you can often borrow it free.</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-3)' }}>Books we think are worth your time. The note under each one is ours; the cover and page are Open Library's, where you can often borrow it free. The Amazon UK links are affiliate links.</div>
         </div>
         <button type="button" onClick={hide} aria-label="Hide books until tomorrow" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 6, display: 'flex' }}><X size={18} /></button>
       </div>
@@ -95,6 +96,8 @@ export function BookStrip() {
       </div>
 
       {view === 'all' && <div style={{ padding: '0 16px 12px' }}><ThemeChips videos={books} value={theme} onChange={pickTheme} /></div>}
+
+      <div style={{ padding: '0 16px 10px', fontSize: 11.5, color: 'var(--text-3)' }}>{AMAZON_DISCLOSURE}</div>
 
       {problem && <div role="alert" style={{ padding: '0 16px 8px', color: '#F87171', fontSize: 13 }}>{problem}</div>}
 
@@ -121,6 +124,7 @@ export function BookStrip() {
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text)', lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{b.title}</span>
                   {b.authors && <span style={{ fontSize: 11.5, fontWeight: 700, color: GREEN, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.authors}</span>}
                 </span>
+                <a href={amazonUkUrl(b.id)} target="_blank" rel="sponsored noopener noreferrer" onClick={() => logEvent('feed_book_amazon', { metadata: { id: b.id, theme: b.theme } })} aria-label={`Buy ${b.title} on Amazon UK (affiliate link, opens in a new tab)`} style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-3)', textDecoration: 'underline' }}>Amazon UK</a>
                 {b.why && <span style={{ fontSize: 12, lineHeight: 1.35, color: 'var(--text-3)', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={b.why}>{b.why}</span>}
               </li>
             );

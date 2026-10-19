@@ -10,7 +10,7 @@
 
 The format is `ISBN | theme | why it is here | authors`. The authors part is there because Open Library's author lists can be messy (repeated names, translators). Edit any "why" line before pasting if you want it in your own voice. The strip tells people the note is ours.
 
-No shop links and no affiliate code: a card shows Open Library's cover and opens the book's page on Open Library, where it can often be borrowed free.
+A card shows Open Library's cover and opens the book's page on Open Library, where it can often be borrowed free. Each card also has an "Amazon UK" link that carries the Associates tag `theinterviewc-21`, and the strip shows Amazon's required line ("As an Amazon Associate we earn from qualifying purchases"). The Associates account is provisional: Amazon reviews the site after three qualified sales, and closes the account if there are none within 180 days of sign-up.
 
 ```
 9780984782857 | interviews | A widely used guide to coding interview questions and how interviewers judge answers, for software roles. | Gayle Laakmann McDowell
