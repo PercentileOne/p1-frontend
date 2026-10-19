@@ -1,12 +1,11 @@
-import type { FeedVideo } from '../api/feedVideosApi';
 import { themeLabel, themesIn } from '../utils/videoThemes';
 
-// A row of theme filters for the video lists (Pitching, Interview tips, Routines…), with how many videos each has. Shows nothing when there is only one theme, since there is nothing to choose.
-// `value` is the chosen theme, or null for all of them.
+// A row of theme filters for the video and book lists (Pitching, Interview tips, Routines…), with how many each has. Shows nothing when there is only one theme, since there is nothing to choose.
+// `value` is the chosen theme, or null for all of them. `videos` is any list of items that have a theme (the books strip passes its books).
 
 const GREEN = '#34D399';
 
-export function ThemeChips({ videos, value, onChange }: { videos: FeedVideo[]; value: string | null; onChange: (theme: string | null) => void }) {
+export function ThemeChips({ videos, value, onChange }: { videos: { theme: string }[]; value: string | null; onChange: (theme: string | null) => void }) {
   const themes = themesIn(videos);
   if (themes.length < 2) return null;
 

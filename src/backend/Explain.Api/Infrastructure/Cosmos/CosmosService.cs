@@ -170,6 +170,10 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("feedVideos", "/pk"));
 
+        // The feed's books strip (2026-10-19): a short list of real books checked against Open Library, one partition. See Features/FeedBooks/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("feedBooks", "/pk"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion
