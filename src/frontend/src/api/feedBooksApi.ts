@@ -52,3 +52,11 @@ export async function setBookSaved(id: string, on: boolean): Promise<BookMarks> 
   if (!res.ok) throw new Error(res.status === 404 ? 'That book is no longer in the list.' : 'That did not save. Try again.');
   return await res.json() as BookMarks;
 }
+
+/** Searches all of Open Library (not only our list) for a book. Results are English books with a cover; `theme` and `why` are empty because they are not ours. Throws a short message if it could not search. */
+export async function searchBooks(query: string): Promise<FeedBook[]> {
+  const res = await fetch(`${API_BASE}/api/feed/books/search?q=${encodeURIComponent(query)}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error('The book search did not answer just now. Try again in a minute.');
+  const body: unknown = await res.json();
+  return (Array.isArray(body) ? body as FeedBook[] : []).map(b => ({ ...b, theme: '', why: '' }));
+}

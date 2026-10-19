@@ -106,4 +106,47 @@ public class FeedBooksTests
         Assert.Null(Books.CleanText(null, 50));
         Assert.Equal("abcde", Books.CleanText("abcdefgh", 5));
     }
+
+    private const string Search = """
+        {"docs": [
+          {"key": "/works/OL17930368W", "title": "Atomic Habits", "author_name": ["James Clear", "james clear", "A", "B", "C"], "cover_i": 12539702, "isbn": ["1847941834", "9781847941831", "9780735211292"]},
+          {"key": "/works/OL1W", "title": "No cover", "isbn": ["9781449373320"]},
+          {"key": "/works/OL2W", "title": "No usable isbn", "cover_i": 5, "isbn": ["1449373321", "9781449373321"]},
+          {"key": "/works/OL3W", "title": "Only 979", "cover_i": 6, "isbn": ["9798664653403"]},
+          {"key": "/books/evil", "title": "Bad key", "cover_i": 7, "isbn": ["9781449373320"]},
+          {"key": "/works/OL4W", "title": "Atomic Habits again", "cover_i": 8, "isbn": ["9781847941831"]}
+        ]}
+        """;
+
+    [Fact]
+    public void Search_keeps_only_books_with_a_title_cover_and_valid_978_ISBN_listed_once()
+    {
+        var hits = Books.ReadSearch(Search);
+        var hit = Assert.Single(hits);
+        Assert.Equal("9781847941831", hit.id);
+        Assert.Equal("Atomic Habits", hit.title);
+        Assert.Equal("James Clear, A, B", hit.authors);                                             // once each, at most three
+        Assert.Equal("https://covers.openlibrary.org/b/id/12539702-L.jpg", hit.coverUrl);          // built from the cover id
+        Assert.Equal("https://openlibrary.org/works/OL17930368W", hit.url);
+    }
+
+    [Fact]
+    public void Search_gives_no_results_for_an_unreadable_or_empty_answer()
+    {
+        Assert.Empty(Books.ReadSearch("not json"));
+        Assert.Empty(Books.ReadSearch("{}"));
+        Assert.Empty(Books.ReadSearch("""{"docs": "x"}"""));
+    }
+
+    [Fact]
+    public void Search_returns_at_most_twelve_books()
+    {
+        var docs = string.Join(",", Enumerable.Range(0, 30).Select(i =>
+        {
+            var first12 = "978" + (100000000 + i).ToString();
+            var sum = 0; for (var j = 0; j < 12; j++) sum += (first12[j] - '0') * (j % 2 == 0 ? 1 : 3);
+            return $"{{\"key\":\"/works/OL{i}W\",\"title\":\"T{i}\",\"cover_i\":{i + 1},\"isbn\":[\"{first12}{(10 - sum % 10) % 10}\"]}}";
+        }));
+        Assert.Equal(Books.MaxSearchHits, Books.ReadSearch("{\"docs\":[" + docs + "]}").Count);
+    }
 }

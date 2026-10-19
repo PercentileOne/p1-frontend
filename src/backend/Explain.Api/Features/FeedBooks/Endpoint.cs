@@ -22,6 +22,8 @@ public static class Endpoint
     public const int MaxPublished = 200;
     public const int MaxMarks = 500;
     public const int MaxWhy = 200;
+    public const int MaxSearch = 100;
+    public const int MaxSearchHits = 12;
     public const int MaxAuthors = 160;
     private const string StateDocId = "feedbook-state";
 
@@ -31,6 +33,28 @@ public static class Endpoint
         {
             var all = await ListAsync(cosmos, ct);
             return Results.Ok(all.Where(b => b.status == "published").OrderByDescending(b => b.addedAt).Take(MaxPublished).Select(ToReply));
+        }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedBooks");
+
+        // Search for any book (2026-10-19): asks Open Library, keeps English books that have a cover and a real ISBN, so each result can show a cover and link to Amazon UK.
+        // Results are not curated and are never stored; only the member's own question goes to Open Library.
+        app.MapGet("/api/feed/books/search", async (string? q, IHttpClientFactory factory, CancellationToken ct) =>
+        {
+            var query = CleanText(q, MaxSearch);
+            if (query is null || query.Length < 2) return Results.Ok(Array.Empty<SearchHit>());
+            try
+            {
+                var http = factory.CreateClient();
+                http.Timeout = TimeSpan.FromSeconds(12);
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("TheInterviewChair-feed/1.0 (francis@percentile.one)");
+                var url = "https://openlibrary.org/search.json?language=eng&limit=30&fields=key,title,author_name,isbn,cover_i&q=" + Uri.EscapeDataString(query);
+                using var res = await http.GetAsync(url, ct);
+                if (!res.IsSuccessStatusCode) return Results.Problem("Open Library did not answer just now. Try again in a minute.", statusCode: 502);
+                return Results.Ok(ReadSearch(await res.Content.ReadAsStringAsync(ct)));
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                return Results.Problem("Open Library did not answer just now. Try again in a minute.", statusCode: 502);
+            }
         }).RequireAuthorization(Permissions.PracticeInterview).WithTags("FeedBooks");
 
         // A person's own "Want to read" list. Private to them.
@@ -180,6 +204,40 @@ public static class Endpoint
         catch (JsonException) { return (null, null, null, null, "Open Library's answer could not be read."); }
     }
 
+    /// <summary>
+    /// Turns Open Library's search answer into book results. A result needs a title, a cover picture and a valid 978-prefixed ISBN-13 (so it has an ISBN-10 for the Amazon link); anything else is skipped.
+    /// The cover and page are built from Open Library's own ids, never taken from free text. At most three authors are shown, and a book is listed once.
+    /// </summary>
+    public static List<SearchHit> ReadSearch(string body)
+    {
+        var hits = new List<SearchHit>();
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (!doc.RootElement.TryGetProperty("docs", out var docs) || docs.ValueKind != JsonValueKind.Array) return hits;
+            var seen = new HashSet<string>();
+            foreach (var d in docs.EnumerateArray())
+            {
+                if (hits.Count >= MaxSearchHits) break;
+                var title = d.TryGetProperty("title", out var t) && t.ValueKind == JsonValueKind.String ? CleanText(t.GetString(), 200) : null;
+                if (title is null || !d.TryGetProperty("cover_i", out var c) || c.ValueKind != JsonValueKind.Number || !c.TryGetInt64(out var coverId) || coverId <= 0) continue;
+                if (!d.TryGetProperty("key", out var k) || k.GetString() is not { } key || !System.Text.RegularExpressions.Regex.IsMatch(key, @"^/works/OL\d+W$")) continue;
+                string? isbn = null;
+                if (d.TryGetProperty("isbn", out var isbns) && isbns.ValueKind == JsonValueKind.Array)
+                    foreach (var i in isbns.EnumerateArray())
+                        if (i.GetString() is { } s && s.StartsWith("978") && IsIsbn13(s)) { isbn = s; break; }
+                if (isbn is null || !seen.Add(isbn)) continue;
+                var authors = new List<string>();
+                if (d.TryGetProperty("author_name", out var names) && names.ValueKind == JsonValueKind.Array)
+                    foreach (var n in names.EnumerateArray())
+                        if (n.GetString() is { } name && CleanText(name, 80) is { } clean && !authors.Contains(clean, StringComparer.OrdinalIgnoreCase) && authors.Count < 3) authors.Add(clean);
+                hits.Add(new SearchHit(isbn, title, string.Join(", ", authors), $"https://covers.openlibrary.org/b/id/{coverId}-L.jpg", "https://openlibrary.org" + key));
+            }
+        }
+        catch (JsonException) { /* an unreadable answer is no results */ }
+        return hits;
+    }
+
     // ---- storage and shaping ----
 
     private static async Task<(string? Title, string? Authors, string? CoverUrl, string? PageUrl, string? Error)> VerifyAsync(HttpClient http, string isbn, CancellationToken ct)
@@ -227,6 +285,7 @@ public static class Endpoint
     public record BookReply(string id, string title, string authors, string coverUrl, string url, string theme, string why, string status, string addedAt);
     public record BookState(string id, string userId, string type, List<VideoFeed.Mark> saved, string updatedAt);
     public record BooksMarks(List<string> saved);
+    public record SearchHit(string id, string title, string authors, string coverUrl, string url);
     public record MarkRequest(bool On);
     public record AddRequest(string Isbn, string Theme, string? Why = null, string? Authors = null);
     public record PatchRequest(string? Status, string? Theme, string? Why, string? Authors);

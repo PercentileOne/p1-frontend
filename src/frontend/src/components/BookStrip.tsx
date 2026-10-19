@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Bookmark, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { fetchFeedBooks } from '../api/feedBooksApi';
+import { Bookmark, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { fetchFeedBooks, searchBooks } from '../api/feedBooksApi';
 import type { FeedBook } from '../api/feedBooksApi';
 import { localDate } from '../api/routinesApi';
 import { logEvent } from '../api/flowLogger';
@@ -33,6 +33,11 @@ export function BookStrip() {
   const [hidden, setHidden] = useState(hiddenToday);
   const [edges, setEdges] = useState({ left: false, right: false });
   const rowRef = useRef<HTMLUListElement>(null);
+  // Search (2026-10-19): the box looks through our list and, on Search, all of Open Library. `results` is null when there is no search showing.
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<{ query: string; books: FeedBook[] } | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchProblem, setSearchProblem] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -49,12 +54,14 @@ export function BookStrip() {
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [measure, books, view, hidden]);
+  }, [measure, books, view, hidden, results]);
 
   if (!books || books.length === 0) return null;
 
   const savedCount = books.filter(b => saved.includes(b.id)).length;
-  const shown = view === 'saved' ? saved.map(id => books.find(b => b.id === id)).filter((b): b is FeedBook => !!b)
+  const ours = (q: string) => { const w = q.toLowerCase().split(/\s+/).filter(Boolean); return books.filter(b => w.every(x => `${b.title} ${b.authors}`.toLowerCase().includes(x))); };
+  const shown = results ? results.books
+    : view === 'saved' ? saved.map(id => books.find(b => b.id === id)).filter((b): b is FeedBook => !!b)
     : theme ? books.filter(b => b.theme === theme) : books;
 
   function hide() { try { localStorage.setItem(HIDE_KEY, localDate()); } catch { /* it will just show again */ } setHidden(true); setView('all'); }
@@ -62,6 +69,22 @@ export function BookStrip() {
   function open(b: FeedBook) { logEvent('feed_book_open', { metadata: { id: b.id, theme: b.theme } }); }
   // Choosing a theme starts the row again from its first card.
   function pickTheme(t: string | null) { setTheme(t); rowRef.current?.scrollTo?.({ left: 0 }); }
+  async function runSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim().replace(/\s+/g, ' ');
+    if (q.length < 2) return;
+    setSearching(true); setSearchProblem('');
+    logEvent('feed_book_search', { metadata: { length: q.length } });
+    try {
+      const found = await searchBooks(q);
+      const mine = ours(q);
+      // Our own matches first (they carry our note and can go on the reading list), then the rest of Open Library without duplicates.
+      setResults({ query: q, books: [...mine, ...found.filter(f => !mine.some(m => m.id === f.id))] });
+      rowRef.current?.scrollTo?.({ left: 0 });
+    } catch (err) { setSearchProblem((err as Error).message); }
+    finally { setSearching(false); }
+  }
+  function clearSearch() { setResults(null); setQuery(''); setSearchProblem(''); }
   function scrollBy(dir: 1 | -1) { rowRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: 'smooth' }); }
 
   const tab = (id: View, text: string, count?: number) => (
@@ -91,17 +114,35 @@ export function BookStrip() {
         <button type="button" onClick={hide} aria-label="Hide books until tomorrow" style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 6, display: 'flex' }}><X size={18} /></button>
       </div>
 
-      <div role="tablist" aria-label="Which books" style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
-        {tab('all', 'All')}{tab('saved', 'Reading list', savedCount)}
-      </div>
+      <form onSubmit={e => void runSearch(e)} role="search" style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 220px', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg3, rgba(255,255,255,0.05))', border: '1px solid var(--border)', borderRadius: 999, padding: '0 12px' }}>
+          <Search size={15} color="var(--text-3)" />
+          <input type="search" value={query} onChange={e => setQuery(e.target.value)} aria-label="Search for a book" placeholder="Search for any book, by title or author"
+            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13.5, padding: '8px 0', fontFamily: 'inherit' }} />
+        </div>
+        <button type="submit" disabled={searching || query.trim().length < 2} style={{ ...linkBtn, opacity: searching || query.trim().length < 2 ? 0.6 : 1 }}>{searching ? 'Searching…' : 'Search'}</button>
+      </form>
 
-      {view === 'all' && <div style={{ padding: '0 16px 12px' }}><ThemeChips videos={books} value={theme} onChange={pickTheme} /></div>}
+      {searchProblem && <div role="alert" style={{ padding: '0 16px 8px', color: '#F87171', fontSize: 13 }}>{searchProblem}</div>}
+
+      {results && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px 10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-2, var(--text))' }}>{results.books.length === 0 ? `No books found for “${results.query}”.` : `Results for “${results.query}” (from our list, then Open Library)`}</span>
+          <button type="button" onClick={clearSearch} style={linkBtn}>Clear search</button>
+        </div>
+      )}
+
+      {!results && <div role="tablist" aria-label="Which books" style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
+        {tab('all', 'All')}{tab('saved', 'Reading list', savedCount)}
+      </div>}
+
+      {!results && view === 'all' && <div style={{ padding: '0 16px 12px' }}><ThemeChips videos={books} value={theme} onChange={pickTheme} /></div>}
 
       <div style={{ padding: '0 16px 10px', fontSize: 11.5, color: 'var(--text-3)' }}>{AMAZON_DISCLOSURE}</div>
 
       {problem && <div role="alert" style={{ padding: '0 16px 8px', color: '#F87171', fontSize: 13 }}>{problem}</div>}
 
-      {shown.length === 0 && (
+      {shown.length === 0 && !results && (
         <div style={{ padding: '8px 16px 14px', fontSize: 14, color: 'var(--text-3)' }}>Nothing on your reading list yet. Tap the bookmark on any book to keep it for later. Only you can see this list.</div>
       )}
 
@@ -111,20 +152,21 @@ export function BookStrip() {
         <ul ref={rowRef} onScroll={measure} style={{ listStyle: 'none', margin: 0, padding: '0 16px', display: shown.length === 0 ? 'none' : 'flex', alignItems: 'flex-start', gap: GAP, overflowX: 'auto', scrollSnapType: 'x mandatory', scrollPaddingLeft: 16, WebkitOverflowScrolling: 'touch' }}>
           {shown.map(b => {
             const isSaved = saved.includes(b.id);
+            const curated = books.some(x => x.id === b.id);
             return (
               <li key={b.id} style={{ flex: `0 0 ${CARD_W}px`, scrollSnapAlign: 'start', position: 'relative', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <a href={b.url} target="_blank" rel="noopener noreferrer" onClick={() => open(b)} aria-label={`${b.title}${b.authors ? `, by ${b.authors}` : ''}. Opens on Open Library in a new tab`}
                   style={{ position: 'relative', display: 'block', width: CARD_W, aspectRatio: '2 / 3', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', background: '#0b1018', textDecoration: 'none' }}>
                   <img src={b.coverUrl} alt="" loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />
                 </a>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                {curated && <div style={{ position: 'absolute', top: 8, right: 8 }}>
                   <button type="button" aria-pressed={isSaved} aria-label={isSaved ? `Remove ${b.title} from your reading list` : `Add ${b.title} to your reading list`} title={isSaved ? 'On your reading list. Tap to remove' : 'Add to your reading list'} onClick={() => void toggle(b)} style={roundButton(isSaved)}><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} /></button>
-                </div>
+                </div>}
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text)', lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{b.title}</span>
                   {b.authors && <span style={{ fontSize: 11.5, fontWeight: 700, color: GREEN, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.authors}</span>}
                 </span>
-                <a href={amazonUkUrl(b.id)} target="_blank" rel="sponsored noopener noreferrer" onClick={() => logEvent('feed_book_amazon', { metadata: { id: b.id, theme: b.theme } })} aria-label={`Buy ${b.title} on Amazon UK (affiliate link, opens in a new tab)`} style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-3)', textDecoration: 'underline' }}>Amazon UK</a>
+                <a href={amazonUkUrl(b.id)} target="_blank" rel="sponsored noopener noreferrer" onClick={() => logEvent('feed_book_amazon', { metadata: { id: b.id, theme: b.theme, searched: !curated } })} aria-label={`Buy ${b.title} on Amazon UK (affiliate link, opens in a new tab)`} style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-3)', textDecoration: 'underline' }}>Amazon UK</a>
                 {b.why && <span style={{ fontSize: 12, lineHeight: 1.35, color: 'var(--text-3)', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={b.why}>{b.why}</span>}
               </li>
             );
