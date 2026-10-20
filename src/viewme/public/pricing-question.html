@@ -86,7 +86,7 @@
 <body>
 <div class="wrap">
   <h1>Launch Pricing Model</h1>
-  <p class="lede">What each pricing choice does to the monthly profit of TheInterviewChair.com, built from the platform's real Azure bill and its per-interview costs. Change any number and everything updates. It includes a section on a free access period.</p>
+  <p class="lede">What each pricing choice does to the monthly profit of TheInterviewChair.com, built from the platform's real Azure bill and its per-interview costs. Change any number and everything updates. It includes a section on a free access period, from two weeks to six months.</p>
 
   <p class="note"><strong>Amber labels are estimates or examples, not measured facts.</strong> The user counts below (500 candidates, 5 recruiter seats, 300 demos, 100 new users a month) and the share who go on to pay are placeholders for numbers still to be measured. Green labels are real figures from the platform's bills and measurements.</p>
 
@@ -145,8 +145,8 @@
       <section class="panel">
         <h2>Free access period</h2>
         <div class="fields">
-          <div class="field"><label for="freeDays">Length of the free period</label><div class="row"><input id="freeDays" type="number" min="0" step="1" inputmode="numeric"><span class="unit">days</span></div></div>
-          <div class="field"><label for="freePeriodInterviews">Interviews during it</label><input id="freePeriodInterviews" type="number" min="0" step="0.5" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> per new user, within the cap</span></div>
+          <div class="field"><label for="freeMonths">Length of the free period</label><div class="row"><input id="freeMonths" type="number" min="0" step="0.5" inputmode="decimal"><span class="unit">months</span></div></div>
+          <div class="field"><label for="freePeriodInterviews">Interviews a month during it</label><input id="freePeriodInterviews" type="number" min="0" step="0.5" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> per new user, within the monthly cap</span></div>
           <div class="field"><label for="freeConv">Who go on to pay</label><div class="row"><input id="freeConv" type="number" min="0" max="100" step="1" inputmode="decimal"><span class="unit">%</span></div><span class="hint"><span class="tag guess">example</span> the number to learn from a trial</span></div>
           <div class="field"><label for="newUsers">New users a month</label><input id="newUsers" type="number" min="0" step="10" inputmode="numeric"><span class="hint"><span class="tag guess">example</span></span></div>
         </div>
@@ -193,6 +193,8 @@
         <h2>What a free period costs and buys</h2>
         <table id="freePeriod"></table>
         <p class="hint" id="freeNote" style="margin:10px 0 0"></p>
+        <h2 style="margin-top:16px">The same, for different lengths</h2>
+        <div class="scroll"><table id="freeLengths"></table></div>
       </section>
 
       <section class="panel">
@@ -214,9 +216,9 @@
   };
   var COMMON = { candidates: 500, seats: 5, demos: 300, affiliate: 0, linksPerSeat: 4, sessionsPerLink: 2,
                  cAvatar: 0.05, cVoice: 0.15, cStt: 0.05, cText: 0.02, cOther: 0.10, cDemo: 0.09,
-                 spatius: 37, other: 15, feePct: 1.5, feeFixed: 0.20, freeDays: 14, freePeriodInterviews: 2, freeConv: 20, newUsers: 100 };
+                 spatius: 37, other: 15, feePct: 1.5, feeFixed: 0.20, freeMonths: 3, freePeriodInterviews: 2, freeConv: 20, newUsers: 100 };
   var IDS = ['candPrice','payingPct','seatPrice','linkFee','candidates','seats','demos','affiliate','interviews','freeInterviews','cap','linksPerSeat','sessionsPerLink',
-             'cAvatar','cVoice','cStt','cText','cOther','cDemo','spatius','other','feePct','feeFixed','freeDays','freePeriodInterviews','freeConv','newUsers'];
+             'cAvatar','cVoice','cStt','cText','cOther','cDemo','spatius','other','feePct','feeFixed','freeMonths','freePeriodInterviews','freeConv','newUsers'];
   var $ = function (id) { return document.getElementById(id); };
   var gbp0 = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
   var gbp2 = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -317,8 +319,9 @@
     $('riskNotes').innerHTML = notes.map(function (n) { return '<li>' + n + '</li>'; }).join('');
 
     // Free access period: what one new user costs during it, what winning one paying candidate costs, and how long that takes to earn back.
-    var fd = num('freeDays'), fi = Math.min(num('freePeriodInterviews'), c.cap), conv = Math.min(100, num('freeConv')) / 100, nu = num('newUsers');
-    var costPerNew = fi * c.perInt + num('cOther') * fd / 30;
+    var fm = num('freeMonths'), fi = Math.min(num('freePeriodInterviews'), c.cap), conv = Math.min(100, num('freeConv')) / 100, nu = num('newUsers');
+    var perUserMonth = fi * c.perInt + num('cOther');
+    var costPerNew = perUserMonth * fm;
     var costPerPayer = conv > 0 ? costPerNew / conv : 0;
     var monthly = c.price - fee(c.price) - c.intPay * c.perInt - num('cOther');
     var payback = monthly > 0 && conv > 0 ? costPerPayer / monthly : null;
@@ -333,10 +336,17 @@
     if (c.price <= 0) fnote = 'At a price of zero there is no paid plan to move people onto, so a free period has nothing to lead to. Pick a paid scenario above to see it.';
     else if (monthly <= 0) fnote = 'At this price a paying candidate leaves nothing after card fees and costs, so a free period can never be earned back.';
     else {
-      var need = costPerNew / (3 * monthly) * 100;
-      fnote = 'To earn the free period back within three months of someone paying, about ' + (need > 100 ? 'more than all' : Math.ceil(need) + '%') + ' of new users would need to convert. A short trial will show the real conversion rate.';
+      var need = costPerNew / (6 * monthly) * 100;
+      fnote = 'To earn the free period back within six months of someone paying, about ' + (need > 100 ? 'more than all' : Math.ceil(need) + '%') + ' of new users would need to convert. A short trial will show the real conversion rate.';
     }
     $('freeNote').textContent = fnote;
+    var lens = [[0.5, '2 weeks'], [1, '1 month'], [2, '2 months'], [3, '3 months'], [6, '6 months']];
+    $('freeLengths').innerHTML = '<tr><th>Free period</th><th class="n">Per new user</th><th class="n">Per payer</th><th class="n">Earned back</th></tr>' +
+      lens.map(function (l) {
+        var per = perUserMonth * l[0], payer = conv > 0 ? per / conv : 0;
+        var back = monthly > 0 && conv > 0 ? (payer / monthly < 1 ? 'under 1 month' : (payer / monthly).toFixed(1) + ' months') : 'never';
+        return '<tr' + (Math.abs(l[0] - fm) < 0.01 ? ' style="font-weight:600"' : '') + '><td>' + l[1] + '</td><td class="n">' + money2(per) + '</td><td class="n">' + (conv > 0 ? money2(payer) : '-') + '</td><td class="n ' + (back === 'never' ? 'neg' : '') + '">' + back + '</td></tr>';
+      }).join('');
 
     // Other sizes
     var sizes = [100, 500, 2000, 10000, 50000];
