@@ -20,6 +20,8 @@ import TeamPage from './TeamPage'
 import HelpCentre from './HelpCentre'
 import { GettingStartedCard } from '../components/GettingStartedCard'
 import { HelpHint } from '../components/HelpHint'
+import { PageIntro } from '../components/PageIntro'
+import { PAGE_INTROS } from '../help/pageIntros'
 import { RECRUITER_ARTICLES } from '../help/articles'
 import { logEvent } from '../api/flowLogger'
 import IndustryStatsCard from '../components/IndustryStatsCard'
@@ -273,9 +275,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ── HELP: one-line "How does this work?" hint on pages that have an article ── */}
-        {activeNav !== 'Help' && activeNav !== 'Dashboard' && (() => {
+        {/* ── ABOUT THIS PAGE: a short description of what the page is for, with a link to its help article where there is one (Francis, 2026-10-20).
+             Pages without a description keep the older one-line "New to ...?" bar. ── */}
+        {activeNav !== 'Help' && (() => {
           const a = RECRUITER_ARTICLES.find(x => x.navLabel === activeNav)
+          const intro = PAGE_INTROS[activeNav]
+          if (intro) return <PageIntro key={activeNav} label={activeNav} text={intro} article={a ? { id: a.id } : undefined} onOpen={openHelp} />
+          if (activeNav === 'Dashboard') return null
           return a ? <HelpHint key={a.id} pageLabel={activeNav} articleId={a.id} onOpen={openHelp} /> : null
         })()}
 
