@@ -58,6 +58,11 @@
       "route": "/feed-spec",
       "rewrite": "/feed-spec.html",
       "headers": { "X-Robots-Tag": "noindex, nofollow" }
+    },
+    {
+      "route": "/pricing-question",
+      "rewrite": "/pricing-question.html",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" }
     }
   ],
   "navigationFallback": {

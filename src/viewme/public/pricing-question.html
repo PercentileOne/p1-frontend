@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A working model of launch pricing and a free access period for TheInterviewChair.com, shared for feedback.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="/track.js?v=2"></script>
+<title>Launch Pricing Model | TheInterviewChair.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  /* Layout: inputs in a column on the left, a sticky results panel on the right; one column on a phone.
+     Palette: brand green on a cool ink ground; amber marks anything that is an estimate or an example; red is only for money going the wrong way. */
+  :root {
+    --bg: #f2f5f3; --panel: #ffffff; --ink: #16211d; --muted: #5a6b64; --line: #d9e1dd;
+    --accent: #0a7a57; --accent-soft: #dcf3ea; --warn: #9a5b00; --warn-soft: #fbefd5; --bad: #b42318; --bad-soft: #fde7e4; --good: #0a7a57;
+    --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1412; --panel: #141d1a; --ink: #e5eee9; --muted: #92a69d; --line: #27352f;
+      --accent: #34d399; --accent-soft: #123428; --warn: #f2b84b; --warn-soft: #3a2c0d; --bad: #ff8a7a; --bad-soft: #3d1b17; --good: #34d399; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1412; --panel: #141d1a; --ink: #e5eee9; --muted: #92a69d; --line: #27352f;
+    --accent: #34d399; --accent-soft: #123428; --warn: #f2b84b; --warn-soft: #3a2c0d; --bad: #ff8a7a; --bad-soft: #3d1b17; --good: #34d399; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+  * { box-sizing: border-box; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: 12px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; }
+  .lede { color: var(--muted); margin: 0 0 18px; max-width: 62ch; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .presets button { font: inherit; font-weight: 600; font-size: 14px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .presets button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .presets button[aria-pressed="true"] { color: #06231a; } }
+  :root[data-theme="dark"] .presets button[aria-pressed="true"] { color: #06231a; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
+  @media (max-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; font-weight: 600; }
+  .field .row { display: flex; align-items: center; gap: 6px; }
+  .field input, .field select { width: 100%; min-width: 0; font: inherit; font-family: var(--f-num); font-size: 15px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .unit { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; letter-spacing: 0.02em; }
+  .tag.real { background: var(--accent-soft); color: var(--accent); }
+  .tag.guess { background: var(--warn-soft); color: var(--warn); }
+  .hint { font-size: 12px; color: var(--muted); }
+  .results { position: sticky; top: env(safe-area-inset-top, 0px); }
+  @media (max-width: 880px) { .results { position: static; } }
+  .net { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 14px; border-radius: 10px; margin-bottom: 14px; }
+  .net.good { background: var(--accent-soft); } .net.bad { background: var(--bad-soft); }
+  .net .big { font-family: var(--f-num); font-size: 34px; font-weight: 600; letter-spacing: -0.02em; }
+  .net.good .big { color: var(--good); } .net.bad .big { color: var(--bad); }
+  .net .lab { font-size: 13px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { padding: 6px 0; text-align: left; vertical-align: baseline; }
+  td.n, th.n { text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr + tr td, tr + tr th { border-top: 1px solid var(--line); }
+  td.neg, .neg { color: var(--bad); }
+  td.sub { color: var(--muted); font-size: 13px; padding-left: 14px; }
+  .bars { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; }
+  .bar { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+  .track { display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: var(--bg); }
+  .seg { height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  .note { background: var(--warn-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 16px; }
+  .scroll { overflow-x: auto; }
+  ul.tight { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; } ul.tight li { margin: 3px 0; }
+  @media (prefers-reduced-motion: no-preference) { .net { transition: background-color .2s; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <h1>Launch Pricing Model</h1>
+  <p class="lede">What each pricing choice does to the monthly profit of TheInterviewChair.com, built from the platform's real Azure bill and its per-interview costs. Change any number and everything updates. It includes a section on a free access period.</p>
+
+  <p class="note"><strong>Amber labels are estimates or examples, not measured facts.</strong> The user counts below (500 candidates, 5 recruiter seats, 300 demos, 100 new users a month) and the share who go on to pay are placeholders for numbers still to be measured. Green labels are real figures from the platform's bills and measurements.</p>
+
+  <div class="presets" role="group" aria-label="Pricing scenarios">
+    <button type="button" data-preset="today" aria-pressed="true">Today: £4.99 and £49 seat</button>
+    <button type="button" data-preset="three" aria-pressed="false">£3 for everyone</button>
+    <button type="button" data-preset="one" aria-pressed="false">£1 for candidates, £3 seat</button>
+    <button type="button" data-preset="free" aria-pressed="false">Free</button>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel">
+        <h2>Prices</h2>
+        <div class="fields">
+          <div class="field"><label for="candPrice">Candidate, per month</label><div class="row"><input id="candPrice" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div></div>
+          <div class="field"><label for="payingPct">Candidates who pay</label><div class="row"><input id="payingPct" type="number" min="0" max="100" step="1" inputmode="decimal"><span class="unit">%</span></div><span class="hint"><span class="tag guess">example</span> everyone pays in the £1, £3 and free cases</span></div>
+          <div class="field"><label for="seatPrice">Recruiter seat, per month</label><div class="row"><input id="seatPrice" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div></div>
+          <div class="field"><label for="linkFee">Interview-prep link</label><div class="row"><input id="linkFee" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£ each</span></div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>People and volume</h2>
+        <div class="fields">
+          <div class="field"><label for="candidates">Active candidates</label><input id="candidates" type="number" min="0" step="10" inputmode="numeric"><span class="hint"><span class="tag guess">example</span></span></div>
+          <div class="field"><label for="seats">Recruiter seats</label><input id="seats" type="number" min="0" step="1" inputmode="numeric"><span class="hint"><span class="tag guess">example</span></span></div>
+          <div class="field"><label for="demos">Public demos a month</label><input id="demos" type="number" min="0" step="10" inputmode="numeric"><span class="hint"><span class="tag guess">example</span></span></div>
+          <div class="field"><label for="affiliate">Affiliate income a month</label><div class="row"><input id="affiliate" type="number" min="0" step="1" inputmode="decimal"><span class="unit">£</span></div><span class="hint">Amazon and later others</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Usage</h2>
+        <div class="fields">
+          <div class="field"><label for="interviews">Interviews per paying candidate</label><input id="interviews" type="number" min="0" step="0.5" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> a month</span></div>
+          <div class="field"><label for="freeInterviews">Interviews per non-paying candidate</label><input id="freeInterviews" type="number" min="0" step="0.1" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> the free taster</span></div>
+          <div class="field"><label for="cap">Monthly cap per candidate</label><input id="cap" type="number" min="1" step="1" inputmode="numeric"><span class="hint">The current rule is 10 a month and 3 a day. This is the main safety lever.</span></div>
+          <div class="field"><label for="linksPerSeat">Prep links per seat</label><input id="linksPerSeat" type="number" min="0" step="0.5" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> a month</span></div>
+          <div class="field"><label for="sessionsPerLink">Sessions used per link</label><input id="sessionsPerLink" type="number" min="0" max="3" step="0.5" inputmode="decimal"><span class="hint">A link allows up to 3</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Cost of one full interview</h2>
+        <div class="fields">
+          <div class="field"><label for="cAvatar">Avatar face (Spatius)</label><div class="row"><input id="cAvatar" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div><span class="hint"><span class="tag real">agreed</span> 5p; demo measured at 2.4p</span></div>
+          <div class="field"><label for="cVoice">Voice (ElevenLabs)</label><div class="row"><input id="cVoice" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div><span class="hint"><span class="tag guess">estimate</span> still to be measured</span></div>
+          <div class="field"><label for="cStt">Listening (Whisper)</label><div class="row"><input id="cStt" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div><span class="hint"><span class="tag guess">estimate</span> $0.006 a minute, about 10 minutes of speech</span></div>
+          <div class="field"><label for="cText">AI text and scoring</label><div class="row"><input id="cText" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div><span class="hint"><span class="tag real">real</span> whole AI bill is £5 in 20 days</span></div>
+          <div class="field"><label for="cOther">Other AI per candidate</label><div class="row"><input id="cOther" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£ a month</span></div><span class="hint"><span class="tag guess">estimate</span> Learn, Career Coach, CV</span></div>
+          <div class="field"><label for="cDemo">One public demo</label><div class="row"><input id="cDemo" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£</span></div><span class="hint"><span class="tag guess">estimate</span> 2.4p avatar measured, plus voice and listening</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Free access period</h2>
+        <div class="fields">
+          <div class="field"><label for="freeDays">Length of the free period</label><div class="row"><input id="freeDays" type="number" min="0" step="1" inputmode="numeric"><span class="unit">days</span></div></div>
+          <div class="field"><label for="freePeriodInterviews">Interviews during it</label><input id="freePeriodInterviews" type="number" min="0" step="0.5" inputmode="decimal"><span class="hint"><span class="tag guess">example</span> per new user, within the cap</span></div>
+          <div class="field"><label for="freeConv">Who go on to pay</label><div class="row"><input id="freeConv" type="number" min="0" max="100" step="1" inputmode="decimal"><span class="unit">%</span></div><span class="hint"><span class="tag guess">example</span> the number to learn from a trial</span></div>
+          <div class="field"><label for="newUsers">New users a month</label><input id="newUsers" type="number" min="0" step="10" inputmode="numeric"><span class="hint"><span class="tag guess">example</span></span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Fixed monthly costs and card fees</h2>
+        <div class="fields">
+          <div class="field"><label for="azure">Azure</label>
+            <select id="azure">
+              <option value="229">Before the database move: about £229</option>
+              <option value="111" selected>Now, database moved: about £111 expected</option>
+              <option value="65">Web plan and Defender trimmed too: about £65, untested</option>
+            </select>
+            <span class="hint"><span class="tag real">real</span> £147.84 in the first 20 days of October, before the move. The new figure shows in the next cost report.</span></div>
+          <div class="field"><label for="spatius">Spatius plan</label><div class="row"><input id="spatius" type="number" min="0" step="1" inputmode="decimal"><span class="unit">£ a month</span></div><span class="hint"><span class="tag real">real</span> $49 Builder plan</span></div>
+          <div class="field"><label for="other">Everything else fixed</label><div class="row"><input id="other" type="number" min="0" step="1" inputmode="decimal"><span class="unit">£ a month</span></div><span class="hint"><span class="tag guess">estimate</span> domains, email, tools</span></div>
+          <div class="field"><label for="feePct">Card fee, percentage</label><div class="row"><input id="feePct" type="number" min="0" step="0.1" inputmode="decimal"><span class="unit">%</span></div><span class="hint"><span class="tag guess">check</span> Stripe's standard UK rate</span></div>
+          <div class="field"><label for="feeFixed">Card fee, fixed</label><div class="row"><input id="feeFixed" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">£ per payment</span></div><span class="hint">On £1 this fixed part is a fifth of the payment.</span></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="col results" aria-label="Results">
+      <section class="panel">
+        <div id="netBox" class="net good"><div><div class="lab" id="netLab">Profit each month</div><div class="hint" id="netSub"></div></div><div class="big" id="netBig">£0</div></div>
+        <h2>Where the money goes</h2>
+        <div class="bars" aria-hidden="true">
+          <div class="bar"><span>Comes in</span><div class="track" id="barIn"></div></div>
+          <div class="bar"><span>Goes out</span><div class="track" id="barOut"></div></div>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div style="height:12px"></div>
+        <table id="summary"></table>
+      </section>
+
+      <section class="panel">
+        <h2>Who is the risk?</h2>
+        <table id="risk"></table>
+        <ul class="tight" id="riskNotes"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>What a free period costs and buys</h2>
+        <table id="freePeriod"></table>
+        <p class="hint" id="freeNote" style="margin:10px 0 0"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Profit at other sizes</h2>
+        <div class="scroll"><table id="sizes"></table></div>
+        <p class="hint" id="breakEven" style="margin:10px 0 0"></p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PRESETS = {
+    today: { candPrice: 4.99, payingPct: 15, seatPrice: 49, linkFee: 0.99, interviews: 4, freeInterviews: 0.5, cap: 10 },
+    three: { candPrice: 3, payingPct: 100, seatPrice: 3, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 6 },
+    one:   { candPrice: 1, payingPct: 100, seatPrice: 3, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 4 },
+    free:  { candPrice: 0, payingPct: 100, seatPrice: 0, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 3 }
+  };
+  var COMMON = { candidates: 500, seats: 5, demos: 300, affiliate: 0, linksPerSeat: 4, sessionsPerLink: 2,
+                 cAvatar: 0.05, cVoice: 0.15, cStt: 0.05, cText: 0.02, cOther: 0.10, cDemo: 0.09,
+                 spatius: 37, other: 15, feePct: 1.5, feeFixed: 0.20, freeDays: 14, freePeriodInterviews: 2, freeConv: 20, newUsers: 100 };
+  var IDS = ['candPrice','payingPct','seatPrice','linkFee','candidates','seats','demos','affiliate','interviews','freeInterviews','cap','linksPerSeat','sessionsPerLink',
+             'cAvatar','cVoice','cStt','cText','cOther','cDemo','spatius','other','feePct','feeFixed','freeDays','freePeriodInterviews','freeConv','newUsers'];
+  var $ = function (id) { return document.getElementById(id); };
+  var gbp0 = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+  var gbp2 = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function money(v) { return (v < 0 ? '−' : '') + gbp0.format(Math.abs(v)); }
+  function money2(v) { return (v < 0 ? '−' : '') + gbp2.format(Math.abs(v)); }
+  function num(id) { var v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; }
+
+  function fee(price) { return price > 0 ? price * num('feePct') / 100 + num('feeFixed') : 0; }
+
+  function compute(candidates) {
+    var perInt = num('cAvatar') + num('cVoice') + num('cStt') + num('cText');
+    var cap = Math.max(1, num('cap'));
+    var payShare = Math.min(100, num('payingPct')) / 100;
+    var price = num('candPrice');
+    var intPay = Math.min(num('interviews'), cap), intFree = Math.min(num('freeInterviews'), cap);
+    var payers = candidates * payShare, free = candidates - payers;
+    var candRev = payers * price, candFees = payers * fee(price);
+    var seats = num('seats'), seatPrice = num('seatPrice');
+    var seatRev = seats * seatPrice, seatFees = seats * fee(seatPrice);
+    var links = seats * num('linksPerSeat'), linkFee = num('linkFee');
+    var linkRev = links * linkFee, linkFees = links * fee(linkFee);
+    var affiliate = num('affiliate');
+    var candInterviewCost = (payers * intPay + free * intFree) * perInt;
+    var candOther = candidates * num('cOther');
+    var linkCost = links * num('sessionsPerLink') * perInt;
+    var demoCost = num('demos') * num('cDemo');
+    var fixedAzure = parseFloat($('azure').value), fixedSpatius = num('spatius'), fixedOther = num('other');
+    var revenue = candRev + seatRev + linkRev + affiliate;
+    var fees = candFees + seatFees + linkFees;
+    var variable = candInterviewCost + candOther + linkCost + demoCost;
+    var fixed = fixedAzure + fixedSpatius + fixedOther;
+    var net = revenue - fees - variable - fixed;
+    var margin = payShare * (price - fee(price) - intPay * perInt) - (1 - payShare) * intFree * perInt - num('cOther');
+    var constant = seatRev - seatFees + linkRev - linkFees - linkCost + affiliate - demoCost - fixed;
+    return { perInt: perInt, cap: cap, price: price, payShare: payShare, intPay: intPay, intFree: intFree, payers: payers,
+      candRev: candRev, candFees: candFees, seatRev: seatRev, seatFees: seatFees, linkRev: linkRev, linkFees: linkFees, affiliate: affiliate,
+      candInterviewCost: candInterviewCost, candOther: candOther, linkCost: linkCost, demoCost: demoCost,
+      fixedAzure: fixedAzure, fixedSpatius: fixedSpatius, fixedOther: fixedOther, revenue: revenue, fees: fees, variable: variable, fixed: fixed,
+      net: net, margin: margin, constant: constant };
+  }
+
+  function row(label, value, cls, sub) {
+    return '<tr><td' + (sub ? ' class="sub"' : '') + '>' + label + '</td><td class="n ' + (cls || '') + '">' + value + '</td></tr>';
+  }
+
+  function render() {
+    var c = compute(num('candidates'));
+    var box = $('netBox');
+    box.className = 'net ' + (c.net >= 0 ? 'good' : 'bad');
+    $('netLab').textContent = c.net >= 0 ? 'Profit each month' : 'Loss each month';
+    $('netBig').textContent = money(c.net);
+    $('netSub').textContent = 'after card fees, running costs and fixed costs';
+
+    var inParts = [['Candidates', c.candRev, 'var(--accent)'], ['Recruiter seats', c.seatRev, '#3b82c4'], ['Prep links', c.linkRev, '#8a63d2'], ['Affiliate', c.affiliate, '#c28a14']];
+    var outParts = [['Interviews, voice and AI', c.candInterviewCost + c.candOther + c.linkCost + c.demoCost, '#c2410c'], ['Card fees', c.fees, '#b8860b'], ['Fixed costs', c.fixed, '#64748b']];
+    var scale = Math.max(c.revenue, c.variable + c.fees + c.fixed, 1);
+    function seg(parts, el) {
+      el.innerHTML = parts.map(function (p) { return '<div class="seg" style="width:' + (p[1] / scale * 100).toFixed(2) + '%;background:' + p[2] + '"></div>'; }).join('');
+    }
+    seg(inParts, $('barIn')); seg(outParts, $('barOut'));
+    $('legend').innerHTML = inParts.concat(outParts).filter(function (p) { return p[1] > 0; })
+      .map(function (p) { return '<span><i style="background:' + p[2] + '"></i>' + p[0] + ' ' + money(p[1]) + '</span>'; }).join('');
+
+    $('summary').innerHTML =
+      '<tr><th>Comes in</th><th class="n">' + money(c.revenue) + '</th></tr>' +
+      row('Candidates (' + Math.round(c.payers).toLocaleString('en-GB') + ' paying)', money(c.candRev), '', true) +
+      row('Recruiter seats', money(c.seatRev), '', true) +
+      row('Prep links', money(c.linkRev), '', true) +
+      row('Affiliate', money(c.affiliate), '', true) +
+      '<tr><th>Card fees</th><th class="n neg">' + money(-c.fees) + '</th></tr>' +
+      '<tr><th>Interviews, voice and AI</th><th class="n neg">' + money(-(c.candInterviewCost + c.candOther + c.linkCost + c.demoCost)) + '</th></tr>' +
+      row('Candidate interviews', money(-c.candInterviewCost), 'neg', true) +
+      row('Other AI per candidate', money(-c.candOther), 'neg', true) +
+      row('Prep-link sessions', money(-c.linkCost), 'neg', true) +
+      row('Public demos', money(-c.demoCost), 'neg', true) +
+      '<tr><th>Fixed costs</th><th class="n neg">' + money(-c.fixed) + '</th></tr>' +
+      row('Azure', money(-c.fixedAzure), 'neg', true) + row('Spatius', money(-c.fixedSpatius), 'neg', true) + row('Everything else', money(-c.fixedOther), 'neg', true) +
+      '<tr><th>Profit or loss</th><th class="n ' + (c.net < 0 ? 'neg' : '') + '">' + money(c.net) + '</th></tr>';
+
+    // Who is the risk: one candidate who uses the whole cap, against what that candidate pays.
+    var maxCost = c.cap * c.perInt + num('cOther');
+    var paysNet = c.price - fee(c.price);
+    $('risk').innerHTML =
+      row('One interview costs', money2(c.perInt)) +
+      row('A candidate using the whole cap (' + c.cap + ')', money2(maxCost), 'neg') +
+      row('What that candidate pays, after card fees', money2(paysNet), paysNet < maxCost ? 'neg' : '') +
+      row('Left over from them', money2(paysNet - maxCost), paysNet - maxCost < 0 ? 'neg' : '');
+    var notes = [];
+    if (c.price > 0 && paysNet - maxCost < 0) notes.push('At this price a candidate who uses the full cap costs more than they pay. The cap, not the price, is what protects the business.');
+    if (c.price > 0 && c.price < 2) notes.push('The card fee takes ' + Math.round(fee(c.price) / c.price * 100) + '% of every ' + money2(c.price) + ' payment. Below about £2 it is better to charge less often (for example £3 a quarter) or go fully free.');
+    if (c.price === 0) notes.push('Free means every candidate costs money and the only income is recruiters, prep links and affiliate commission. Keep the cap low and watch the bill weekly.');
+    // The most interviews a month a candidate can have before they cost more than they pay (once card fees and their other AI use are taken off).
+    var room = paysNet - num('cOther');
+    var safeCap = c.perInt > 0 && room > 0 ? Math.floor(room / c.perInt) : 0;
+    if (c.price > 0) notes.unshift('A candidate stops costing money above ' + safeCap + ' interviews a month at this price' + (safeCap < c.cap ? ', and the cap is ' + c.cap + '. Setting the cap at ' + Math.max(safeCap, 1) + ' removes that risk.' : '. The cap is at or below that, so no single candidate can lose money.'));
+    var worstNet = c.net - (num('candidates') * (c.cap * c.perInt) - (c.candInterviewCost));
+    notes.push('If every candidate used the whole cap this month, the result would be ' + money(worstNet) + ' instead of ' + money(c.net) + '.');
+    $('riskNotes').innerHTML = notes.map(function (n) { return '<li>' + n + '</li>'; }).join('');
+
+    // Free access period: what one new user costs during it, what winning one paying candidate costs, and how long that takes to earn back.
+    var fd = num('freeDays'), fi = Math.min(num('freePeriodInterviews'), c.cap), conv = Math.min(100, num('freeConv')) / 100, nu = num('newUsers');
+    var costPerNew = fi * c.perInt + num('cOther') * fd / 30;
+    var costPerPayer = conv > 0 ? costPerNew / conv : 0;
+    var monthly = c.price - fee(c.price) - c.intPay * c.perInt - num('cOther');
+    var payback = monthly > 0 && conv > 0 ? costPerPayer / monthly : null;
+    $('freePeriod').innerHTML =
+      row('One new user costs during the free period', money2(costPerNew), 'neg') +
+      row('The programme, for ' + nu.toLocaleString('en-GB') + ' new users a month', money(nu * costPerNew), 'neg') +
+      row('New paying candidates each month', Math.round(nu * conv).toLocaleString('en-GB')) +
+      row('Cost of winning one paying candidate', conv > 0 ? money2(costPerPayer) : 'none win', conv > 0 ? 'neg' : '') +
+      row('What a paying candidate then leaves each month', money2(monthly), monthly < 0 ? 'neg' : '') +
+      row('Earned back after', payback === null ? 'never' : (payback < 1 ? 'under a month' : payback.toFixed(1) + ' months'), payback === null ? 'neg' : '');
+    var fnote;
+    if (c.price <= 0) fnote = 'At a price of zero there is no paid plan to move people onto, so a free period has nothing to lead to. Pick a paid scenario above to see it.';
+    else if (monthly <= 0) fnote = 'At this price a paying candidate leaves nothing after card fees and costs, so a free period can never be earned back.';
+    else {
+      var need = costPerNew / (3 * monthly) * 100;
+      fnote = 'To earn the free period back within three months of someone paying, about ' + (need > 100 ? 'more than all' : Math.ceil(need) + '%') + ' of new users would need to convert. A short trial will show the real conversion rate.';
+    }
+    $('freeNote').textContent = fnote;
+
+    // Other sizes
+    var sizes = [100, 500, 2000, 10000, 50000];
+    $('sizes').innerHTML = '<tr><th>Candidates</th><th class="n">Profit a month</th></tr>' +
+      sizes.map(function (n) { var r = compute(n); return '<tr><td>' + n.toLocaleString('en-GB') + '</td><td class="n ' + (r.net < 0 ? 'neg' : '') + '">' + money(r.net) + '</td></tr>'; }).join('');
+    var be;
+    if (c.constant >= 0) be = 'Recruiters, prep links and affiliate income already cover the fixed costs, so every candidate adds to profit if they earn more than they cost.';
+    else if (c.margin <= 0) be = 'At these prices each candidate costs more than they bring in, so more candidates make the loss bigger. It never breaks even.';
+    else be = 'Break-even at about ' + Math.ceil(-c.constant / c.margin).toLocaleString('en-GB') + ' candidates (each one leaves about ' + money2(c.margin) + ' a month after card fees and costs).';
+    $('breakEven').textContent = be;
+  }
+
+  function setValues(obj) { Object.keys(obj).forEach(function (k) { if ($(k)) $(k).value = obj[k]; }); }
+  function applyPreset(name) {
+    setValues(PRESETS[name]);
+    document.querySelectorAll('[data-preset]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-preset') === name)); });
+    render();
+  }
+
+  setValues(COMMON);
+  document.querySelectorAll('[data-preset]').forEach(function (b) { b.addEventListener('click', function () { applyPreset(b.getAttribute('data-preset')); }); });
+  IDS.concat(['azure']).forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      if (PRESETS.today && ['candPrice','payingPct','seatPrice','linkFee','interviews','freeInterviews','cap'].indexOf(id) >= 0)
+        document.querySelectorAll('[data-preset]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      render();
+    });
+  });
+  applyPreset('today');
+})();
+</script>
+</body>
+</html>
