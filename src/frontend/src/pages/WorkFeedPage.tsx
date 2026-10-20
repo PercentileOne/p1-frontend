@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { QuestionOfTheDayCard } from '../components/QuestionOfTheDayCard';
 import { VideoStrip } from '../components/VideoStrip';
 import { BookStrip } from '../components/BookStrip';
+import { CourseStrip } from '../components/CourseStrip';
 import { FeedLeftPanels, FeedRightPanels } from '../components/FeedSidePanels';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useRoutineSummary } from '../hooks/useRoutineSummary';
@@ -12,7 +13,7 @@ import { localDate } from '../api/routinesApi';
 
 // The candidate dashboard's Feed tab on WORK (Francis, 2026-10-18; design in docs/specs/agent-driven-feed.md and the Feed mock-up). Three columns on a wide screen, as in the mock-up: your profile and routine on the left,
 // the feed in the middle, what is coming up and industry news on the right. On a narrower screen the feed comes first and the panels follow it.
-// Built in the spec's order: the Question of the Day, the video strip, books (2026-10-19), then courses and news. Everything here is labelled as curated or written by TheInterviewChair.
+// Built in the spec's order: the Question of the Day, the video strip, books (2026-10-19), courses (2026-10-20), then news. Everything here is labelled as curated or written by TheInterviewChair.
 // Not to be confused with FeedPage.tsx, the older social-feed prototype with sample data that is routed at /feed.
 export default function WorkFeedPage({ onNavigate }: { onNavigate?: (label: string) => void }) {
   const wide = useMediaQuery('(min-width: 1180px)');
@@ -38,6 +39,7 @@ export default function WorkFeedPage({ onNavigate }: { onNavigate?: (label: stri
           <QuestionOfTheDayCard onData={setQotd} />
           <VideoStrip />
           <BookStrip />
+          <CourseStrip />
         </main>
         <aside aria-label="You" style={{ ...column, order: wide ? 1 : 2 }}>
           <FeedLeftPanels qotd={qotd} nextInterview={nextInterview} routine={routine} onNavigate={onNavigate} />

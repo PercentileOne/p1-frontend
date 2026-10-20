@@ -20,6 +20,7 @@ import CvAnalyzer from './pages/CvAnalyzer'
 import Subjects from './pages/Subjects'
 import FeedVideos from './pages/FeedVideos'
 import FeedBooks from './pages/FeedBooks'
+import FeedCourses from './pages/FeedCourses'
 import Access from './pages/Access'
 import LocationCheck from './pages/LocationCheck'
 import AccessRequests from './pages/AccessRequests'
@@ -67,6 +68,7 @@ function AppRoutes() {
       <Route path="/subjects" element={<RequireAuth><Subjects /></RequireAuth>} />
       <Route path="/feed-videos" element={<RequireAuth><FeedVideos /></RequireAuth>} />
       <Route path="/feed-books" element={<RequireAuth><FeedBooks /></RequireAuth>} />
+      <Route path="/feed-courses" element={<RequireAuth><FeedCourses /></RequireAuth>} />
       <Route path="/activity-log" element={<RequireAuth><ActivityLog /></RequireAuth>} />
       <Route path="/access" element={<RequireAuth><Access /></RequireAuth>} />
       <Route path="/location-check" element={<RequireAuth><LocationCheck /></RequireAuth>} />

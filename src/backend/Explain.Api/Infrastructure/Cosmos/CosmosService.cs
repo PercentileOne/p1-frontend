@@ -174,6 +174,10 @@ public class CosmosService
         await _database.CreateContainerIfNotExistsAsync(
             new ContainerProperties("feedBooks", "/pk"));
 
+        // The feed's courses strip (2026-10-20): a short list of courses from official providers, checked against the provider's own page, one partition. See Features/FeedCourses/Endpoint.cs.
+        await _database.CreateContainerIfNotExistsAsync(
+            new ContainerProperties("feedCourses", "/pk"));
+
         // "In Demand Subjects" — one document per (job title, subject) pair, counters
         // incremented every time a candidate keeps that subject in the intake screen's
         // Special Focus field when actually starting an interview (never for a suggestion

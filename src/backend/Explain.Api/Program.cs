@@ -378,6 +378,7 @@ Explain.Api.Features.Planning.Endpoint.Map(app);
 Explain.Api.Features.QuestionOfTheDay.Endpoint.Map(app);
 Explain.Api.Features.FeedVideos.Endpoint.Map(app);
 Explain.Api.Features.FeedBooks.Endpoint.Map(app);
+Explain.Api.Features.FeedCourses.Endpoint.Map(app);
 Explain.Api.Features.Follows.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
