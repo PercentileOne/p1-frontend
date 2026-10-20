@@ -1,11 +1,10 @@
 // What each recruiter-portal page is for, in one or two plain sentences (Francis, 2026-10-20: "put a short description of what the page does, somewhere at the top").
-// Shown above the page by PageIntro, keyed by the menu label in Dashboard's NAV_ITEMS. Written to say only what the page really does today: the Dashboard's activity numbers and
-// pending-interviews list are fixed examples for now, and the description says so. Settings has no entry because that page is a "Coming soon" placeholder, and Help is the explanation.
+// Shown above the page by PageIntro, keyed by the menu label in Dashboard's NAV_ITEMS. Written to say only what the page really does today. Settings has no entry because that page is a "Coming soon" placeholder, and Help is the explanation.
 // UK spelling, "practice" for the verb as well as the noun (house style). Keep each to about 300 characters.
 
 export const PAGE_INTROS: Record<string, string> = {
   'Dashboard':
-    'Your starting point. Follow the getting-started steps and see figures for the industry. The activity numbers and the pending interviews further down are examples for now.',
+    'Your starting point. Follow the getting-started steps, see figures for the industry, and see how the candidates you have sent Interview Preps to are getting on.',
   'Interview Preps':
     'Send a candidate a realistic AI interview for the exact role, before the real one. You can see whether they have opened it, how many attempts they have made and whether they have finished. You never see their answers or scores.',
   'Client Gifts':
