@@ -40,6 +40,8 @@ import { localDate } from "../api/routinesApi";
 import RoutinesAndSystemsPage from "./RoutinesAndSystemsPage";
 import WorkFeedPage from "./WorkFeedPage";
 import { HelpHint } from "../components/HelpHint";
+import { PageIntro } from "../components/PageIntro";
+import { PAGE_INTROS } from "../help/pageIntros";
 import { CANDIDATE_ARTICLES } from "../help/articles";
 import { logEvent } from "../api/flowLogger";
 import { useIsPhone } from "../hooks/useIsPhone";
@@ -951,9 +953,13 @@ export default function CandidateDashboard() {
           )}
         </div>
 
-        {/* ── HELP: one-line "How does this work?" hint on pages that have an article ── */}
-        {activeNav !== "Help" && activeNav !== "Dashboard" && (() => {
+        {/* ── ABOUT THIS PAGE: a short description of what the page is for, with a link to its help article where there is one (Francis, 2026-10-20).
+             Pages without a description keep the older one-line "New to ...?" bar. ── */}
+        {activeNav !== "Help" && (() => {
           const a = CANDIDATE_ARTICLES.find(x => x.navLabel === activeNav && x.hint);
+          const intro = PAGE_INTROS[activeNav];
+          if (intro) return <PageIntro key={activeNav} label={activeNav} text={intro} article={a ? { id: a.id } : undefined} onOpen={openHelp} />;
+          if (activeNav === "Dashboard") return null;
           return a ? <HelpHint key={a.id} pageLabel={HINT_LABELS[activeNav] ?? activeNav} articleId={a.id} onOpen={openHelp} /> : null;
         })()}
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { showAllPageIntros } from '../components/PageIntro';
 import { ArrowLeft, ArrowRight, LifeBuoy, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { logEvent } from '../api/flowLogger';
 import { CANDIDATE_ARTICLES, CONTACT_URL, HELP_CATEGORIES, HELP_VISITED_KEY } from '../help/articles';
@@ -22,6 +23,7 @@ function matches(a: HelpArticle, q: string): boolean {
 
 export default function HelpCentre({ initialArticleId, onNavigate }: Props) {
   const [query, setQuery] = useState('');
+  const [introsBack, setIntrosBack] = useState('');
   const [category, setCategory] = useState<string>('All');
   const [openId, setOpenId] = useState<string | null>(initialArticleId ?? null);
   const [voted, setVoted] = useState<Record<string, boolean>>({});
@@ -164,6 +166,14 @@ export default function HelpCentre({ initialArticleId, onNavigate }: Props) {
           ))}
         </div>
       )}
+
+      <div style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <button type="button" onClick={() => { const n = showAllPageIntros(); setIntrosBack(n > 0 ? `Done. ${n} page description${n === 1 ? '' : 's'} will show again.` : 'Nothing was hidden, so every page description is already showing.'); }}
+          style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'inherit' }}>
+          Show the page descriptions again
+        </button>
+        {introsBack && <span role="status" style={{ fontSize: 13, color: '#34D399' }}>{introsBack}</span>}
+      </div>
     </div>
   );
 }
