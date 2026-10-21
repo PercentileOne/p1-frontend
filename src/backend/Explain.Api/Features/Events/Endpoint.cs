@@ -31,7 +31,7 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/events", async (EventRequest req, HttpContext ctx, CosmosService cosmos, IpGeoLookupService geo, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, ILogger<Program> logger) =>
+        app.MapPost("/api/events", async (EventRequest req, HttpContext ctx, CosmosService cosmos, IpGeoLookupService geo, [Microsoft.AspNetCore.Mvc.FromServices] AnalyticsIgnoreList ignoreList, [Microsoft.AspNetCore.Mvc.FromServices] IpOwnerService owners, ILogger<Program> logger) =>
         {
             if (string.IsNullOrWhiteSpace(req.SessionId) || string.IsNullOrWhiteSpace(req.EventType))
                 return Results.BadRequest(new { error = "sessionId and eventType are required." });
@@ -56,6 +56,15 @@ public static class Endpoint
                 if (!AllowedFromIp(ip)) return Results.Ok(new { logged = false });
                 // The owner's own addresses (admin funnel page → Ignored addresses) are never written to the log at all — checked before the geo lookup so they cost nothing.
                 if (await ignoreList.IsIgnoredAsync(ip)) return Results.Ok(new { logged = false });
+                // Robots that load a sign-in portal are not written to the log at all (Francis, 2026-10-21: scanners visited the employer and admin portals the minute their new addresses
+                // got certificates, and filled a page of the Activity Log). Only the recruiter, employer and admin portals, and only visitors who are not signed in: the marketing site
+                // and the candidate portal keep their robots because the visitor funnel reports on them. The cheap checks come first, so the network lookup runs only for those visits.
+                var uaHeader = ctx.Request.Headers.UserAgent.ToString();
+                if (IsSignInPortal(req.Portal) && userId is null)
+                {
+                    var owner = (await owners.GetResolverAsync(ctx.RequestAborted))(ip);
+                    if (IsAutomatedPortalVisit(req.Portal, signedIn: false, uaHeader, owner?.IsMachine ?? false)) return Results.Ok(new { logged = false });
+                }
                 var geoResult = await geo.ResolveAsync(ip, ctx.RequestAborted);
 
                 var doc = new SystemEventDoc(
@@ -92,6 +101,18 @@ public static class Endpoint
             }
         }).AllowAnonymous();
     }
+
+    private static readonly string[] SignInPortals = ["recruiter", "employer", "admin"];
+
+    /// <summary>The portals people must sign in to use: recruiter, employer and admin (any capitalisation). The marketing site and the candidate portal are not among them.</summary>
+    public static bool IsSignInPortal(string? portal) => portal is not null && SignInPortals.Contains(portal.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True for a visit to a sign-in portal that should not be logged: the visitor is not signed in, and either the user agent names itself as a robot or the visit comes from a
+    /// cloud, hosting or crawler network (Amazon, Google, a VPS company and so on). Signed-in visits, and every visit to any other portal, are never dropped.
+    /// </summary>
+    public static bool IsAutomatedPortalVisit(string? portal, bool signedIn, string? userAgent, bool isMachineNetwork) =>
+        IsSignInPortal(portal) && !signedIn && (isMachineNetwork || Admin.Endpoint.IsBotAgent(userAgent));
 
     private record EventRequest(string SessionId, string EventType, string? Page, string? Portal, Dictionary<string, object>? Metadata);
 
