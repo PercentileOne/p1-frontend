@@ -349,7 +349,7 @@ export default function InterviewHistory() {
           role={shareTarget.role}
           company={shareTarget.company}
           score={shareTarget.score}
-          shareUrl={`https://candidate.explain.global/shared/${shareTarget.id}`}
+          shareUrl={`https://candidate.theinterviewchair.com/shared/${shareTarget.id}`}
           onClose={() => setShareTarget(null)}
         />
       )}

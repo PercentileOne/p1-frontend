@@ -24,10 +24,10 @@ export type Portal =
 /** The subdomain each portal lives at. Used for cross-portal redirects. */
 export const PORTAL_ORIGINS: Record<Portal, string> = {
   candidate: 'https://candidate.theinterviewchair.com',
-  recruiter: 'https://recruiter.interviewme.global',
-  employer:  'https://employer.interviewme.global',
-  admin:     'https://admin.interviewme.global',
-  careers:   'https://careers.interviewme.global',
+  recruiter: 'https://recruiter.theinterviewchair.com',
+  employer:  'https://employer.theinterviewchair.com',
+  admin:     'https://admin.theinterviewchair.com',
+  careers:   'https://careers.theinterviewchair.com',
 };
 
 // ── Roles ─────────────────────────────────────────────────────────────────────

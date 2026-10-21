@@ -60,7 +60,7 @@ export function CvAnalysisModal({ onClose, initialData, onSaved }: Props) {
   // available once a record has an id (either just saved, or opened from history).
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(
-    initialData?.isShared && initialData.shareToken ? `https://recruiter.interviewme.global/shared/cv-analysis/${initialData.shareToken}` : null,
+    initialData?.isShared && initialData.shareToken ? `https://recruiter.theinterviewchair.com/shared/cv-analysis/${initialData.shareToken}` : null,
   );
   const [shareCopied, setShareCopied] = useState(false);
 

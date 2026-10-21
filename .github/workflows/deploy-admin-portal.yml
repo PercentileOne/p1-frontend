@@ -1,4 +1,4 @@
-name: Deploy admin.interviewme.global → Azure SWA
+name: Deploy admin.theinterviewchair.com → Azure SWA
 
 on:
   push:

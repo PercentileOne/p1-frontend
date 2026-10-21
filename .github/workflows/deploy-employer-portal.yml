@@ -1,4 +1,4 @@
-name: Deploy employer.explain.global → Azure SWA
+name: Deploy employer.theinterviewchair.com → Azure SWA
 
 on:
   push:

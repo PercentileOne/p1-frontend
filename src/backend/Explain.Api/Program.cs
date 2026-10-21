@@ -120,6 +120,9 @@ builder.Services.AddCors(options =>
             "https://candidate.theinterviewchair.com",
             "https://www.theinterviewchair.com",
             "https://theinterviewchair.com",
+            "https://recruiter.theinterviewchair.com",
+            "https://employer.theinterviewchair.com",
+            "https://admin.theinterviewchair.com",
             "https://login.theinterviewchair.com", // the neutral role-picker gate — moved here from www.interviewme.global
             "https://candidate.interviewme.global", // legacy domain, now redirects — kept until DNS fully propagates
             "https://recruiter.interviewme.global",

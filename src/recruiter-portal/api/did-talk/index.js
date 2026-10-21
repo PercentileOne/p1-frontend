@@ -4,9 +4,9 @@ const { requireAuth, CORS_HEADERS } = require('../_shared/verifyToken');
 const DID_BASE_HOST = 'api.d-id.com';
 
 const PRESENTER_IMAGES = {
-  hr: 'https://recruiter.explain.global/images/sarah.png',
-  technical: 'https://recruiter.explain.global/images/james.png',
-  agent: 'https://recruiter.explain.global/images/mike.png',
+  hr: 'https://recruiter.theinterviewchair.com/images/sarah.png',
+  technical: 'https://recruiter.theinterviewchair.com/images/james.png',
+  agent: 'https://recruiter.theinterviewchair.com/images/mike.png',
 };
 
 const DID_VOICES = {

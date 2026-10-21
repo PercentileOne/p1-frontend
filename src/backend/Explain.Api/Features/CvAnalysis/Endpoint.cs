@@ -34,7 +34,7 @@ public static class Endpoint
     // sharing their own "What Am I Worth?" analysis needs a candidate.theinterviewchair.com
     // link, not a recruiter one. Domain per Alerts/Endpoint.cs's own recruiter-link convention
     // and Interviews/Endpoint.cs's own ShareBaseUrl for the candidate side.
-    private const string RecruiterPortalUrl = "https://recruiter.interviewme.global";
+    private const string RecruiterPortalUrl = "https://recruiter.theinterviewchair.com";
     private const string CandidatePortalUrl = "https://candidate.theinterviewchair.com";
     private const string MarketingSiteUrl = "https://www.theinterviewchair.com";
     // Tags every link a person shares from their own analysis, so the Activity Log shows shared CV cards as a source (the same naming as shared videos).

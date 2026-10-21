@@ -127,7 +127,7 @@ export default function CandidateHome() {
             }}>IM</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
-                Interview<span style={{ color: '#34d399' }}>Me</span><span style={{ color: '#7b5cf5' }}>.global</span>
+                <span style={{ color: '#34d399' }}>The</span>Interview<span style={{ color: '#34d399' }}>Chair</span><span style={{ color: '#7b5cf5' }}>.com</span>
               </div>
               <div style={{ fontSize: 10, color: TEXT3, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 1 }}>
                 Candidate Portal
@@ -185,7 +185,7 @@ export default function CandidateHome() {
             }}>C</div>
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: TEXT1 }}>Candidate</div>
-              <div style={{ fontSize: 10, color: TEXT3 }}>candidate.explain.global</div>
+              <div style={{ fontSize: 10, color: TEXT3 }}>candidate.theinterviewchair.com</div>
             </div>
           </div>
         </div>

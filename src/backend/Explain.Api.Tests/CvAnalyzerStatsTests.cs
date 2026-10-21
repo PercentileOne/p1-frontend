@@ -62,7 +62,7 @@ public class CvAnalyzerStatsTests
     [Theory]
     [InlineData("https://www.theinterviewchair.com", "marketing")]
     [InlineData("https://candidate.theinterviewchair.com", "candidate")]
-    [InlineData("https://recruiter.interviewme.global", "recruiter")]
+    [InlineData("https://recruiter.theinterviewchair.com", "recruiter")]
     [InlineData("https://example.com", "other")]
     [InlineData("", "other")]
     public void Source_comes_from_the_page_that_sent_the_request(string origin, string expected) =>

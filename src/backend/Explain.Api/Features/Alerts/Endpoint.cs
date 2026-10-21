@@ -230,8 +230,8 @@ public static class Endpoint
     private static async Task SendAlertMatchEmailAsync(Alert alert, AlertMatch match, IEmailSender emailSender, ILogger logger)
     {
         var portalUrl = alert.ownerType == "employer"
-            ? "https://employer.interviewme.global/dashboard"
-            : "https://recruiter.interviewme.global/dashboard";
+            ? "https://employer.theinterviewchair.com/dashboard"
+            : "https://recruiter.theinterviewchair.com/dashboard";
 
         var body = $"""
             <!DOCTYPE html>

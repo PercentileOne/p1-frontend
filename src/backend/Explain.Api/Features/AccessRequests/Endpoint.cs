@@ -284,7 +284,7 @@ public static class Endpoint
                 <tr><td style="padding:8px 0;color:#666;">Seats</td><td style="padding:8px 0;">{r.Seats}</td></tr>
                 <tr><td style="padding:8px 0;color:#666;vertical-align:top;">Message</td><td style="padding:8px 0;">{E(r.Message ?? "—")}</td></tr>
               </table>
-              <p style="margin-top:22px;"><a href="https://admin.interviewme.global/access-requests" style="background:#34d399;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:700;">Open in the admin portal</a></p>
+              <p style="margin-top:22px;"><a href="https://admin.theinterviewchair.com/access-requests" style="background:#34d399;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:700;">Open in the admin portal</a></p>
               <p style="color:#999;font-size:12px;">Call them, then create their organisation and send the payment link from the Access requests page.</p>
             </div>
             """;

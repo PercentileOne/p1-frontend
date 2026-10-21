@@ -18,7 +18,7 @@ export function ChairLogo({ size = 96, showText = true }: ChairLogoProps) {
       }}>
         <img
           src="/images/mastermind-chair-tight.png"
-          alt="InterviewMe"
+          alt="TheInterviewChair.com"
           style={{
             width: '100%', height: '100%',
             objectFit: 'cover',
@@ -41,7 +41,7 @@ export function ChairLogo({ size = 96, showText = true }: ChairLogoProps) {
           lineHeight: 1,
           fontFamily: "-apple-system,'Segoe UI',system-ui,sans-serif",
         }}>
-          InterviewMe<span style={{ color: '#4F8EF7' }}>.global</span>
+          <span style={{ color: '#34D399' }}>The</span>Interview<span style={{ color: '#34D399' }}>Chair</span><span style={{ opacity: 0.55, fontWeight: 500 }}>.com</span>
         </div>
       )}
     </div>

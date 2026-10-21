@@ -179,7 +179,7 @@ public static class Endpoint
     private static async Task SendIntroductionEmailAsync(Introduction intro, IEmailSender emailSender, ILogger logger)
     {
 
-        var watchUrl = $"https://employer.interviewme.global/watch/{intro.id}";
+        var watchUrl = $"https://employer.theinterviewchair.com/watch/{intro.id}";
         var scoreLine = intro.overallScore is not null ? $" — scored {intro.overallScore}%" : "";
         var feeLine = intro.proposedFeeGbp is not null
             ? $"<p style=\"text-align:center;font-size:12px;color:rgba(255,255,255,0.4);margin:0 0 20px;\">Proposed introduction fee: £{intro.proposedFeeGbp:N0}</p>"

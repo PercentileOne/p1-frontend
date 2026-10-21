@@ -1,4 +1,4 @@
-name: Deploy candidate.explain.global → Azure SWA (orange-island)
+name: Deploy candidate.theinterviewchair.com → Azure SWA (orange-island)
 
 on:
   push:
