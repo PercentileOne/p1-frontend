@@ -2,7 +2,7 @@ import { useAuthStore } from '../auth/authStore';
 
 // The feed's courses strip (2026-10-20): courses from official providers, checked against the provider's own page when an admin adds them. Title and picture are the provider's; the link goes to the provider's own site.
 // Absolute URL on purpose (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export type CourseCost = 'free' | 'free-to-audit' | 'paid' | '';
 

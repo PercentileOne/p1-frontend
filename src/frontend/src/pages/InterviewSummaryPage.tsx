@@ -487,7 +487,7 @@ export default function InterviewSummaryPage() {
   useEffect(() => {
     if (hasRouteState || !routeId || !authUser?.id || !authToken) return;
     setFetchState('loading');
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
     fetch(`${apiBase}/api/interviews/${encodeURIComponent(authUser.id)}/${encodeURIComponent(routeId)}`, {
       headers: { Authorization: `Bearer ${authToken}` },
     })
@@ -536,7 +536,7 @@ export default function InterviewSummaryPage() {
     if (!hasRouteState || !candidateId || !interviewId || !authToken) { setUploadPending(false); return; }
     let cancelled = false;
     let attempts = 0;
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
     const poll = () => {
       if (cancelled) return;
       attempts += 1;
@@ -621,7 +621,7 @@ export default function InterviewSummaryPage() {
   useEffect(() => {
     if (!authToken || !loopRole) return;
     let cancelled = false;
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
     fetch(`${apiBase}/api/interviews`, { headers: { Authorization: `Bearer ${authToken}` } })
       .then(res => (res.ok ? res.json() : []))
       .then((list: Array<{ id: string; createdAt: string; role?: string | null; overallScore: number }>) => {

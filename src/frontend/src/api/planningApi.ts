@@ -1,7 +1,7 @@
 import { useAuthStore } from '../auth/authStore';
 
 // Goals and reviews (2026-10-18), for the Routines & Systems page. Absolute URL on purpose: this SWA's own Functions runtime would 404 a relative /api path (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export type GoalStatus = 'active' | 'paused' | 'completed';
 export type GoalTrack = 'milestones' | 'number';

@@ -72,7 +72,7 @@ export default function MyTalksPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showCoaching, setShowCoaching] = useState(false);
 
-  const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+  const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
   useEffect(() => {
     if (!authToken) return;

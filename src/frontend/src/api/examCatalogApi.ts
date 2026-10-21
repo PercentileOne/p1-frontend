@@ -10,7 +10,7 @@
 // (new recurring Azure cost), not done as part of writing this code.
 // Absolute URL to the real backend — never a relative /api path (this SWA's own Functions runtime
 // would silently 404 it; see CLAUDE.md).
-const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export const PROXY_BASE = 'https://p1-examcatalog-agent.azurewebsites.net/api/examcatalog';
 

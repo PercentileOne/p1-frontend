@@ -1,6 +1,6 @@
 // "Printable Interview Questions" client (Francis, 2026-09-22) — talks to Explain.Api's Features/QuestionPacks. Public and
 // anonymous, same absolute-URL rule as every other backend call from this app (see CLAUDE.md's relative-/api/* gotcha).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface QuestionPackQa { question: string; answer: string }
 export interface QuestionPackContent { jobRole: string; focusAreas: string | null; difficulty: string; questions: QuestionPackQa[] }

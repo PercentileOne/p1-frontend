@@ -8,7 +8,7 @@ import type { CoachingMessage } from '../utils/coachingEngine';
 import { logFlowEvent } from './flowLogger';
 import { applyNames, personaGuidance } from '../lib/seatInterviewers';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const MODEL = 'gpt-4o-mini';
 
 // AI is always available — calls go through the .NET backend's /api/ai-proxy endpoint

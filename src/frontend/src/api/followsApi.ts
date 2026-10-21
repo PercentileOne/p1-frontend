@@ -1,7 +1,7 @@
 import { useAuthStore } from '../auth/authStore';
 
 // Following another person (2026-10-18). Absolute URL on purpose (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface FollowState { following: boolean; followers: number }
 

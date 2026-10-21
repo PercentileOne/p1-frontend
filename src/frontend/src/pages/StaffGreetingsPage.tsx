@@ -12,7 +12,7 @@ import { unlockTTSAudio } from '../api/ttsApi';
 // to just that window, brings the live face up, and records it saying the greeting, with the sound. The result can be watched, retaken, or saved to the interviewer.
 // Needs a computer, Chrome or Edge (the cropping uses "region capture"), and a staff sign-in.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 interface AdminInterviewer {
   id: string; displayName: string; role: 'hr' | 'technical' | 'briefing'; spatiusAvatarId: string; backgroundUrl: string | null; portraitUrl: string | null; greetingUrl: string | null; active: boolean;

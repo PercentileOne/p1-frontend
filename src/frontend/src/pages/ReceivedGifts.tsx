@@ -27,7 +27,7 @@ const FILTER_OPTS = ['All', 'Expiring soon'] as const;
 type FilterOpt = (typeof FILTER_OPTS)[number];
 type SortKey = 'expiresAt' | 'senderName' | 'sessionsRemaining';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const EXPIRING_SOON_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches the shortest tier (gift-3day)
 
 function fmtDate(iso: string | null) {

@@ -11,7 +11,7 @@ public class OpenAiEnricher(IConfiguration config, IHttpClientFactory httpFactor
     // Was a direct OpenAI call with its own key — now routes through Explain.Api's shared
     // /api/ai-proxy (Azure AI Foundry Model Router), same path Learn and interview scoring use,
     // so this agent gets the router's auto-failover too and no longer needs its own OpenAI key.
-    private readonly string _explainApiUrl = (config["ExplainApiUrl"] ?? "https://api.explain.global").TrimEnd('/');
+    private readonly string _explainApiUrl = (config["ExplainApiUrl"] ?? "https://api.theinterviewchair.com").TrimEnd('/');
 
     private static readonly JsonSerializerOptions _json = new()
     {

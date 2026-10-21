@@ -5,7 +5,7 @@ import type { TedTalk, TedTalkOrder } from './tedTalksApi';
 // enough to reuse as-is), pointed at the backend's separate productivity-videos search + its
 // own pinned list (Features/Talks/ProductivityVideos/Endpoint.cs), so pinning here never mixes
 // with the TED pinned list.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 function authHeaders(): Record<string, string> {
   const token = useAuthStore.getState().token;

@@ -1,6 +1,6 @@
 // "Delete my account" client (Francis, 2026-09-21) — talks to Explain.Api's Features/Users/DeleteAccount. Permanent: the server removes the
 // person's data everywhere and cancels any subscription; the caller then signs out and leaves.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export async function deleteMyAccount(token: string, confirmEmail: string): Promise<{ ok: true } | { ok: false; error: string }> {
   try {

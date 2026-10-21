@@ -10,7 +10,7 @@
 
 import { searchCareers, type Career } from './careersApi';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface CvSkill {
   name: string;

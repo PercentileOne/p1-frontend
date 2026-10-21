@@ -13,7 +13,7 @@ import { HELP_VISITED_KEY } from '../help/articles';
 const DISMISS_KEY = 'tic.gettingstarted.dismissed';
 // The Learn page keeps a candidate's generated courses in this browser (see LearnPanel's STORAGE_KEY) — there is no server list to ask.
 const LEARN_COURSES_KEY = 'im_learn_courses_v1';
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 interface Step { key: string; label: string; hint: string; nav: string; done: boolean }
 

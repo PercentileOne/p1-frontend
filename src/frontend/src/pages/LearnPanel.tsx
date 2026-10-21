@@ -13,7 +13,7 @@ import { logLearnTopic } from '../api/learnTopicsApi';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG2    = '#10131a';

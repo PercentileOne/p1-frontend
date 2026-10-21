@@ -1,7 +1,7 @@
 import { useAuthStore } from '../auth/authStore';
 
 // The feed's books strip (2026-10-19): real books checked against Open Library when an admin adds them. Covers and links come from Open Library; nothing is re-hosted. Absolute URL on purpose (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface FeedBook {
   id: string;        // the ISBN-13

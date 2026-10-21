@@ -1,6 +1,6 @@
 // Industry news for the Feed's right-hand panel (2026-10-19): the same real RSS business and startup headlines the Dashboard's Business Pulse card uses (backend CareerNews, GET /api/business-news).
 // Short headline, source and link only, never copied text. Absolute URL on purpose (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface FeedNewsItem { tag: string; headline: string; source: string; url: string; publishedAt: string }
 

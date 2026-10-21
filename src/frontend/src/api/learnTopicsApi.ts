@@ -2,7 +2,7 @@
 // Learn (LearnPanel.tsx's handleGenerate), and reads back the real top-studied-topics ranking.
 // Fire-and-forget on the log side — a logging failure should never block opening the course.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface LearnTopicStat {
   topic: string;

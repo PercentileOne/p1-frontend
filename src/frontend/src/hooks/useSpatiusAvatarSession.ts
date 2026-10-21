@@ -16,7 +16,7 @@ import { tapSpokenPcmForRecording } from '../api/ttsApi';
 // the demo ticket (see backend Features/TryOut "spatius-token"). Full interviews use the same hook through a thin per-seat adapter
 // (useSpatiusSeat) and the interview-ticket route (backend Features/Interviews/AvatarSession "spatius-token").
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export type SpatiusStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'closed';
 type Sdk = typeof import('@spatius/avatarkit');

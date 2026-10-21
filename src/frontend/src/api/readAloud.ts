@@ -8,7 +8,7 @@
 import { useAuthStore } from '../auth/authStore';
 import { sanitiseForTTS } from './ttsApi';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export type ReadAloudState = 'idle' | 'loading' | 'playing' | 'paused' | 'done' | 'error';
 export type ReadAloudGender = 'female' | 'male';

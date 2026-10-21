@@ -1259,7 +1259,7 @@
   var IV_TRAITS = [['depth', 'Depth'], ['strictness', 'Strictness'], ['warmth', 'Warmth'], ['humour', 'Humour'], ['pace', 'Pace']];
   var pickList = IV_FALLBACK, pickSel = 'haruto';
   // An uploaded portrait (Admin > Interviewers) wins; otherwise the picture file on this site.
-  function ivPhoto(i) { return i.portraitUrl ? 'https://api.explain.global' + i.portraitUrl : '/img/iv-' + i.id + '.webp'; }
+  function ivPhoto(i) { return i.portraitUrl ? 'https://api.theinterviewchair.com' + i.portraitUrl : '/img/iv-' + i.id + '.webp'; }
   // A recorded greeting clip (made once by staff in Admin > Interviewers > Record greetings) plays straight away on any device, with no live face to build.
   function resetClip(cur) {
     var v = document.getElementById('pickVideo'), btn = document.getElementById('pickPlay');
@@ -1340,12 +1340,12 @@
   if (document.readyState === 'complete') setTimeout(startHello, 1200); else window.addEventListener('load', function () { setTimeout(startHello, 1200); });
 
   try {
-    fetch('https://api.explain.global/interviews/interviewers').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
+    fetch('https://api.theinterviewchair.com/interviews/interviewers').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
       if (!Array.isArray(list)) return;
       var ok = list.filter(function (i) { return (i.role === 'hr' || i.role === 'technical') && (IV_IDS[i.id] || i.portraitUrl); })
                    .sort(function (a, b) { return (a.role === b.role ? 0 : a.role === 'hr' ? -1 : 1) || (a.sortOrder - b.sortOrder); });
       if (ok.length < 2) return;
-      ok.forEach(function (i) { if (i.greetingUrl && i.greetingUrl.charAt(0) === '/') i.greetingUrl = 'https://api.explain.global' + i.greetingUrl; });
+      ok.forEach(function (i) { if (i.greetingUrl && i.greetingUrl.charAt(0) === '/') i.greetingUrl = 'https://api.theinterviewchair.com' + i.greetingUrl; });
       pickList = ok;
       if (!ok.some(function (i) { return i.id === pickSel; })) { var d = ok.filter(function (i) { return i.defaultFor === 'technical'; })[0]; pickSel = (d || ok[0]).id; }
       renderPick(); syncHello();
@@ -1414,7 +1414,7 @@
   if (selLang.value.indexOf('en') === 0 && !forcedLang) {
     var done = false;
     try {
-      fetch('https://api.explain.global/api/tryout/country').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      fetch('https://api.theinterviewchair.com/api/tryout/country').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
         done = true; applyLanguage((j && j.country) || '');
       }).catch(function () { /* keep the browser-based default */ });
     } catch (e) { /* keep the browser-based default */ }

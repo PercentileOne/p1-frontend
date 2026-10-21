@@ -20,7 +20,7 @@
 // funnel = sessions that fired `interaction`. Found 2026-09-26: most US traffic is data-centre
 // crawlers (Boardman/Ashburn/Council Bluffs) hitting every portal within the same second.
 (function () {
-  var API_BASE = 'https://api.explain.global';
+  var API_BASE = 'https://api.theinterviewchair.com';
   var SESSION_KEY = 'explain_session_id';
   var FIRST_KEY = 'tic_first_touch';
 

@@ -66,7 +66,7 @@
       var params = new URLSearchParams(window.location.search);
       var sessionId = params.get('session_id');
       if (!sessionId) return;
-      fetch('https://api.explain.global/api/session-passes/checkout-session/' + encodeURIComponent(sessionId))
+      fetch('https://api.theinterviewchair.com/api/session-passes/checkout-session/' + encodeURIComponent(sessionId))
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (data) {
           if (data && data.recipientFirstName) {

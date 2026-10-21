@@ -7,7 +7,7 @@
 import type { ExamCatalogEntry } from './examCatalogApi';
 import type { MCQQuestion } from './aiScoring';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const MODEL = 'gpt-4o-mini';
 
 async function chatJSON<T>(systemPrompt: string, userPrompt: string, temperature = 0.5): Promise<T> {

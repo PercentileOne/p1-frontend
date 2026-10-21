@@ -3,7 +3,7 @@ import { useAuthStore } from '../auth/authStore';
 import { localDate } from '../api/routinesApi';
 
 // Today's My Routines progress, asked as a summary only so it never creates a day for someone who has not opened My Routines (the same call the Dashboard's routine card makes).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface RoutineSummary { essentialsDone: number; essentialsTotal: number; done: number; total: number }
 

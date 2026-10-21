@@ -32,7 +32,7 @@ export interface TranscriptMeta {
 export type MicState = 'idle' | 'listening' | 'processing';
 
 const FILLER_WORDS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 'i mean', 'sort of', 'kind of', 'right so'];
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 export const whisperConfigured = true;
 
 // Only English filler words are known, so they are only flagged in English — in any other language "no fillers found" would be a claim we can't back up,

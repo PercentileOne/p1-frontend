@@ -44,7 +44,7 @@ jobs:
         working-directory: src/recruiter-portal
         env:
           # VITE_ELEVENLABS_* removed — see deploy-candidate-portal.yml for why.
-          VITE_EXPLAIN_API_URL: https://api.explain.global
+          VITE_EXPLAIN_API_URL: https://api.theinterviewchair.com
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps

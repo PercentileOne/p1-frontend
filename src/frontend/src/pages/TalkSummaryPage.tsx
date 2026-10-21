@@ -17,7 +17,7 @@ import type { TalkScoreResult, DimensionScore } from '../api/talksApi';
 // live interviewers and Mike as a separate "just compared notes" character).
 const WAYNE_COLOR = '#4F8EF7';
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
 function scoreColor(pct: number) {
   if (pct >= 70) return '#34D399';

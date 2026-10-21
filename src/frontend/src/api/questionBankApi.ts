@@ -2,7 +2,7 @@
 // Features/QuestionBank/Endpoint.cs for why this is a separate store from qaLog (explicit
 // opt-in only, not an automatic trail of every question asked).
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface QuestionBankEntry {
   id: string;

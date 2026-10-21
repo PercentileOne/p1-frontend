@@ -4,7 +4,7 @@
 // Fire-and-forget: a logging failure should never block starting the interview, same
 // reasoning as inDemandSubjectsApi.ts's identical shape.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export type ConfidenceResponse = 'confident' | 'not-confident';
 

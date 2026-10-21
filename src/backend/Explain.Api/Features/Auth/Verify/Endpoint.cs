@@ -67,7 +67,7 @@ public static class Endpoint
 
             try
             {
-                var apiBase = config["ApiPublicUrl"] ?? "https://api.explain.global";
+                var apiBase = config["ApiPublicUrl"] ?? "https://api.theinterviewchair.com";
                 var verifyUrl = $"{apiBase}/api/auth/verify-email?token={Uri.EscapeDataString(user.EmailVerificationToken)}";
                 var body = $"""
                     <p style="font-family:-apple-system,'Segoe UI',sans-serif;">

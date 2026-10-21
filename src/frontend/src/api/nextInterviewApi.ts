@@ -3,7 +3,7 @@ import { daysUntil } from './planningApi';
 
 // "Next interview" (2026-10-18): the interviews a person says are coming up, plus the ones a recruiter sent a prep for (those already carry a date).
 // Absolute URL on purpose: this SWA's own Functions runtime would 404 a relative /api path (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface NextInterview {
   id: string;          // "prep:{id}" for a recruiter's prep, so the two kinds never clash

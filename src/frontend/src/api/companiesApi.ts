@@ -3,7 +3,7 @@
 // process and style per role family. It shapes how the mock interview is WRITTEN; it never contains real or
 // leaked questions, and nothing here implies the company is involved.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface CompanySummary {
   id: string;

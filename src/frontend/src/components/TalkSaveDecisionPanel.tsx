@@ -16,7 +16,7 @@ interface Props {
   onDiscarded?: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
 // Talk-room counterpart to SaveDecisionPanel.tsx — copied then trimmed rather than
 // parameterized, since SaveDecisionPanel hardcodes /api/interviews/... paths throughout;

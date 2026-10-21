@@ -5,7 +5,7 @@ import { sanitiseForTTS, getTTSLanguage } from './ttsApi';
 import { useAuthStore } from '../auth/authStore';
 import { seatInterviewerId } from '../lib/seatInterviewers';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 // The LiveAvatar kill switch — read once per room mount, before either seat attempts to
 // connect. A failed fetch (network hiccup, backend blip) fails OPEN (enabled: true) rather

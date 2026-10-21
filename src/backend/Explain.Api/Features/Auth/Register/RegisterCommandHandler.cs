@@ -197,7 +197,7 @@ public class RegisterCommandHandler(
 
     private static async Task SendVerificationEmailAsync(SqlUser user, string token, string? next, IConfiguration config, IEmailSender emailSender, ILogger logger)
     {
-        var apiBase = config["ApiPublicUrl"] ?? "https://api.explain.global";
+        var apiBase = config["ApiPublicUrl"] ?? "https://api.theinterviewchair.com";
         var safeNext = Explain.Api.Features.Auth.Verify.Endpoint.SafeNext(next);
         var verifyUrl = $"{apiBase}/api/auth/verify-email?token={Uri.EscapeDataString(token)}" + (safeNext is null ? "" : $"&next={Uri.EscapeDataString(safeNext)}");
 

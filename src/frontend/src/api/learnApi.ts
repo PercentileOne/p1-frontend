@@ -1,6 +1,6 @@
 import type { LessonData, LessonProgress, SavedLesson } from '../types/learn';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const API_PROXY = `${API_BASE}/api/ai-proxy`;
 const MODEL = 'gpt-4o-mini';
 

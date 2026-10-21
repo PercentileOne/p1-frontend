@@ -34,7 +34,7 @@ const FILTER_OPTS = ['All', 'Upcoming', 'Past'] as const;
 type FilterOpt = (typeof FILTER_OPTS)[number];
 type SortKey = 'interviewDate' | 'role' | 'recruiterName' | 'level';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 function levelColor(level: string) {
   return level === 'Standard' ? '#34D399' : level === 'Pro' ? '#F59E0B' : level === 'Expert' ? '#EF4444' : '#4F8EF7';

@@ -4,7 +4,7 @@
 // un-metered, and this is the one feature where every message is a fresh, uncached AI call,
 // so the daily cap has to be enforced authoritatively server-side.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';

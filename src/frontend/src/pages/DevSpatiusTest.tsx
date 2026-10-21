@@ -11,7 +11,7 @@ import { fetchAvatarAudioPcm } from '../api/liveAvatarApi';
 // Cost note: Spatius bills connected time, like HeyGen — hence the explicit Disconnect button and the 5-minute idle
 // auto-disconnect below, mirroring the cost-control lesson from LiveAvatar.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const IDLE_MS = 5 * 60 * 1000;
 
 let sdkReady: Promise<void> | null = null;

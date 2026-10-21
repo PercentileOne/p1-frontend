@@ -36,7 +36,7 @@ jobs:
       - name: Build
         working-directory: src/admin-portal
         env:
-          VITE_EXPLAIN_API_URL: https://api.explain.global
+          VITE_EXPLAIN_API_URL: https://api.theinterviewchair.com
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps

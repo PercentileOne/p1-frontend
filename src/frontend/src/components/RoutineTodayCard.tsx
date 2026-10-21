@@ -5,7 +5,7 @@ import { localDate } from '../api/routinesApi';
 
 // The Dashboard's "today" card for My Routines (Francis, 2026-10-13). It only asks for a summary, so it never creates a day for someone who has not opened My Routines.
 // The first time it is shown each day it carries "ready for you" wording; after that it quietly shows progress.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const GREEN = '#34D399';
 
 interface Summary { essentialsDone: number; essentialsTotal: number; done: number; total: number }

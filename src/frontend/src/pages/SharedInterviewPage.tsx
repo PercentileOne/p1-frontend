@@ -39,7 +39,7 @@ export default function SharedInterviewPage() {
 
   useEffect(() => {
     if (!token) { setState('error'); return; }
-    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+    const apiBase = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
     fetch(`${apiBase}/api/interviews/shared/${encodeURIComponent(token)}`)
       .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
       .then((d: SharedSession) => { setData(d); setState('done'); })

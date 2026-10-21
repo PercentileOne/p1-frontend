@@ -2,7 +2,7 @@
 // server-side (per visitor and per day), so a `capped` reply is a normal outcome to show kindly, not an error.
 import { useAuthStore } from '../auth/authStore';
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface TryOutStart {
   subject: string;

@@ -42,7 +42,7 @@ jobs:
           # this fix closes. Voice generation now goes through Explain.Api's own /interviews/speak
           # proxy, which holds the ElevenLabs key and voice ids server-side (see
           # Features/Interviews/SpeakVoice). ttsApi.ts no longer reads any ElevenLabs env var.
-          VITE_EXPLAIN_API_URL: https://api.explain.global
+          VITE_EXPLAIN_API_URL: https://api.theinterviewchair.com
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps

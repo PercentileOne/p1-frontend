@@ -1,7 +1,7 @@
 import { useAuthStore } from '../auth/authStore';
 
 // The feed's video strip (2026-10-18): verified videos from official YouTube channels, added by an admin. Absolute URL on purpose (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface FeedVideo {
   id: string;          // the YouTube video id

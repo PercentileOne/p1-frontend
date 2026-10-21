@@ -3,7 +3,7 @@ import { useAuthStore } from '../auth/authStore';
 // Telling a recruiter how far a candidate has got with the prep they were sent (2026-10-18). The recruiter sees THAT the prep was opened and started, how many times the
 // candidate practised, and how many questions they answered. Never the answers and never the scores (Francis's decision), so nothing here can carry either.
 // Absolute URL on purpose: this SWA's own Functions runtime would 404 a relative /api path (see CLAUDE.md). Fire and forget: a report that fails must never get in the way of the practice.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface PrepRef { id: string; recruiterId: string }
 export type PrepStep = 'opened' | 'started' | 'answered' | 'finished';

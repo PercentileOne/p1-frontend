@@ -25,7 +25,7 @@ interface Props {
   onDiscarded?: () => void;
 }
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export function CertSaveDecisionPanel({ passed, scaledScore, maxScore, certName, candidateId, examSessionId, alreadyShared = false, onDiscarded }: Props) {
   const authToken = useAuthStore(s => s.token) ?? '';

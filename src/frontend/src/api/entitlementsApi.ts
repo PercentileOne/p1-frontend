@@ -2,7 +2,7 @@
 // decides; this only asks, shows the result, and starts Stripe checkout. While the server's enforcement switch is OFF it always
 // answers "allowed", so nothing here changes what anyone can do until that switch is flipped.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface StartInterviewResult {
   allowed: boolean;

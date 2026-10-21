@@ -45,7 +45,7 @@ interface Props {
   onDiscarded?: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
 export function SaveDecisionPanel({
   score,

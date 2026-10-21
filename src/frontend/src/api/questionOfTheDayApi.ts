@@ -3,7 +3,7 @@ import { localDate } from './routinesApi';
 
 // Question of the Day (2026-10-18), the first content type of the feed. The server never sends the correct answer until the question has been answered.
 // Absolute URL on purpose: this SWA's own Functions runtime would 404 a relative /api path (see CLAUDE.md).
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface QuestionOfTheDay {
   needsTopic: boolean;

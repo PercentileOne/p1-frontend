@@ -87,7 +87,7 @@ export function sanitiseForTTS(text: string, swapNames = true): string {
   return out;
 }
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 // Shared AudioContext — created once, reused across all TTS calls
 let _audioCtx: AudioContext | null = null;

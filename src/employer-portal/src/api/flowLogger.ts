@@ -7,7 +7,7 @@
 // "backend is .NET Minimal APIs only" — not something to keep building on. They're left running,
 // unused, rather than deleted as part of this change (see the event-logging plan's own scope
 // notes) in case anything still depends on them.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 const SESSION_KEY = 'explain_session_id';
 

@@ -7,7 +7,7 @@
 // anything. Now posts to the real unified backend endpoint (see Features/Events/Endpoint.cs) —
 // same one every other portal is moving onto — instead of the old relative path or the
 // recruiter-portal-only Node.js Functions this file's sibling copy happened to work against.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 const SESSION_KEY = 'explain_session_id';
 

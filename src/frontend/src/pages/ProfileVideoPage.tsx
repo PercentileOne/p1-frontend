@@ -49,7 +49,7 @@ interface AnswerClip {
   coachingTips: string[];
 }
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 // ── AI Coaching ───────────────────────────────────────────────────────────────
 async function generateProfileCoaching(question: string, answer: string): Promise<string[]> {

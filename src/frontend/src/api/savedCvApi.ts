@@ -1,6 +1,6 @@
 // The CV a candidate used last time, kept on their account so it does not have to be uploaded again (2026-10-04). All calls are best-effort: a failure
 // simply means the person uploads or pastes their CV as before.
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface SavedCv { fileName: string; text: string; updatedAt: string }
 

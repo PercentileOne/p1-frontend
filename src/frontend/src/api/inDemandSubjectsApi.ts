@@ -3,7 +3,7 @@
 // suggestions themselves — only what survives the candidate's own keep/discard curation).
 // Fire-and-forget: a logging failure should never block starting the interview.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export async function logInDemandSubjects(token: string, jobTitle: string, subjects: string[]): Promise<void> {
   if (!subjects.length) return;

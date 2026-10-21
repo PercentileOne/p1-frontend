@@ -57,7 +57,7 @@ type LiveCard  = { color: string; bg: string; border: string; shadow: string; in
 interface NewsItem { tag: string; headline: string; source: string; url: string; publishedAt: string; color: string }
 interface FeaturedStat { value: string; label: string; sourceLabel?: string; sourceUrl?: string }
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 // slug: null keeps the URL as bare /dashboard for the home tab; every other tab gets a
 // real ?tab= query param so the address bar always matches what's on screen, and browser

@@ -1,7 +1,7 @@
 // Interview pass certificates (Francis, 2026-09-19). Issued by the backend for PASSES ONLY — the server re-checks the
 // saved score and difficulty, so nothing here can mint one for a non-pass. Public view is by an unguessable token.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface PublicCertificate {
   candidateName?: string | null;

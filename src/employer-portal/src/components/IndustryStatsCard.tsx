@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 // to this portal's audience, so a figure is edited once and updated everywhere. Every stat shows
 // its source; renders nothing if the fetch fails rather than an empty box.
 
-const BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global'
+const BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com'
 
 interface Stat { id: string; label: string; value: string; sourceLabel?: string | null; sourceUrl?: string | null }
 

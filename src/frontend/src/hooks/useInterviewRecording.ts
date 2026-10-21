@@ -6,7 +6,7 @@ import type { CVContext, JobSpecContext } from '../utils/contextBuilder';
 import { FILTER_CSS, type FilterPreset } from './useVideoFilter';
 import type { ChapterMarker, McqResult, RoomPhase, SessionAnswer } from '../pages/interview-room/types';
 
-const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.explain.global';
+const API_BASE = import.meta.env.VITE_EXPLAIN_API_URL ?? 'https://api.theinterviewchair.com';
 
 export interface UseInterviewRecordingParams {
   phase: RoomPhase;

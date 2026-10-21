@@ -114,7 +114,7 @@ interface IncomingState {
   recruiterName?: string;
 }
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 

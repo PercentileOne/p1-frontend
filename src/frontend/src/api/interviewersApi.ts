@@ -1,6 +1,6 @@
 // The interviewers a candidate can meet (public, read-only): the active ones from Admin > Interviewers. Voice IDs and audit fields are never sent to the browser.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface PublicInterviewer {
   id: string;

@@ -2,7 +2,7 @@
 // real likes for the signed-in candidate's own profile. See backend Features/Profile/Endpoint.cs
 // (GET /profile/engagement) for how each number is actually counted.
 
-const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.explain.global';
+const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 
 export interface ProfileEngagement {
   profileViews: number;
