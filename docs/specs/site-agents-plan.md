@@ -15,6 +15,8 @@ Spatius is only the face. It draws the avatar in the browser (3D Gaussian render
 
 What we do **not** have is a live, hands-free conversation loop with sub-second turn-taking. The interview room works one question at a time.
 
+**Confirmed from Spatius's own pricing and docs pages (22 Oct 2026):** the product is a "Real-Time AI Avatar SDK" only (Studio, a Motion Server that turns speech audio into lip-sync motion, and client SDKs for Web, iOS, Android and Flutter). No hosted agent, no knowledge base, no embed widget is listed. Their playground tutor, and the "Interview coach / Career consultant" tiles on their homepage, are their own demos. The roughly 2-minute / 3-question limit Francis saw is therefore the playground's demo cap, not a Spatius limit on us: paid plans allow sessions of 30 minutes (Starter) to 60 (Builder), so our own 3-minute cap is ours to set. Public plan table that day: Free $0 (100 min, 10-minute sessions, 2 at once), Starter $16 (2,000 min), Builder $39 (5,500 min, 60-minute sessions, 4 avatar creations a month), Growth $119, Scale $239; extra avatar creations $25 each ($16 at volume); Enterprise adds SLA, isolated deployment and an Avatar Creation API. Francis's notes say Builder costs him $49; check the 29 Oct renewal invoice against the $39 on the page.
+
 ## Options
 
 | | A. Build the loop ourselves | B. ElevenLabs Agents + Spatius face (recommended) |
