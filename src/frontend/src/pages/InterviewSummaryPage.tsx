@@ -509,7 +509,10 @@ export default function InterviewSummaryPage() {
   const companyMock: boolean = src.companyMock === true;
   const selectedDifficulty: string | undefined = typeof src.selectedDifficulty === 'string' ? src.selectedDifficulty : undefined;
   const hasCv: boolean = src.hasCv === true || (src.hasCv === undefined && !!cvCtx?.firstName);
-  const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null);
+  // The replay normally plays the copy kept in this browser (src.playbackUrl). If that copy is missing (an empty local recording, a reload), the video the server saved is used
+  // as soon as the upload lands, so a candidate is never left without the player while the shared link already plays it (our first customer only saw it by scanning the QR code).
+  const [serverVideoUrl, setServerVideoUrl] = useState<string | null>(null);
+  const playbackUrl: string | null = src.playbackUrl ?? (typeof src.videoUrl === 'string' ? src.videoUrl : null) ?? serverVideoUrl;
   const chapters: { questionIndex: number; questionText: string; competency: string; offsetSeconds: number }[] = src.chapters ?? [];
   const interviewId: string | undefined = src.interviewId ?? routeId;
   const candidateId: string | undefined = src.candidateId ?? authUser?.id;
@@ -553,7 +556,11 @@ export default function InterviewSummaryPage() {
       })
         .then(res => {
           if (cancelled) return;
-          if (res.ok) { setUploadPending(false); return; }
+          if (res.ok) {
+            void res.json().then((d: { videoUrl?: unknown }) => { if (!cancelled && typeof d?.videoUrl === 'string' && d.videoUrl) setServerVideoUrl(d.videoUrl); }).catch(() => { /* the local copy, if any, still plays */ });
+            setUploadPending(false);
+            return;
+          }
           setTimeout(poll, nextDelay);
         })
         .catch(() => {
