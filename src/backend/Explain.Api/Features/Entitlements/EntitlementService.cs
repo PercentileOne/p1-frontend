@@ -50,15 +50,20 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
     // ── Settings (Azure SQL, table EntitlementSettings — one row, Id = 1) ───────────────────────
     private static (EntitlementSettings s, DateTime at)? _cache; // static: the service itself is per-request, the setting is not
 
+    // The cache is process-wide, so tests that each have their own database would read one another's settings (a flaky failure seen
+    // 2026-10-22). Entitlements:CacheSeconds = 0 turns it off; the live default stays 20 seconds.
+    private int CacheSeconds => Math.Max(0, config.GetValue("Entitlements:CacheSeconds", 20));
+
     public async Task<EntitlementSettings> GetSettingsAsync()
     {
-        if (_cache is { } c && DateTime.UtcNow - c.at < TimeSpan.FromSeconds(20)) return c.s;
+        var ttl = CacheSeconds;
+        if (ttl > 0 && _cache is { } c && DateTime.UtcNow - c.at < TimeSpan.FromSeconds(ttl)) return c.s;
         var row = await db.EntitlementSettings.AsNoTracking().FirstOrDefaultAsync(r => r.Id == 1);
         var result = row is null
             ? EntitlementSettings.Default
             : new EntitlementSettings(row.Enforce, Math.Clamp(row.DailyCap, 0, 100), Math.Clamp(row.MonthlyCap, 0, 1000), row.TasterEnabled,
                 Math.Clamp(row.FreePeriodMonths, 0, 24), Math.Clamp(row.FreePeriodMonthlyCap, 0, 100), Math.Clamp(row.RecruiterPrepCap, 0, 1000));
-        _cache = (result, DateTime.UtcNow);
+        if (ttl > 0) _cache = (result, DateTime.UtcNow);
         return result;
     }
 

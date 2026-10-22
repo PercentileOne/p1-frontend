@@ -27,7 +27,7 @@ public sealed class EntitlementServiceTests : IDisposable
 
     private static EntitlementService Ent(AppDbContext db) =>
         new(db, new SessionPassService(db, new NoEmail(), NullLogger<SessionPassService>.Instance),
-            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Jwt:Secret"] = "test-secret" }).Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Jwt:Secret"] = "test-secret", ["Entitlements:CacheSeconds"] = "0" }).Build(),
             NullLogger<EntitlementService>.Instance);
 
     private async Task<string> User(string email, bool verified = true, DateTime? created = null)

@@ -126,7 +126,7 @@ public sealed class SessionPassServiceTests : IDisposable
         using (var db = NewDb())
         {
             // The migration seeds this row in production; EnsureCreated seeds it via the model's HasData.
-            var ent = new EntitlementService(db, Svc(db), new ConfigurationBuilder().Build(), NullLogger<EntitlementService>.Instance);
+            var ent = new EntitlementService(db, Svc(db), new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Entitlements:CacheSeconds"] = "0" }).Build(), NullLogger<EntitlementService>.Instance);
             var s = await ent.GetSettingsAsync();
             Assert.False(s.Enforce); Assert.Equal(3, s.DailyCap); Assert.Equal(10, s.MonthlyCap); Assert.True(s.TasterEnabled);
             await ent.SaveSettingsAsync(new EntitlementSettings(true, 2, 8, false), "francis@percentile.one");
