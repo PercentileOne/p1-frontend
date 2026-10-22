@@ -30,4 +30,9 @@
     <PackageReference Include="Stripe.net" Version="52.4.2" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- Password-locked pages (Features/PrivatePages): stored with the server, never on the public website. -->
+    <Content Include="PrivatePages\**\*.html" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

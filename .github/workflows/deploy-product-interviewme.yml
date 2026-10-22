@@ -35,17 +35,12 @@ jobs:
           cp src/viewme/public/viewme-trade-2.png deploy-product/viewme-trade-2.png
           cp src/viewme/public/viewme-trade-3.png deploy-product/viewme-trade-3.png
           cp src/viewme/public/about.html deploy-product/about.html
-          cp src/viewme/public/fp.html deploy-product/fp.html
           cp src/viewme/public/contact.html deploy-product/contact.html
           cp src/viewme/public/profile.html deploy-product/profile.html
-          cp src/viewme/public/patent.html deploy-product/patent.html
           cp src/viewme/public/how-we-score.html deploy-product/how-we-score.html
           cp src/viewme/public/ways-in.html deploy-product/ways-in.html
           cp src/viewme/public/recruiters.html deploy-product/recruiters.html
-          cp src/viewme/public/pitch-deck.html deploy-product/pitch-deck.html
-          cp src/viewme/public/architecture.html deploy-product/architecture.html
-          cp src/viewme/public/feed-spec.html deploy-product/feed-spec.html
-          cp src/viewme/public/pricing-question.html deploy-product/pricing-question.html
+          cp src/viewme/public/private.html deploy-product/private.html
           cp src/viewme/public/gift-interview.html deploy-product/gift-interview.html
           cp src/viewme/public/gift-interview-success.html deploy-product/gift-interview-success.html
           cp src/viewme/public/privacy.html deploy-product/privacy.html
@@ -58,8 +53,6 @@ jobs:
           # where in the page it sat. Found live: a genuine 404 on https://www.theinterviewchair.com/track.js.
           cp src/viewme/public/track.js deploy-product/track.js
           cp src/viewme/public/robots.txt deploy-product/robots.txt
-          mkdir -p deploy-product/patent-files
-          cp src/viewme/public/patent-files/*.png deploy-product/patent-files/
           # Images used by the homepage (WebP, 2026-09-21).
           mkdir -p deploy-product/img
           cp src/viewme/public/img/*.webp deploy-product/img/

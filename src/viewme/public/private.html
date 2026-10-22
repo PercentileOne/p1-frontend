@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private page | TheInterviewChair.com</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="/track.js?v=2"></script>
+<style>
+  /* The shared unlock page for every password-locked address (pitch-deck, architecture, feed-spec, pricing-question, patent, fp). Layout: one small card in the middle of the screen.
+     After unlocking, the page itself fills the window inside a frame. The page's own text is never stored on this website; it is fetched from the server with the unlock token. */
+  :root { --bg: #f2f5f3; --card: #ffffff; --ink: #16211d; --muted: #5a6b64; --line: #d9e1dd; --accent: #0a7a57; --bad: #b42318; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0d1412; --card: #141d1a; --ink: #e5eee9; --muted: #92a69d; --line: #27352f; --accent: #34d399; --bad: #ff8a7a; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 15px; line-height: 1.5; }
+  .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px 24px; }
+  h1 { margin: 0 0 6px; font-size: 20px; letter-spacing: -0.01em; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input { width: 100%; font: inherit; padding: 11px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { margin-top: 14px; width: 100%; font: inherit; font-weight: 700; padding: 11px 14px; border-radius: 9px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+  @media (prefers-color-scheme: dark) { button { color: #06231a; } }
+  button[disabled] { opacity: 0.6; cursor: default; }
+  #error { min-height: 20px; margin-top: 10px; font-size: 13.5px; color: var(--bad); }
+  #doc { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap" id="gate">
+  <form class="card" id="form" autocomplete="on">
+    <h1>This page is private</h1>
+    <p>Enter the password you were given to open it.</p>
+    <label for="pw">Password</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password" required autofocus>
+    <button type="submit" id="go">Open page</button>
+    <div id="error" role="alert"></div>
+  </form>
+</div>
+<iframe id="doc" title="Private page" hidden sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe>
+
+<script>
+(function () {
+  var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  var API = local ? 'http://localhost:5000' : 'https://api.theinterviewchair.com';
+  var KEY = 'tic.private.token';
+  var name = location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+  var gate = document.getElementById('gate'), form = document.getElementById('form'), frame = document.getElementById('doc');
+  var err = document.getElementById('error'), pw = document.getElementById('pw'), go = document.getElementById('go');
+
+  function store(t) { try { if (t) localStorage.setItem(KEY, t); else localStorage.removeItem(KEY); } catch (e) { /* the page still opens, it just asks again next time */ } }
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function say(text) { err.textContent = text || ''; }
+  function ask(text) { gate.hidden = false; frame.hidden = true; say(text); go.disabled = false; pw.focus(); }
+
+  async function open(token) {
+    if (!/^[a-z0-9-]+$/.test(name)) { ask('That address is not a private page.'); return; }
+    var res;
+    try { res = await fetch(API + '/api/private-pages/' + name, { headers: { Authorization: 'Bearer ' + token } }); }
+    catch (e) { ask('The page could not be reached just now. Please try again in a minute.'); return; }
+    if (res.status === 401) { store(null); ask(''); return; }
+    if (!res.ok) { ask('That page was not found.'); return; }
+    var html = await res.text();
+    frame.srcdoc = html;
+    gate.hidden = true;
+    frame.hidden = false;
+    document.title = (html.match(/<title>([^<]*)<\/title>/i) || [0, 'Private page'])[1];
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    say(''); go.disabled = true;
+    var res;
+    try { res = await fetch(API + '/api/private-pages/unlock', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw.value }) }); }
+    catch (ex) { ask('The page could not be reached just now. Please try again in a minute.'); return; }
+    var body = {};
+    try { body = await res.json(); } catch (ex) { /* no details */ }
+    if (!res.ok) { ask(body.error || 'That did not work. Please try again.'); pw.select(); return; }
+    store(body.token);
+    pw.value = '';
+    open(body.token);
+  });
+
+  var token = stored();
+  if (token) open(token); else pw.focus();
+})();
+</script>
+</body>
+</html>

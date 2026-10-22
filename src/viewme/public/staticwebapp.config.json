@@ -17,20 +17,12 @@
       "rewrite": "/about.html"
     },
     {
-      "route": "/fp",
-      "rewrite": "/fp.html"
-    },
-    {
       "route": "/contact",
       "rewrite": "/contact.html"
     },
     {
       "route": "/book",
       "rewrite": "/book.html"
-    },
-    {
-      "route": "/patent",
-      "rewrite": "/patent.html"
     },
     {
       "route": "/how-we-score",
@@ -46,28 +38,58 @@
     },
     {
       "route": "/pitch-deck",
-      "rewrite": "/pitch-deck.html",
-      "headers": { "X-Robots-Tag": "noindex, nofollow" }
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
     },
     {
       "route": "/architecture",
-      "rewrite": "/architecture.html",
-      "headers": { "X-Robots-Tag": "noindex, nofollow" }
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
     },
     {
       "route": "/feed-spec",
-      "rewrite": "/feed-spec.html",
-      "headers": { "X-Robots-Tag": "noindex, nofollow" }
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
     },
     {
       "route": "/pricing-question",
-      "rewrite": "/pricing-question.html",
-      "headers": { "X-Robots-Tag": "noindex, nofollow" }
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
+    },
+    {
+      "route": "/fp",
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
+    },
+    {
+      "route": "/patent",
+      "rewrite": "/private.html",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store"
+      }
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/*.{png,jpg,svg,ico,css,js,woff,woff2}"]
+    "exclude": [
+      "/*.{png,jpg,svg,ico,css,js,woff,woff2}"
+    ]
   },
   "globalHeaders": {
     "X-Frame-Options": "SAMEORIGIN",
