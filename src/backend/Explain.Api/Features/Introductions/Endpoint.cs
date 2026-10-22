@@ -31,7 +31,7 @@ public static class Endpoint
             if (string.IsNullOrEmpty(senderId)) return Results.Unauthorized();
 
             var perms = ctx.User.FindAll("perm").Select(c => c.Value).ToHashSet();
-            var isRecruiter = perms.Contains("CAN_MANAGE_INTERVIEWS");
+            var isRecruiter = perms.Contains("CAN_MANAGE_INTERVIEWS") && perms.Contains("CAN_VIEW_CANDIDATE_PROFILE");   // a self-service recruiter waits for approval
             var isCandidate = perms.Contains("CAN_PRACTICE_INTERVIEW");
             if (!isRecruiter && !isCandidate)
                 return Results.Forbid();

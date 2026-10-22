@@ -15,14 +15,18 @@ namespace Explain.Api.Features.Auth.Verify;
 public static class Endpoint
 {
     // Only a known internal page is ever carried through the email link (no open redirect): today just the subscribe page.
-    public static string? SafeNext(string? next) => next == "/subscription" ? next : null;
+    public static string? SafeNext(string? next) => next is "/subscription" or "/recruiter" ? next : null;
 
     public static void Map(WebApplication app)
     {
         app.MapGet("/api/auth/verify-email", async (string? token, string? next, AppDbContext db, IConfiguration config, SecurityEventLogger securityEvents) =>
         {
-            var candidateAppUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
-            var nextQuery = SafeNext(next) is { } safe ? $"&next={Uri.EscapeDataString(safe)}" : "";
+            // A self-service recruiter's link lands on the recruiter portal's sign-in; everyone else on the candidate app's.
+            var toRecruiter = SafeNext(next) == "/recruiter";
+            var candidateAppUrl = toRecruiter
+                ? (config["RecruiterAppUrl"] ?? "https://recruiter.theinterviewchair.com")
+                : (config["CandidateAppUrl"] ?? "http://localhost:5173");
+            var nextQuery = !toRecruiter && SafeNext(next) is { } safe ? $"&next={Uri.EscapeDataString(safe)}" : "";
 
             if (string.IsNullOrWhiteSpace(token))
                 return Results.Redirect($"{candidateAppUrl}/login?verifyError=missing-token");

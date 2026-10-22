@@ -167,7 +167,16 @@ namespace Explain.Api.Migrations
                     b.Property<bool>("Enforce")
                         .HasColumnType("bit");
 
+                    b.Property<int>("FreePeriodMonthlyCap")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FreePeriodMonths")
+                        .HasColumnType("int");
+
                     b.Property<int>("MonthlyCap")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecruiterPrepCap")
                         .HasColumnType("int");
 
                     b.Property<bool>("TasterEnabled")
@@ -190,7 +199,10 @@ namespace Explain.Api.Migrations
                             Id = 1,
                             DailyCap = 3,
                             Enforce = false,
+                            FreePeriodMonthlyCap = 3,
+                            FreePeriodMonths = 3,
                             MonthlyCap = 10,
+                            RecruiterPrepCap = 10,
                             TasterEnabled = true,
                             UpdatedAt = new DateTime(2026, 9, 21, 0, 0, 0, 0, DateTimeKind.Utc),
                             UpdatedBy = "system"
@@ -879,6 +891,13 @@ namespace Explain.Api.Migrations
                             IsSystemRole = true,
                             Name = "Super Admin",
                             Slug = "super-admin"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsSystemRole = true,
+                            Name = "Recruiter (self-service)",
+                            Slug = "recruiter-lite"
                         });
                 });
 
@@ -946,6 +965,26 @@ namespace Explain.Api.Migrations
                         {
                             RoleId = 2,
                             PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 4
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 7
                         },
                         new
                         {

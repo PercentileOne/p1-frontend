@@ -31,6 +31,9 @@ public class RegisterCommandHandler(
     private static readonly Dictionary<string, (int RoleId, string Name)> SelfRegisterableRoles = new(StringComparer.OrdinalIgnoreCase)
     {
         ["candidate"] = (1, "Candidate"),
+        // Self-service recruiter (2026-10-22, Francis: free for 3 months, no "contact me" step). Gets the recruiter-lite role: can send
+        // interview-prep links and nothing that touches candidate data. The full Recruiter role is added only when an admin approves them.
+        ["recruiter-lite"] = (6, "Recruiter"),
     };
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand cmd, CancellationToken ct)
@@ -53,6 +56,9 @@ public class RegisterCommandHandler(
             return Result<AuthResponse>.Failure("Recruiter and employer accounts are set up by our team. Please request access at https://www.theinterviewchair.com/request-access.html and we'll be in touch.", 403);
 
         var email = cmd.Email.Trim().ToLower();
+
+        if (string.Equals(cmd.Role?.Trim(), "recruiter-lite", StringComparison.OrdinalIgnoreCase) && Explain.Api.Features.Entitlements.EmailNormaliser.IsDisposable(email))
+            return Result<AuthResponse>.Failure("Please use your work email address to register.", 400);
 
         // An invite code, if one was given, must be good BEFORE anything is created, so a mistyped code is a clear message and not a half-made account.
         string? inviteCode = null;

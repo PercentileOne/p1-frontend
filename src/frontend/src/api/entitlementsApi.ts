@@ -7,8 +7,8 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 export interface StartInterviewResult {
   allowed: boolean;
   enforced: boolean;
-  source: string;      // staff | complimentary | subscription | pass | taster | none | enforcement-off
-  code: string;        // daily-cap | monthly-cap | taster-used | verify-email | email-not-eligible | no-access | ...
+  source: string;      // staff | complimentary | subscription | free-period | pass | taster | none | enforcement-off
+  code: string;        // daily-cap | monthly-cap | free-cap | free-period-ended | taster-used | verify-email | email-not-eligible | no-access | ...
   message: string;
   usageId: string | null;
   ticket?: string | null;   // signed proof the server allowed this interview — sent with the avatar-session request
@@ -16,13 +16,15 @@ export interface StartInterviewResult {
 
 export interface EntitlementStatus {
   enforced: boolean;
-  plan: 'staff' | 'complimentary' | 'subscriber' | 'pass' | 'prep' | 'taster' | 'none';
+  plan: 'staff' | 'complimentary' | 'subscriber' | 'free-period' | 'pass' | 'prep' | 'taster' | 'none';
   canStartInterview: boolean;
   code: string;
   message: string;
   dailyUsed: number; dailyCap: number; monthlyUsed: number; monthlyCap: number;
   passSessionsLeft: number;
   prepSessionsLeft?: number;
+  freeUntil?: string | null;      // set while the account is inside its free months
+  freeMonthlyUsed?: number; freeMonthlyCap?: number;
   tasterAvailable: boolean;
 }
 

@@ -18,7 +18,9 @@ public record EntitlementStatus(
     int DailyUsed, int DailyCap, int MonthlyUsed, int MonthlyCap,
     int PassSessionsLeft,
     bool TasterAvailable,
-    int PrepSessionsLeft = 0);
+    int PrepSessionsLeft = 0,
+    DateTime? FreeUntil = null,          // set while the account is inside its free months
+    int FreeMonthlyUsed = 0, int FreeMonthlyCap = 0);
 
 public record StartResult(bool Allowed, bool Enforced, string Source, string Code, string Message, string? UsageId, string? Ticket = null);
 
@@ -54,7 +56,8 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         var row = await db.EntitlementSettings.AsNoTracking().FirstOrDefaultAsync(r => r.Id == 1);
         var result = row is null
             ? EntitlementSettings.Default
-            : new EntitlementSettings(row.Enforce, Math.Clamp(row.DailyCap, 0, 100), Math.Clamp(row.MonthlyCap, 0, 1000), row.TasterEnabled);
+            : new EntitlementSettings(row.Enforce, Math.Clamp(row.DailyCap, 0, 100), Math.Clamp(row.MonthlyCap, 0, 1000), row.TasterEnabled,
+                Math.Clamp(row.FreePeriodMonths, 0, 24), Math.Clamp(row.FreePeriodMonthlyCap, 0, 100), Math.Clamp(row.RecruiterPrepCap, 0, 1000));
         _cache = (result, DateTime.UtcNow);
         return result;
     }
@@ -64,6 +67,7 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         var row = await db.EntitlementSettings.FirstOrDefaultAsync(r => r.Id == 1);
         if (row is null) { row = new Infrastructure.Sql.Models.EntitlementSettingsRow { Id = 1 }; db.EntitlementSettings.Add(row); }
         row.Enforce = s.Enforce; row.DailyCap = s.DailyCap; row.MonthlyCap = s.MonthlyCap; row.TasterEnabled = s.TasterEnabled;
+        row.FreePeriodMonths = s.FreePeriodMonths; row.FreePeriodMonthlyCap = s.FreePeriodMonthlyCap; row.RecruiterPrepCap = s.RecruiterPrepCap;
         row.UpdatedAt = DateTime.UtcNow; row.UpdatedBy = updatedBy;
         await db.SaveChangesAsync();
         _cache = null;
@@ -119,8 +123,13 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         return result;
     }
 
-    private async Task<(EntitlementFacts facts, int passesLeft, string? prepIdToUse)> GatherAsync(string userId, string email, bool adminClaim)
+    /// <summary>The end of an account's free months (sign-up plus N calendar months), or null when there is no free period.</summary>
+    public static DateTime? FreeUntilFor(DateTime createdUtc, int freePeriodMonths) =>
+        freePeriodMonths > 0 ? createdUtc.AddMonths(freePeriodMonths) : null;
+
+    private async Task<(EntitlementFacts facts, int passesLeft, string? prepIdToUse, DateTime? freeUntil)> GatherAsync(string userId, string email, bool adminClaim)
     {
+        var settings = await GetSettingsAsync();
         var now = DateTime.UtcNow;
         var emailLower = email.Trim().ToLowerInvariant();
         var key = EmailNormaliser.Key(email);
@@ -139,15 +148,22 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
         var activePasses = await passes.GetActiveForEmailAsync(emailLower);
         var passLeft = activePasses.Sum(p => Math.Max(0, p.sessionsTotal - p.sessionsUsed));
 
-        string[] counted = ["subscription", "complimentary"];
+        string[] counted = ["subscription", "complimentary", "free-period"];
+        string[] monthlyCounted = ["subscription", "complimentary"];   // free-period starts have their own monthly cap, so they never eat a subscriber's 10
         var dailyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkDay == day && u.VoidedAt == null && counted.Contains(u.Source));
-        var monthlyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkMonth == month && u.VoidedAt == null && counted.Contains(u.Source));
+        var monthlyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkMonth == month && u.VoidedAt == null && monthlyCounted.Contains(u.Source));
+        var freeMonthlyUsed = await db.InterviewUsages.AsNoTracking().CountAsync(u => u.UserId == userId && u.UkMonth == month && u.VoidedAt == null && u.Source == "free-period");
         var tasterUsed = await db.InterviewUsages.AsNoTracking().AnyAsync(u => u.EmailKey == key && u.Source == "taster" && u.VoidedAt == null);
         var preps = await ActivePrepsAsync(emailLower, userId, now);
 
+        var freeUntil = user is null ? null : FreeUntilFor(user.CreatedAt, settings.FreePeriodMonths);
+        var inFreeWindow = freeUntil is { } fu && now < fu;
+        var hasComplimentary = grants.Contains("complimentary") || grants.Contains("comp");
+        var isStaff = adminClaim || isAdminRole || grants.Contains("staff");
+
         var facts = new EntitlementFacts(
-            IsStaff: adminClaim || isAdminRole || grants.Contains("staff"),
-            HasComplimentary: grants.Contains("complimentary") || grants.Contains("comp"),
+            IsStaff: isStaff,
+            HasComplimentary: hasComplimentary,
             HasSubscription: hasSub,
             PassSessionsLeft: passLeft,
             DailyUsed: dailyUsed,
@@ -155,32 +171,37 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
             TasterUsed: tasterUsed,
             EmailVerified: user?.EmailVerified ?? false,
             DisposableEmail: EmailNormaliser.IsDisposable(email),
-            PrepSessionsLeft: preps.Sum(p => p.Left));
-        return (facts, passLeft, preps.Count > 0 ? preps[0].PrepId : null);
+            PrepSessionsLeft: preps.Sum(p => p.Left),
+            InFreePeriod: inFreeWindow && !isStaff && !hasComplimentary && !hasSub,
+            FreeMonthlyUsed: freeMonthlyUsed,
+            FreePeriodEnded: freeUntil is { } end && now >= end);
+        return (facts, passLeft, preps.Count > 0 ? preps[0].PrepId : null, freeUntil);
     }
 
     private static string PlanOf(EntitlementFacts f) =>
-        f.IsStaff ? "staff" : f.HasSubscription ? "subscriber" : f.HasComplimentary ? "complimentary" : f.PassSessionsLeft > 0 ? "pass" : f.PrepSessionsLeft > 0 ? "prep" : !f.TasterUsed ? "taster" : "none";
+        f.IsStaff ? "staff" : f.HasSubscription ? "subscriber" : f.HasComplimentary ? "complimentary" : f.InFreePeriod ? "free-period" : f.PassSessionsLeft > 0 ? "pass" : f.PrepSessionsLeft > 0 ? "prep" : !f.TasterUsed && !f.FreePeriodEnded ? "taster" : "none";
 
     // Read-only — used by the UI to show "1 free interview available" / limits, and to decide whether to show the paywall early.
     public async Task<EntitlementStatus> GetStatusAsync(string userId, string email, bool adminClaim = false)
     {
         var settings = await GetSettingsAsync();
-        var (facts, passLeft, _) = await GatherAsync(userId, email, adminClaim);
+        var (facts, passLeft, _, freeUntil) = await GatherAsync(userId, email, adminClaim);
         var d = EntitlementRules.Decide(facts, settings);
         return new EntitlementStatus(
             Enforced: settings.Enforce, Plan: PlanOf(facts), CanStartInterview: d.Allowed || !settings.Enforce,
             Code: d.Code, Message: d.Message,
             DailyUsed: facts.DailyUsed, DailyCap: settings.DailyCap, MonthlyUsed: facts.MonthlyUsed, MonthlyCap: settings.MonthlyCap,
-            PassSessionsLeft: passLeft, TasterAvailable: settings.TasterEnabled && !facts.TasterUsed && !facts.HasSubscription && !facts.HasComplimentary && !facts.IsStaff,
-            PrepSessionsLeft: facts.PrepSessionsLeft);
+            PassSessionsLeft: passLeft, TasterAvailable: settings.TasterEnabled && !facts.TasterUsed && !facts.HasSubscription && !facts.HasComplimentary && !facts.IsStaff && !facts.InFreePeriod && !facts.FreePeriodEnded,
+            PrepSessionsLeft: facts.PrepSessionsLeft,
+            FreeUntil: facts.InFreePeriod ? freeUntil : null,
+            FreeMonthlyUsed: facts.FreeMonthlyUsed, FreeMonthlyCap: facts.InFreePeriod ? settings.FreePeriodMonthlyCap : 0);
     }
 
     // The moment an interview begins: decide, and record the start (consuming a pass session / the taster when that is the source).
     public async Task<StartResult> StartInterviewAsync(string userId, string email, bool adminClaim = false)
     {
         var settings = await GetSettingsAsync();
-        var (facts, _, prepId) = await GatherAsync(userId, email, adminClaim);
+        var (facts, _, prepId, _) = await GatherAsync(userId, email, adminClaim);
         var d = EntitlementRules.Decide(facts, settings);
         var key = EmailNormaliser.Key(email);
         var (day, month) = UkDayAndMonth(DateTime.UtcNow);
@@ -217,6 +238,64 @@ public class EntitlementService(AppDbContext db, SessionPassService passes, ICon
 
         var ticket = InterviewTicket.Create(config["Jwt:Secret"] ?? string.Empty, userId, DateTimeOffset.UtcNow);
         return new StartResult(true, settings.Enforce, d.Allowed ? d.Source : "enforcement-off", d.Code, d.Message, usage.Id, ticket);
+    }
+
+    // ── Recruiter prep links ───────────────────────────────────────────────────────────────────
+    // A prep link emails a stranger on the recruiter's behalf and costs up to 3 practice interviews, so it is capped per UK month.
+    // A self-service ("lite") recruiter is ALWAYS limited, whatever the enforcement switch says: they signed up without our vetting, so
+    // the cap and the free months are what stop the sign-up form becoming a way to send email through us. A fully approved recruiter
+    // is only limited once enforcement is on. Staff and anyone on a staff grant are never limited.
+    public record PrepAllowance(bool Allowed, string Code, string Message, int UsedThisMonth, int Cap, DateTime? FreeUntil);
+
+    public async Task<PrepAllowance> CheckRecruiterPrepAsync(string userId, string email, bool adminClaim, bool isLite)
+    {
+        var settings = await GetSettingsAsync();
+        var cap = settings.RecruiterPrepCap;
+        if (!settings.Enforce && !isLite) return new(true, "enforcement-off", "", 0, cap, null);
+
+        var now = DateTime.UtcNow;
+        var emailLower = email.Trim().ToLowerInvariant();
+        var key = EmailNormaliser.Key(email);
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        var isAdminRole = user is not null && string.Equals(user.Role, "admin", StringComparison.OrdinalIgnoreCase);
+        var grants = await db.AccessGrants.AsNoTracking()
+            .Where(g => g.RevokedAt == null && (g.ExpiresAt == null || g.ExpiresAt > now) && (g.Email == emailLower || g.Email == key || g.UserId == userId))
+            .Select(g => g.Kind).ToListAsync();
+        if (adminClaim || isAdminRole || grants.Contains("staff")) return new(true, "staff", "", 0, cap, null);
+
+        var hasComplimentary = grants.Contains("complimentary") || grants.Contains("comp");
+        var freeUntil = user is null ? null : FreeUntilFor(user.CreatedAt, settings.FreePeriodMonths);
+        var inFree = freeUntil is { } fu && now < fu;
+        if (!hasComplimentary && !inFree)
+            return new(false, "free-period-ended", "Your free months have ended. Email support@theinterviewchair.com to keep sending prep links.", 0, cap, freeUntil);
+
+        var used = await CountPrepsThisMonthAsync(userId, now);
+        if (used >= cap)
+            return new(false, "prep-cap", $"You've sent your {cap} prep links for this month. The count resets at the start of next month. Email support@theinterviewchair.com if you need more.", used, cap, freeUntil);
+        return new(true, hasComplimentary ? "complimentary" : "free-period", "", used, cap, freeUntil);
+    }
+
+    /// <summary>Prep links a recruiter created in the current UK month (container interview-preps, partition /recruiterId). A lookup failure counts as 0 and is logged.</summary>
+    public async Task<int> CountPrepsThisMonthAsync(string recruiterId, DateTime utcNow)
+    {
+        if (cosmos is null) return 0;
+        try
+        {
+            var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utcNow, DateTimeKind.Utc), Uk);
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(new DateTime(local.Year, local.Month, 1, 0, 0, 0, DateTimeKind.Unspecified), Uk);
+            var container = cosmos.GetContainer("interview-preps");
+            var q = new QueryDefinition("SELECT VALUE COUNT(1) FROM c WHERE c.recruiterId = @r AND c.createdAt >= @s")
+                .WithParameter("@r", recruiterId).WithParameter("@s", startUtc.ToString("yyyy-MM-ddTHH:mm:ss"));
+            using var feed = container.GetItemQueryIterator<int>(q, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(recruiterId) });
+            var total = 0;
+            while (feed.HasMoreResults) foreach (var n in await feed.ReadNextAsync()) total += n;
+            return total;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not count this month's prep links for {Recruiter}; treating as 0.", recruiterId);
+            return 0;
+        }
     }
 
     // Gives a start back (the interview never actually began). Frees the taster / a daily slot; does not refund a pass session.

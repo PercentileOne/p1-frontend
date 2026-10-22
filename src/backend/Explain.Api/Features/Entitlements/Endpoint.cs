@@ -78,7 +78,11 @@ public static class Endpoint
             if (req.DailyCap is < 0 or > 100 || req.MonthlyCap is < 0 or > 1000)
                 return Results.BadRequest(new { error = "Daily cap must be 0-100 and monthly cap 0-1000." });
             var by = ctx.User.FindFirst("email")?.Value ?? ctx.User.FindFirst("sub")?.Value ?? "unknown";
-            await svc.SaveSettingsAsync(new EntitlementSettings(req.Enforce, req.DailyCap, req.MonthlyCap, req.TasterEnabled), by);
+            if (req.FreePeriodMonths is < 0 or > 24 || req.FreePeriodMonthlyCap is < 0 or > 100 || req.RecruiterPrepCap is < 0 or > 1000)
+                return Results.BadRequest(new { error = "Free months must be 0-24, the free monthly cap 0-100 and the recruiter prep cap 0-1000." });
+            var current = await svc.GetSettingsAsync();   // an older admin screen that does not send the new numbers keeps what is stored
+            await svc.SaveSettingsAsync(new EntitlementSettings(req.Enforce, req.DailyCap, req.MonthlyCap, req.TasterEnabled,
+                req.FreePeriodMonths ?? current.FreePeriodMonths, req.FreePeriodMonthlyCap ?? current.FreePeriodMonthlyCap, req.RecruiterPrepCap ?? current.RecruiterPrepCap), by);
             return Results.Ok(await svc.GetSettingsAsync());
         }).RequireAuthorization(Permissions.ManageUsers);
 
@@ -157,6 +161,6 @@ public static class Endpoint
     private static (string? userId, string? email) Who(HttpContext ctx) =>
         (ctx.User.FindFirst("sub")?.Value, ctx.User.FindFirst("email")?.Value);
 
-    public record SettingsRequest(bool Enforce, int DailyCap, int MonthlyCap, bool TasterEnabled);
+    public record SettingsRequest(bool Enforce, int DailyCap, int MonthlyCap, bool TasterEnabled, int? FreePeriodMonths = null, int? FreePeriodMonthlyCap = null, int? RecruiterPrepCap = null);
     public record GrantRequest(string Email, string Kind, string? Reason, DateTimeOffset? ExpiresAt);
 }

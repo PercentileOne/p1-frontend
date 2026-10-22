@@ -27,6 +27,11 @@ import { logEvent } from '../api/flowLogger'
 import IndustryStatsCard from '../components/IndustryStatsCard'
 import { DashboardOverview } from '../components/DashboardOverview'
 import { teamApi } from '../api/teamApi'
+import { getRecruiterAccess, type RecruiterAccess } from '../api/recruiterAccessApi'
+
+// Self-service recruiters (2026-10-22) can send interview-prep links and nothing that touches candidate data. These sections open once an
+// admin approves them; the server refuses them either way, this just says so plainly instead of showing a broken page.
+const LOCKED_UNTIL_APPROVED = ['Client Gifts', 'Alerts', 'Candidate Marketplace', 'Analytics']
 
 // Streamlined 2026-08-31: Francis wants the recruiter portal to work alongside recruiters'
 // existing ATS/CRM tooling rather than replace it, so anything that overlaps with tools
@@ -59,6 +64,16 @@ export default function Dashboard() {
     setActiveNav('Help')
   }
   const [packBuilderSpec, setPackBuilderSpec] = useState<string | null>(null)
+
+  const approved = !!user?.permissions?.includes('CAN_VIEW_CANDIDATE_PROFILE')
+  const [access, setAccess] = useState<RecruiterAccess | null>(null)
+  useEffect(() => {
+    if (!token || approved) return
+    let cancelled = false
+    void getRecruiterAccess(token).then(a => { if (!cancelled) setAccess(a) })
+    return () => { cancelled = true }
+  }, [token, approved, activeNav])
+  const isLocked = (label: string) => !approved && LOCKED_UNTIL_APPROVED.includes(label)
 
   // The signed-in recruiter's own details (Francis, 2026-10-20). This page used to show a fixed name, role and company to everyone.
   const [company, setCompany] = useState<string | null>(null)
@@ -126,7 +141,7 @@ export default function Dashboard() {
               }}
             >
               <Icon size={15} strokeWidth={activeNav === label ? 2.2 : 1.8} />
-              {label}
+              {label}{isLocked(label) && <span aria-label="locked until approved" title="Opens once your account is approved" style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.7 }}>🔒</span>}
             </button>
           ))}
         </nav>
@@ -179,6 +194,16 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── Self-service tier: what is free, how much is left, and what opens on approval ── */}
+        {!approved && (activeNav === 'Dashboard' || activeNav === 'Interview Preps') && (
+          <div style={{ marginBottom: 20, padding: '14px 18px', borderRadius: 12, background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.28)', fontSize: 13, lineHeight: 1.6, color: 'var(--text-2)' }}>
+            <strong style={{ color: 'var(--text)' }}>Your free recruiter account</strong>
+            {access?.freeUntil && <> is free until <strong>{new Date(access.freeUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></>}
+            {access && <>. You've sent <strong>{access.prepsThisMonth} of {access.prepCap}</strong> prep links this month.</>}
+            {' '}Searching candidates, client gifts, alerts and analytics open once we've approved your account. Email <strong>support@theinterviewchair.com</strong> to ask.
+          </div>
+        )}
+
         {/* ── ABOUT THIS PAGE: a short description of what the page is for, with a link to its help article where there is one (Francis, 2026-10-20).
              Pages without a description keep the older one-line "New to ...?" bar. ── */}
         {activeNav !== 'Help' && (() => {
@@ -190,22 +215,29 @@ export default function Dashboard() {
         })()}
 
         {/* ── SUB-PAGES ── */}
+        {isLocked(activeNav) && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 260, textAlign: 'center', color: 'var(--text-3)', fontSize: 14, gap: 6 }}>
+            <div style={{ fontSize: 30 }}>🔒</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-2)' }}>{activeNav} opens once your account is approved</div>
+            <div style={{ maxWidth: 420, lineHeight: 1.6 }}>Your free account can send interview-prep links. This part touches candidate data, so we switch it on after a quick check. Email support@theinterviewchair.com and we'll do it.</div>
+          </div>
+        )}
         {activeNav === 'Help' && <HelpCentre key={helpArticle ?? 'index'} initialArticleId={helpArticle} onNavigate={label => { setHelpArticle(null); setActiveNav(label) }} />}
         {activeNav === 'Interview Preps' && <InterviewPreps />}
-        {activeNav === 'Client Gifts' && <ClientGifts />}
+        {activeNav === 'Client Gifts' && !isLocked('Client Gifts') && <ClientGifts />}
         {activeNav === 'Interview Packs' && <InterviewPacks />}
         {activeNav === 'Candidates' && <Candidates />}
         {activeNav === 'CV Insights' && <CvAnalysisHistory />}
-        {activeNav === 'Candidate Marketplace' && <CandidateSearch />}
+        {activeNav === 'Candidate Marketplace' && !isLocked('Candidate Marketplace') && <CandidateSearch />}
         {activeNav === 'Screen' && <ScreenCandidates />}
-        {activeNav === 'Analytics' && <Analytics />}
+        {activeNav === 'Analytics' && !isLocked('Analytics') && <Analytics />}
         {activeNav === 'Job Specs' && !packBuilderSpec && <JobPositions onViewSpec={title => setPackBuilderSpec(title)} />}
         {activeNav === 'Job Specs' && packBuilderSpec && <PackBuilder specTitle={packBuilderSpec} onBack={() => setPackBuilderSpec(null)} />}
         {activeNav === 'Interviews' && <Interviews />}
         {activeNav === 'CVs' && <CVsPage />}
         {activeNav === 'Pack History' && <PackHistory />}
         {activeNav === 'My Interviews' && <InterviewHistory />}
-        {activeNav === 'Alerts' && <Alerts />}
+        {activeNav === 'Alerts' && !isLocked('Alerts') && <Alerts />}
         {activeNav === 'Team' && <TeamPage />}
         {activeNav !== 'Dashboard' && activeNav !== 'Interview Preps' && activeNav !== 'Client Gifts' && activeNav !== 'Interview Packs' && activeNav !== 'Candidates' && activeNav !== 'CV Insights' && activeNav !== 'Candidate Marketplace' && activeNav !== 'Screen' && activeNav !== 'Analytics' && activeNav !== 'Job Specs' && activeNav !== 'Help' && activeNav !== 'Interviews' && activeNav !== 'CVs' && activeNav !== 'Pack History' && activeNav !== 'My Interviews' && activeNav !== 'Alerts' && activeNav !== 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--text-3)', fontSize: 14 }}>

@@ -26,7 +26,8 @@ public static class Endpoint
             if (string.IsNullOrEmpty(ownerId)) return Results.Unauthorized();
 
             var perms = ctx.User.FindAll("perm").Select(c => c.Value).ToHashSet();
-            var isRecruiter = perms.Contains(Permissions.ManageInterviews);
+            // A self-service recruiter (no candidate-profile permission) waits for approval: a talent alert reports on candidate profiles.
+            var isRecruiter = perms.Contains(Permissions.ManageInterviews) && perms.Contains(Permissions.ViewCandidateProfile);
             var isEmployer = perms.Contains(Permissions.ViewEmployerPortal);
             if (!isRecruiter && !isEmployer) return Results.Forbid();
 

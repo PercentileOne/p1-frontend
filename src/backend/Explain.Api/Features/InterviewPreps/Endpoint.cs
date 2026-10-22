@@ -25,10 +25,17 @@ public static class Endpoint
 {
     public static void Map(WebApplication app)
     {
-        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IEmailSender emailSender, ILogger<Program> logger) =>
+        app.MapPost("/api/interview-preps", async (Request req, HttpContext ctx, CosmosService cosmos, CvFileStorageService cvFiles, IEmailSender emailSender, Entitlements.EntitlementService entitlements, ILogger<Program> logger) =>
         {
             var recruiterId = ctx.User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
+
+            // The monthly prep-link cap and the free months (always for a self-service recruiter; for a full one once enforcement is on).
+            var recruiterEmail = ctx.User.FindFirst("email")?.Value ?? string.Empty;
+            var isAdmin = ctx.User.HasClaim("perm", Permissions.ViewAdminPortal);
+            var isLite = !ctx.User.HasClaim("perm", Permissions.ViewCandidateProfile);
+            var allowance = await entitlements.CheckRecruiterPrepAsync(recruiterId, recruiterEmail, isAdmin, isLite);
+            if (!allowance.Allowed) return Results.Json(new { error = allowance.Message, code = allowance.Code }, statusCode: 403);
 
             if (string.IsNullOrWhiteSpace(req.FirstName))
                 return Results.BadRequest(new { error = "First name is required." });

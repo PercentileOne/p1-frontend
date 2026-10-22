@@ -3,7 +3,11 @@
 
 const EXPLAIN_API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'http://localhost:5000';
 
-export interface AccessSettings { enforce: boolean; dailyCap: number; monthlyCap: number; tasterEnabled: boolean }
+export interface AccessSettings {
+  enforce: boolean; dailyCap: number; monthlyCap: number; tasterEnabled: boolean;
+  freePeriodMonths: number; freePeriodMonthlyCap: number; recruiterPrepCap: number;   // free months for new accounts, interviews a month during them, prep links a month for recruiters
+}
+export interface RecruiterApproval { id: string; email: string; name: string; emailVerified: boolean; signedUp: string; prepsThisMonth: number }
 export interface AccessGrant {
   id: number; email: string; kind: 'staff' | 'complimentary' | 'comp'; reason: string; grantedBy: string;
   grantedAt: string; expiresAt: string | null; revokedAt: string | null;
@@ -40,5 +44,7 @@ export const accessApi = {
   addGrant: (token: string, g: { email: string; kind: 'staff' | 'comp'; reason: string }) => call<{ id: number }>('/api/admin/access/grants', token, 'POST', g),
   revokeGrant: (token: string, id: number) => call<unknown>(`/api/admin/access/grants/${id}`, token, 'DELETE'),
   grantAllExisting: (token: string) => call<{ granted: number }>('/api/admin/access/grant-all-existing', token, 'POST', {}),
+  recruiterApprovals: (token: string) => call<RecruiterApproval[]>('/api/admin/recruiter-approvals', token),
+  approveRecruiter: (token: string, userId: string) => call<{ approved: boolean }>(`/api/admin/recruiter-approvals/${encodeURIComponent(userId)}/approve`, token, 'POST', {}),
   revokeComplimentary: (token: string) => call<{ revoked: number }>('/api/admin/access/revoke-complimentary', token, 'POST', {}),
 };

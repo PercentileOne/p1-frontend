@@ -156,7 +156,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Role { Id = 2, Slug = "recruiter",   Name = "Recruiter",   IsSystemRole = true },
             new Role { Id = 3, Slug = "employer",    Name = "Employer",    IsSystemRole = true },
             new Role { Id = 4, Slug = "admin",       Name = "Admin",       IsSystemRole = true },
-            new Role { Id = 5, Slug = "super-admin", Name = "Super Admin", IsSystemRole = true }
+            new Role { Id = 5, Slug = "super-admin", Name = "Super Admin", IsSystemRole = true },
+            // Self-service recruiter (2026-10-22): signs up without our vetting, can send interview-prep links, cannot see candidate data.
+            // An admin "approves" them by adding the full Recruiter role on top.
+            new Role { Id = 6, Slug = "recruiter-lite", Name = "Recruiter (self-service)", IsSystemRole = true }
         );
 
         // Seed permissions
@@ -194,6 +197,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new RolePermission { RoleId = 2, PermissionId =  6 },
             new RolePermission { RoleId = 2, PermissionId =  7 },
             new RolePermission { RoleId = 2, PermissionId =  8 },
+            // Recruiter (self-service): careers, results, send preps, the portal. No candidate profiles, no analytics.
+            new RolePermission { RoleId = 6, PermissionId =  1 },
+            new RolePermission { RoleId = 6, PermissionId =  4 },
+            new RolePermission { RoleId = 6, PermissionId =  5 },
+            new RolePermission { RoleId = 6, PermissionId =  7 },
             // Employer
             new RolePermission { RoleId = 3, PermissionId =  1 },
             new RolePermission { RoleId = 3, PermissionId =  4 },

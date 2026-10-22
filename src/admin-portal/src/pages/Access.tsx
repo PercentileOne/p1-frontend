@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Loader2, ShieldCheck, ShieldOff, UserPlus, Trash2, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { AccessCodesPanel } from '../components/AccessCodesPanel'
-import { accessApi, type AccessOverview, type AccessGrant, type UsageRow, type ApiError } from '../api/accessApi'
+import { accessApi, type AccessOverview, type AccessGrant, type UsageRow, type RecruiterApproval, type ApiError } from '../api/accessApi'
 
 // Who gets in free, how many interviews people get, and the master switch (Francis, 2026-09-21). Nothing here blocks anyone until
 // "Enforcement" is switched ON — until then the system only RECORDS, and this page shows who WOULD have been turned away.
@@ -12,7 +12,7 @@ const btn: React.CSSProperties = { display: 'inline-flex', alignItems: 'center',
 const danger: React.CSSProperties = { ...btn, color: '#EF4444', borderColor: 'rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)' }
 const fmt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-type Tab = 'staff' | 'free' | 'codes' | 'usage'
+type Tab = 'staff' | 'free' | 'codes' | 'usage' | 'approvals'
 
 export default function Access() {
   const { token } = useAuth()
@@ -24,15 +24,17 @@ export default function Access() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [form, setForm] = useState({ email: '', kind: 'staff' as 'staff' | 'comp', reason: '' })
-  const [caps, setCaps] = useState({ dailyCap: 3, monthlyCap: 10, tasterEnabled: true })
+  const [caps, setCaps] = useState({ dailyCap: 3, monthlyCap: 10, tasterEnabled: true, freePeriodMonths: 3, freePeriodMonthlyCap: 3, recruiterPrepCap: 10 })
+  const [approvals, setApprovals] = useState<RecruiterApproval[]>([])
 
   const load = useCallback(async () => {
     if (!token) return
     setLoading(true); setError('')
     try {
-      const [o, u] = await Promise.all([accessApi.overview(token), accessApi.usage(token)])
-      setData(o); setUsage(u)
-      setCaps({ dailyCap: o.settings.dailyCap, monthlyCap: o.settings.monthlyCap, tasterEnabled: o.settings.tasterEnabled })
+      const [o, u, a] = await Promise.all([accessApi.overview(token), accessApi.usage(token), accessApi.recruiterApprovals(token).catch(() => [] as RecruiterApproval[])])
+      setData(o); setUsage(u); setApprovals(a)
+      setCaps({ dailyCap: o.settings.dailyCap, monthlyCap: o.settings.monthlyCap, tasterEnabled: o.settings.tasterEnabled,
+        freePeriodMonths: o.settings.freePeriodMonths ?? 3, freePeriodMonthlyCap: o.settings.freePeriodMonthlyCap ?? 3, recruiterPrepCap: o.settings.recruiterPrepCap ?? 10 })
     } catch (e) { setError((e as ApiError).error ?? 'Failed to load.') }
     finally { setLoading(false) }
   }, [token])
@@ -106,6 +108,18 @@ export default function Access() {
             <input type="checkbox" checked={caps.tasterEnabled} onChange={e => setCaps(c => ({ ...c, tasterEnabled: e.target.checked }))} /> One free interview per email</label>
           <button style={btn} disabled={busy} onClick={() => void run(() => accessApi.saveSettings(token!, { enforce, ...caps }), 'Limits saved.')}>Save limits</button>
         </div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', margin: '18px 0 12px' }}>Free months for new accounts</div>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: 12, color: 'var(--text-2)' }}>Free months from sign-up (0 = none)<br />
+            <input type="number" min={0} max={24} value={caps.freePeriodMonths} onChange={e => setCaps(c => ({ ...c, freePeriodMonths: Number(e.target.value) }))} style={{ ...input, width: 100, marginTop: 4 }} /></label>
+          <label style={{ fontSize: 12, color: 'var(--text-2)' }}>Interviews a month while free<br />
+            <input type="number" min={0} max={100} value={caps.freePeriodMonthlyCap} onChange={e => setCaps(c => ({ ...c, freePeriodMonthlyCap: Number(e.target.value) }))} style={{ ...input, width: 100, marginTop: 4 }} /></label>
+          <label style={{ fontSize: 12, color: 'var(--text-2)' }}>Recruiter prep links a month<br />
+            <input type="number" min={0} max={1000} value={caps.recruiterPrepCap} onChange={e => setCaps(c => ({ ...c, recruiterPrepCap: Number(e.target.value) }))} style={{ ...input, width: 100, marginTop: 4 }} /></label>
+        </div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 10, lineHeight: 1.5 }}>
+          Self-service recruiters are always held to the prep-link limit and their free months, even while enforcement is off. Everything else here only applies once enforcement is on. Press "Save limits" after changing these.
+        </div>
       </div>
 
       <div style={{ fontSize: 12, color: 'var(--text-3)', margin: '-6px 0 16px 2px' }}>
@@ -114,14 +128,41 @@ export default function Access() {
 
       {/* Free access lists */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        {([['staff', `Staff (${data.counts.staff})`], ['free', `Complimentary & comps (${data.counts.complimentary + data.counts.comps})`], ['codes', 'Invite codes'], ['usage', 'Recent starts']] as [Tab, string][]).map(([t, label]) => (
+        {([['staff', `Staff (${data.counts.staff})`], ['free', `Complimentary & comps (${data.counts.complimentary + data.counts.comps})`], ['approvals', `Recruiter approvals (${approvals.length})`], ['codes', 'Invite codes'], ['usage', 'Recent starts']] as [Tab, string][]).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)} style={{ ...btn, color: tab === t ? 'var(--blue)' : 'var(--text-3)', borderColor: tab === t ? 'var(--blue)' : 'var(--border)' }}>{label}</button>
         ))}
       </div>
 
       {tab === 'codes' && <AccessCodesPanel token={token!} />}
 
-      {tab !== 'usage' && tab !== 'codes' && (
+      {tab === 'approvals' && (
+        <div style={card}>
+          <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginBottom: 12, lineHeight: 1.55 }}>
+            Recruiters who signed up by themselves. They can send interview-prep links but cannot see candidate data, send client gifts or introductions.
+            Approving adds the full recruiter role; they sign in again to see it.
+          </div>
+          {approvals.length === 0 ? <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Nobody is waiting for approval.</div> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {approvals.map(a => (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{a.name || a.email}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', overflowWrap: 'anywhere' }}>{a.email} · signed up {fmt(a.signedUp)} · {a.emailVerified ? 'email verified' : 'email NOT verified'} · {a.prepsThisMonth} prep link(s) this month</div>
+                  </div>
+                  <button style={{ ...btn, color: '#34D399', borderColor: 'rgba(52,211,153,0.4)' }} disabled={busy || !a.emailVerified}
+                    onClick={() => { if (window.confirm(`Approve ${a.email} as a full recruiter?
+
+They will be able to search and contact candidates, send client gifts and introductions.`)) void run(() => accessApi.approveRecruiter(token!, a.id), `${a.email} approved.`) }}>
+                    Approve
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab !== 'usage' && tab !== 'codes' && tab !== 'approvals' && (
         <>
           <div style={{ ...card, marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <UserPlus size={16} color="var(--text-3)" />

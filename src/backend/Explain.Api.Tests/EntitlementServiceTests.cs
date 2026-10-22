@@ -30,18 +30,19 @@ public sealed class EntitlementServiceTests : IDisposable
             new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Jwt:Secret"] = "test-secret" }).Build(),
             NullLogger<EntitlementService>.Instance);
 
-    private async Task<string> User(string email, bool verified = true)
+    private async Task<string> User(string email, bool verified = true, DateTime? created = null)
     {
         using var db = NewDb();
-        var u = new Infrastructure.Sql.Models.User { Email = email, EmailVerified = verified, FirstName = "T", LastName = "T", PasswordHash = "x" };
+        var u = new Infrastructure.Sql.Models.User { Email = email, EmailVerified = verified, FirstName = "T", LastName = "T", PasswordHash = "x", CreatedAt = created ?? DateTime.UtcNow };
         db.Users.Add(u); await db.SaveChangesAsync();
         return u.Id;
     }
 
-    private async Task Enforce(bool on)
+    // The older tests describe the paywall without a free period, so they switch it off here; the free-period tests below turn it on.
+    private async Task Enforce(bool on, int freeMonths = 0, int freeCap = 3, int prepCap = 10)
     {
         using var db = NewDb();
-        await Ent(db).SaveSettingsAsync(new EntitlementSettings(on, 3, 10, true), "test");
+        await Ent(db).SaveSettingsAsync(new EntitlementSettings(on, 3, 10, true, freeMonths, freeCap, prepCap), "test");
     }
 
     private async Task<StartResult> Start(string userId, string email)
@@ -55,6 +56,111 @@ public sealed class EntitlementServiceTests : IDisposable
         using var db = NewDb();
         db.AccessGrants.Add(new AccessGrant { Email = email, Kind = kind, GrantedBy = "test" });
         await db.SaveChangesAsync();
+    }
+
+    // ── Free period (Francis, 2026-10-22): a new account is free for 3 months, 3 interviews a month, then it needs a plan ──────────
+    [Fact]
+    public async Task A_new_account_gets_three_free_interviews_a_month_and_then_waits_for_next_month()
+    {
+        await Enforce(true, freeMonths: 3, freeCap: 3);
+        var id = await User("fresh@example.com");
+        for (var i = 0; i < 3; i++)
+        {
+            var r = await Start(id, "fresh@example.com");
+            Assert.True(r.Allowed); Assert.Equal("free-period", r.Source);
+        }
+        var fourth = await Start(id, "fresh@example.com");
+        Assert.False(fourth.Allowed); Assert.Equal("free-cap", fourth.Code);
+    }
+
+    [Fact]
+    public async Task The_free_cap_does_not_use_up_the_one_off_taster()
+    {
+        await Enforce(true, freeMonths: 3, freeCap: 1);
+        var id = await User("keeps@example.com");
+        await Start(id, "keeps@example.com");
+        var second = await Start(id, "keeps@example.com");
+        Assert.False(second.Allowed); Assert.Equal("free-cap", second.Code);   // not "taster": a free-period account never reaches the taster
+    }
+
+    [Fact]
+    public async Task After_the_free_months_the_paywall_comes_back()
+    {
+        await Enforce(true, freeMonths: 3);
+        var id = await User("old@example.com", created: DateTime.UtcNow.AddMonths(-4));
+        var r = await Start(id, "old@example.com");
+        Assert.False(r.Allowed); Assert.Equal("free-period-ended", r.Code);
+    }
+
+    [Fact]
+    public async Task The_status_shows_the_free_until_date_inside_the_free_months_and_not_after()
+    {
+        await Enforce(true, freeMonths: 3, freeCap: 3);
+        var inside = await User("in@example.com");
+        var outside = await User("out@example.com", created: DateTime.UtcNow.AddMonths(-5));
+        using var db = NewDb();
+        var a = await Ent(db).GetStatusAsync(inside, "in@example.com");
+        var b = await Ent(db).GetStatusAsync(outside, "out@example.com");
+        Assert.Equal("free-period", a.Plan);
+        Assert.NotNull(a.FreeUntil); Assert.Equal(3, a.FreeMonthlyCap); Assert.Equal(0, a.FreeMonthlyUsed);
+        Assert.Null(b.FreeUntil);
+    }
+
+    [Fact]
+    public async Task A_complimentary_account_is_not_held_to_the_free_cap()
+    {
+        await Enforce(true, freeMonths: 3, freeCap: 1);
+        var id = await User("early@example.com");
+        await Grant("early@example.com", "complimentary");
+        for (var i = 0; i < 3; i++) Assert.Equal("complimentary", (await Start(id, "early@example.com")).Source);
+    }
+
+    [Fact]
+    public async Task Free_months_of_zero_means_no_free_period()
+    {
+        await Enforce(true, freeMonths: 0);
+        var id = await User("none@example.com");
+        var r = await Start(id, "none@example.com");
+        Assert.Equal("taster", r.Source);
+    }
+
+    // ── Recruiter prep links ──────────────────────────────────────────────────────────────────────
+    [Fact]
+    public async Task A_self_service_recruiter_is_limited_even_with_enforcement_off()
+    {
+        await Enforce(false, freeMonths: 3);
+        var id = await User("rec@example.com", created: DateTime.UtcNow.AddMonths(-4));   // free months over, no grant
+        using var db = NewDb();
+        var r = await Ent(db).CheckRecruiterPrepAsync(id, "rec@example.com", adminClaim: false, isLite: true);
+        Assert.False(r.Allowed); Assert.Equal("free-period-ended", r.Code);
+    }
+
+    [Fact]
+    public async Task A_self_service_recruiter_inside_the_free_months_may_send()
+    {
+        await Enforce(false, freeMonths: 3);
+        var id = await User("fresh-rec@example.com");
+        using var db = NewDb();
+        var r = await Ent(db).CheckRecruiterPrepAsync(id, "fresh-rec@example.com", adminClaim: false, isLite: true);
+        Assert.True(r.Allowed); Assert.Equal("free-period", r.Code); Assert.NotNull(r.FreeUntil);
+    }
+
+    [Fact]
+    public async Task A_full_recruiter_is_untouched_until_enforcement_is_on()
+    {
+        await Enforce(false, freeMonths: 3);
+        var id = await User("full@example.com", created: DateTime.UtcNow.AddMonths(-9));
+        using var db = NewDb();
+        Assert.True((await Ent(db).CheckRecruiterPrepAsync(id, "full@example.com", false, isLite: false)).Allowed);
+    }
+
+    [Fact]
+    public async Task Staff_recruiters_are_never_limited()
+    {
+        await Enforce(true, freeMonths: 3);
+        var id = await User("boss@example.com", created: DateTime.UtcNow.AddMonths(-9));
+        using var db = NewDb();
+        Assert.True((await Ent(db).CheckRecruiterPrepAsync(id, "boss@example.com", adminClaim: true, isLite: true)).Allowed);
     }
 
     [Fact]

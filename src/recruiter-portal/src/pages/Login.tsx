@@ -126,6 +126,11 @@ export default function Login() {
               <div style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>
                 Sign in to your account
               </div>
+              {new URLSearchParams(window.location.search).get('verified') === 'true' && (
+                <div role="status" style={{ fontSize: 13, color: '#34D399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, padding: '10px 12px' }}>
+                  Your email is confirmed. Sign in to get started.
+                </div>
+              )}
 
               <label style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -203,8 +208,8 @@ export default function Login() {
 
               <p style={{ textAlign: 'center', fontSize: 12, color: '#334155', marginTop: 6 }}>
                 New recruiter?{' '}
-                <a href="https://www.theinterviewchair.com/request-access.html" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
-                  Request access
+                <a href="/register" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
+                  Create a free account
                 </a>
               </p>
             </motion.form>

@@ -69,7 +69,8 @@ export const authApi = {
     password:  string;
     firstName: string;
     lastName:  string;
-    role?:     string; // "recruiter" — omit/anything else defaults to Candidate server-side
+    role?:     string; // "recruiter-lite" for the self-service recruiter sign-up; anything else defaults to Candidate server-side
+    next?:     string; // "/recruiter" sends the verification link back to this portal
   }): Promise<AuthResponse> {
     return post('/auth/register', body);
   },

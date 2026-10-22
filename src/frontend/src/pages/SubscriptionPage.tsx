@@ -9,7 +9,7 @@ import {
 // "My plan" (Francis, 2026-09-21) — what you have, what's left today/this month, and a way to manage or cancel. Cancelling is done in
 // Stripe's own customer portal (update card, invoices, cancel) so it is always one click away and never hidden.
 const PLAN_LABEL: Record<EntitlementStatus['plan'], string> = {
-  staff: 'Staff', complimentary: 'Complimentary access', subscriber: 'Subscriber', pass: 'Interview pass', prep: 'Recruiter interview prep', taster: 'Free interview', none: 'No active plan',
+  staff: 'Staff', complimentary: 'Complimentary access', subscriber: 'Subscriber', 'free-period': 'Free for your first 3 months', pass: 'Interview pass', prep: 'Recruiter interview prep', taster: 'Free interview', none: 'No active plan',
 };
 
 export default function SubscriptionPage() {
@@ -61,6 +61,13 @@ export default function SubscriptionPage() {
               {status.plan === 'subscriber' && (
                 <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7 }}>
                   Today: <strong>{status.dailyUsed}/{status.dailyCap}</strong> interviews · This month: <strong>{status.monthlyUsed}/{status.monthlyCap}</strong>
+                </div>
+              )}
+              {status.plan === 'free-period' && (
+                <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7 }}>
+                  {status.freeUntil && <>Free until <strong>{fmtDate(new Date(status.freeUntil))}</strong>. </>}
+                  Your free months include <strong>{status.freeMonthlyCap ?? 0} interviews a month</strong>: you've used <strong>{status.freeMonthlyUsed ?? 0}</strong> this month.
+                  Nothing is charged while your free months last.
                 </div>
               )}
               {status.plan === 'prep' && <div style={{ fontSize: 14, color: 'var(--text-2)' }}><strong>{status.prepSessionsLeft ?? 0}</strong> practice session(s) left from your recruiter</div>}

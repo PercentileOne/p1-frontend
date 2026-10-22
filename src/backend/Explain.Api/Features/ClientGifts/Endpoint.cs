@@ -40,6 +40,8 @@ public static class Endpoint
             if (string.IsNullOrEmpty(recruiterId)) return Results.Unauthorized();
             var perms = ctx.User.FindAll("perm").Select(c => c.Value).ToHashSet();
             if (!perms.Contains("CAN_MANAGE_INTERVIEWS")) return Results.Forbid();
+            // Gifts cost real interviews and email a client, so a self-service recruiter (no candidate-profile permission) waits for approval.
+            if (!perms.Contains("CAN_VIEW_CANDIDATE_PROFILE")) return Results.Json(new { error = "Client gifts unlock once your recruiter account is approved. Email support@theinterviewchair.com." }, statusCode: 403);
 
             var employerEmail = (req.EmployerEmail ?? "").Trim().ToLower();
             if (employerEmail.Length == 0 || !employerEmail.Contains('@'))
