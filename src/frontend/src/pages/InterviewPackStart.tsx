@@ -19,6 +19,7 @@ import { pickSurveyQuestion, markSurveyAnswered } from '../lib/surveyQuestions';
 import { useAuthStore } from '../auth/authStore';
 import { LANGUAGES, DIFFICULTIES } from '../data/interviewOptions';
 import { InterviewerPicker } from '../components/InterviewerPicker';
+import { warmInterviewRoomFaces } from '../lib/warmFaces';
 import { useIsPhone } from '../hooks/useIsPhone';
 
 // Which stage of the candidate's REAL interview process this practice session represents —
@@ -186,6 +187,8 @@ export default function InterviewPackStart() {
   // A company that is not in the list (2026-10-22: our first customer interviewed for a haulage firm we do not list): the candidate can still type
   // the employer's name. It is named in the interview like a company that came with a prep link; there is just no company-style profile behind it.
   const [typedCompany, setTypedCompany] = useState('');
+  // The room's three faces are a few megabytes each and the first download can outlast the room's connect limit (voice only on a first visit), so fetch them while the form is filled in.
+  useEffect(() => { const t = window.setTimeout(() => { void warmInterviewRoomFaces(); }, 1200); return () => window.clearTimeout(t); }, []);
   const typedCompanyName = !companyMode ? typedCompany.trim().slice(0, 80) : '';
   const listedMatch = typedCompanyName.length > 2 ? companies.find(c => c.name.toLowerCase() === typedCompanyName.toLowerCase()) : undefined;
   // Day One Ready opens a simpler setup: just the role, CV (optional), language and length. Everything else keeps its default and is hidden.

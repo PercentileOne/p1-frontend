@@ -340,7 +340,7 @@ export default function InterviewRoomPage() {
   const isHrQuestion = q?.source === 'HR';
 
   const {
-    isRecording, recordingFailed, uploadStatus,
+    isRecording, recordingFailed, awaitingPermission, uploadStatus,
     startRecording, uploadRecording, buildPlaybackUrl,
     chapterMarkersRef, interviewIdRef, recordingStartTimeRef,
     videoElRef: recordVideoElRef, canvasElRef: recordCanvasElRef,
@@ -1247,6 +1247,13 @@ We are looking for an experienced ${resolvedJobTitle} to join our team. The succ
           never visible, but must be real DOM elements for captureStream() to work reliably */}
       <video ref={recordVideoElRef} playsInline muted style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
       <canvas ref={recordCanvasElRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 1, height: 1 }} />
+
+      {/* The browser's own permission box can open somewhere easy to miss (a first customer on a PC could not find it), and the room waits on it. Say where to look. */}
+      {awaitingPermission && (
+        <div role="status" style={{ position: 'fixed', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 2000, width: 'min(560px, calc(100vw - 32px))', background: '#0d1526', border: '1px solid rgba(52,211,153,0.55)', borderRadius: 14, padding: '14px 18px', boxShadow: '0 18px 50px rgba(0,0,0,0.55)', color: '#f1f5f9', fontSize: 14, lineHeight: 1.55, textAlign: 'left' }}>
+          <strong style={{ color: '#34D399' }}>One click to start.</strong> Your browser is asking to record this interview. Look for a box near the top of your browser or in the middle of your screen, and click <strong>Allow</strong> or <strong>Share</strong>. If it asks about your microphone, click <strong>Allow</strong> too. The recording stays private to you.
+        </div>
+      )}
 
       {/* Cinematic MCQ overlay */}
       {mcqActive && activeMcqQuestion && (

@@ -8,6 +8,7 @@ import { deviceCanUseSpatiusInRoom } from '../hooks/useSpatiusSeat';
 import { preloadSpatiusAvatar, INTERVIEW_TOKEN_PATH } from '../hooks/useSpatiusAvatarSession';
 import { getInterviewTicket } from '../api/entitlementsApi';
 import { readInterviewerChoice, writeInterviewerChoice, type InterviewerChoice } from '../lib/interviewerChoice';
+import { warmInterviewRoomFaces } from '../lib/warmFaces';
 
 // "Your interviewers" (2026-10-07): the candidate picks who interviews them from the interviewers an admin has set up. One row for the HR interviewer and one for the
 // technical interviewer; each card shows the face, the name, a one-line description and the personality bars. The choice is remembered and read when the room opens.
@@ -92,6 +93,9 @@ export function InterviewerPicker() {
   const nonceRef = useRef(0);
 
   useEffect(() => { void fetchInterviewers().then(setRoster); }, []);
+
+  // Whoever is chosen (or the defaults), fetch their faces now so the room does not have to download them when Start is pressed.
+  useEffect(() => { if (roster.length > 0) void warmInterviewRoomFaces(choice, roster); }, [roster, choice]);
 
   // Progress from the framed preview page.
   useEffect(() => {

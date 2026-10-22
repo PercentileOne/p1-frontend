@@ -31,6 +31,8 @@ export interface UseInterviewRecordingParams {
 export interface UseInterviewRecordingReturn {
   isRecording: boolean;
   recordingFailed: boolean;
+  /** True while the browser's own permission box (share this tab / camera and microphone) is open and waiting for a click, so the room can say where to look. */
+  awaitingPermission: boolean;
   uploadStatus: 'idle' | 'uploading' | 'done' | 'error';
   startRecording: () => Promise<void>;
   /** mcqQuestions/mcqResults/mcqBonusPoints/askInterviewerBonusPoints/cvCtx/jobCtx are passed at
@@ -53,6 +55,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
+  const [awaitingPermission, setAwaitingPermission] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -96,7 +99,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
     recordCaptionRef.current = (phase === 'asking' || phase === 'answering') ? (questionText ?? '') : '';
   }, [phase, questionText]);
 
-  const startRecording = useCallback(async () => {
+  const startRecordingNow = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supportsScreenCapture = typeof (navigator.mediaDevices as any)?.getDisplayMedia === 'function';
     try {
@@ -265,6 +268,12 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
       // instead of silently producing a video-less summary page.
     }
   }, []);
+
+  // The browser's permission box can open somewhere easy to miss (a first customer on a PC could not find it); the room shows where to look while this is true.
+  const startRecording = useCallback(async () => {
+    setAwaitingPermission(true);
+    try { await startRecordingNow(); } finally { setAwaitingPermission(false); }
+  }, [startRecordingNow]);
 
   // Snapshot current chunks into a local blob URL for immediate playback on summary screen.
   // Called BEFORE navigate so the URL is ready when the summary mounts.
@@ -442,7 +451,7 @@ export function useInterviewRecording(params: UseInterviewRecordingParams): UseI
   }, []);
 
   return {
-    isRecording, recordingFailed, uploadStatus,
+    isRecording, recordingFailed, awaitingPermission, uploadStatus,
     startRecording, uploadRecording, buildPlaybackUrl,
     chapterMarkersRef, interviewIdRef, recordingStartTimeRef,
     videoElRef, canvasElRef,
