@@ -183,6 +183,11 @@ export default function InterviewPackStart() {
   const [companyLoading, setCompanyLoading] = useState(false);
   const companyPickRef = useRef(0);
   const companyMode = selectedCompanyId !== 'standard';
+  // A company that is not in the list (2026-10-22: our first customer interviewed for a haulage firm we do not list): the candidate can still type
+  // the employer's name. It is named in the interview like a company that came with a prep link; there is just no company-style profile behind it.
+  const [typedCompany, setTypedCompany] = useState('');
+  const typedCompanyName = !companyMode ? typedCompany.trim().slice(0, 80) : '';
+  const listedMatch = typedCompanyName.length > 2 ? companies.find(c => c.name.toLowerCase() === typedCompanyName.toLowerCase()) : undefined;
   // Day One Ready opens a simpler setup: just the role, CV (optional), language and length. Everything else keeps its default and is hidden.
   const dayOne = Boolean(incoming.dayOneReady);
   const stillExtracting = jobSpecExtracting || cvExtracting || companyLoading;
@@ -378,11 +383,12 @@ export default function InterviewPackStart() {
       void nextInterviewApi.create({
         date: realInterviewDate,
         role: jobTitle.trim() || incoming.jobTitle || '',
-        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
+        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (typedCompanyName || incoming.company || ''),
       }).catch(() => { /* ignore */ });
     }
     // Keep this CV for next time (a new one, or one that changed); the saved one is left alone when it was used as it was.
     if (authToken && cvText.trim().length > 20 && !(usingSavedCv && savedCv && savedCv.text === cvText)) void saveCv(authToken, cvFileName || 'My CV', cvText);
+    if (typedCompanyName) logFlowEvent('COMPANY_TYPED', { company: typedCompanyName, listed: Boolean(listedMatch) });   // shows in the Activity Log: which unlisted companies people ask for
     logFlowEvent('START_INTERVIEW_CLICKED', {
       hasJobSpec: Boolean(jobSpec.trim()),
       hasCv: Boolean(cvText.trim()),
@@ -406,7 +412,7 @@ export default function InterviewPackStart() {
     navigate('/interview/standard', {
       state: {
         jobTitle: jobTitle.trim() || incoming.jobTitle || '',
-        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (incoming.company || ''),
+        company: companyMode ? (selectedBrand ?? companyProfile?.name ?? companies.find(c => c.id === selectedCompanyId)?.name ?? '') : (typedCompanyName || incoming.company || ''),
         // Company Specific interview — the digest is what the interview prompts read (see api/companiesApi.ts).
         companyContext: companyMode
           ? (companyProfile
@@ -548,6 +554,27 @@ export default function InterviewPackStart() {
           {!companyMode && (
             <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '10px', lineHeight: 1.5 }}>
               Standard is a well-rounded interview for any role. Or pick a company to practice an interview modelled on how they hire — their values, style and bar.
+            </div>
+          )}
+          {!companyMode && (
+            <div style={{ marginTop: '14px' }}>
+              <label htmlFor="typed-company" style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '6px' }}>
+                Company not in the list? Type who you're interviewing with <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(optional)</span>
+              </label>
+              <input
+                id="typed-company"
+                type="text"
+                value={typedCompany}
+                maxLength={80}
+                onChange={e => setTypedCompany(e.target.value)}
+                placeholder="e.g. a local haulage firm, a small agency, your own employer…"
+                style={{ width: '100%', background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: '10px', padding: '11px 14px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px', lineHeight: 1.5 }}>
+                {listedMatch
+                  ? <>{listedMatch.name} is in the list above. Pick it there for an interview modelled on how they hire.</>
+                  : <>We'll use the name in your interview. Add the job description (the Job Spec tab) so the questions match what they're really looking for.</>}
+              </div>
             </div>
           )}
           {companyMode && companyLoading && (
