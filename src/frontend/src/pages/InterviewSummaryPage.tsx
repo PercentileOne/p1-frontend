@@ -15,6 +15,8 @@ import type { FeedbackOutcome } from '../utils/clientSession';
 import { buildCandidateFeedbackUrl, type CandidateFeedbackSession } from '../utils/clientSession';
 import { getRoleImprovementAreas } from '../utils/clientSession';
 import { speak } from '../api/ttsApi';
+import { seatName } from '../lib/seatInterviewers';
+import { debriefOpening, debriefStrength } from '../lib/debriefLines';
 import { ImproveLoopCard, DIM_AREAS, type LoopArea, type Dim } from '../components/TryImproveLoop';
 
 interface SessionAnswer {
@@ -658,7 +660,8 @@ export default function InterviewSummaryPage() {
     // Use the same topic for both the improvement comment and the Learn pitch
     const focusTopic = weakestTag ?? weakLabel ?? 'your interview technique';
 
-    let opening = `Hi ${name}, it's Michelle here — I've just had a word with Sarah and James, and they wanted me to share some feedback with you.`;
+    // The interviewers the candidate actually chose at intake (the original Amina and Wayne when they kept the defaults).
+    const opening = debriefOpening(name, seatName('hr'), seatName('technical'));
 
     // The outcome (with congratulations on a pass) leads the feedback — see verdictSentence.
     const spokenVerdict = verdictText.replace(/(\d+)%/g, '$1 percent');
@@ -673,9 +676,7 @@ export default function InterviewSummaryPage() {
       mcqComment = `You also picked up ${mcqCorrectCount} out of ${mcqTotalCount} on the bonus multiple-choice round, worth an extra ${mcqBonusPoints} points.`;
     }
 
-    let strengthComment = strongLabel
-      ? `Sarah particularly noticed your ${strongLabel} — she said it came across really well.`
-      : '';
+    const strengthComment = debriefStrength(seatName('hr'), strongLabel);
 
     let improvementComment = pct < 100 && focusTopic
       ? `One area to focus on is ${focusTopic} — if you can sharpen that up, it'll make a real difference.`
