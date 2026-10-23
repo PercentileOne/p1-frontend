@@ -14,7 +14,8 @@ const FACE_RATE = 24000;
 // How close the face is framed (1 = the room's automatic fit). The automatic fit left her too small in this wide tile; the size she is first drawn at looked right, about 30% closer.
 // The voice reaches us in pieces, and a piece that arrives late makes the face hold the sound while the lips catch up (a pause on the same word every time, 2026-10-23). So the
 // start of each answer is held back until this much has arrived (or the answer is over), and the rest then flows straight through.
-const PREBUFFER_MS = 800;
+// To try other amounts without a new release, add ?prebuffer=1500 (milliseconds) to the page address.
+const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.location.search).get('prebuffer')); return Number.isFinite(n) && n >= 0 && n <= 5000 && new URLSearchParams(window.location.search).has('prebuffer') ? n : 800; })();
 const FACE_ZOOM = 1.15;
 
 type Audience = 'recruiter' | 'candidate';
@@ -48,6 +49,12 @@ export default function DevSiteAgent() {
   const pendingBytesRef = useRef(0);
   const turnStartedRef = useRef(false);
   const prebufferTimerRef = useRef<number | undefined>(undefined);
+  // Measurements for finding why the face runs out of lip animation at the same word each time: when each piece of the agent's voice arrives, and how far ahead of playback we are.
+  const turnT0Ref = useRef(0);       // when the first piece of the current answer arrived
+  const fedMsRef = useRef(0);        // how much voice (ms) has arrived in the current answer
+  const lastPieceAtRef = useRef(0);
+  const gapsRef = useRef<number[]>([]);
+  const [report, setReport] = useState('');
   const timerRef = useRef<number | undefined>(undefined);
   const face = pickFace(roster, audience);
 
@@ -108,6 +115,16 @@ export default function DevSiteAgent() {
         onAudio: b64 => {
           // The agent's voice arrives in small pieces at its own sample rate: bring each to the face's rate and hand it over.
           const bytes = resamplePcm16(base64ToBytes(b64), rateRef.current, FACE_RATE);
+          {
+            const now = performance.now();
+            const pieceMs = Math.round((bytes.length / 2 / FACE_RATE) * 1000);
+            if (!speakingRef.current) { turnT0Ref.current = now; fedMsRef.current = 0; gapsRef.current = []; }
+            else gapsRef.current.push(Math.round(now - lastPieceAtRef.current));
+            fedMsRef.current += pieceMs;
+            const aheadMs = Math.round(fedMsRef.current - (now - turnT0Ref.current));   // negative = playback has caught up with what has arrived
+            lastPieceAtRef.current = now;
+            console.info(`[guide] voice piece at +${Math.round(now - turnT0Ref.current)} ms, ${pieceMs} ms long, ${aheadMs} ms ahead of playback`);
+          }
           speakingRef.current = true;
           if (turnStartedRef.current) { spatius.feed(bytes.slice().buffer as ArrayBuffer, false); return; }
           pendingRef.current.push(bytes.slice());
@@ -122,6 +139,8 @@ export default function DevSiteAgent() {
             speakingRef.current = false;
             if (!turnStartedRef.current) flushPending();   // a short answer that never reached the held-back amount
             spatius.feed(silence(FACE_RATE, 20), true);
+            const gaps = gapsRef.current;
+            setReport(`last answer: ${gaps.length + 1} pieces, longest wait between pieces ${gaps.length ? Math.max(...gaps) : 0} ms, hold-back ${PREBUFFER_MS} ms`);
             resetTurn();
           }
         },
@@ -189,6 +208,8 @@ export default function DevSiteAgent() {
           <input type="checkbox" checked={keepVoiceFlowing} disabled={live} onChange={e => setKeepVoiceFlowing(e.target.checked)} />
           Keep the voice flowing even if the lips are late (test, takes effect on the next start)
         </label>
+
+        {report && <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 10 }}>{report}</div>}
 
         {error && <div role="alert" style={{ fontSize: 13, color: '#F59E0B', marginBottom: 12 }}>{error}</div>}
 
