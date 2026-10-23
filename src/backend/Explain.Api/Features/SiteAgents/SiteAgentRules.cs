@@ -8,7 +8,7 @@ namespace Explain.Api.Features.SiteAgents;
 public static class SiteAgentRules
 {
     /// <summary>The longest a guide conversation may run. Also set on the ElevenLabs agent itself (Max conversation duration).</summary>
-    public const int MaxSeconds = 180;
+    public const int MaxSeconds = 300;
 
     public static bool IsAudience(string? audience) => audience is "recruiter" or "candidate";
 

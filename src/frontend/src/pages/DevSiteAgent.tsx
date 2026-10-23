@@ -31,7 +31,7 @@ export default function DevSiteAgent() {
       <div style={{ maxWidth: 720, margin: '0 auto' }}>
         <h1 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 4px' }}>Site guide</h1>
         <p style={{ fontSize: 13, color: 'var(--text-3)', margin: '0 0 18px', lineHeight: 1.55 }}>
-          Admin test page. Talk to the guide the way a homepage visitor would. Each conversation stops by itself after 3 minutes. Use headphones if you can: the guide listens while it talks, and speakers can feed its own voice back to it.
+          Admin test page. Talk to the guide the way a homepage visitor would. Each conversation stops by itself after 5 minutes. Use headphones if you can: the guide listens while it talks, and speakers can feed its own voice back to it.
         </p>
 
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 16px', marginBottom: 18, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>

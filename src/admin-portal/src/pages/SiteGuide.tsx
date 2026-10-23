@@ -34,7 +34,7 @@ export default function SiteGuide() {
         <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: 'var(--text)' }}>Site guide</h1>
       </div>
       <p style={{ fontSize: 13, color: 'var(--text-3)', margin: '0 0 20px', lineHeight: 1.55 }}>
-        A live, talking guide that sits above &ldquo;Choose your interviewer&rdquo; on the homepage, with Recruiter and Candidate tabs. Visitors talk to it for up to 3 minutes, and each conversation is billed minutes at ElevenLabs and Spatius.
+        A live, talking guide that sits above &ldquo;Choose your interviewer&rdquo; on the homepage, with Recruiter and Candidate tabs. Visitors talk to it for up to 5 minutes, and each conversation is billed minutes at ElevenLabs and Spatius.
       </p>
 
       <div style={{ ...card, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>

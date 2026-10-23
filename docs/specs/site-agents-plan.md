@@ -41,7 +41,7 @@ Recommendation: **B**. It gives the Spatius-like feel in days. Option A can stil
 
 ## Safeguards (they matter more here than anywhere else, because strangers pay us by the minute)
 
-- **Cost:** start only on a button press; hard cap per conversation (suggest 3 minutes, enforced by ElevenLabs's own maximum-duration setting and by our server); a daily cap on total minutes; a per-visitor limit (IP and a cookie); a spend alert in Azure Cost Management and a monthly budget in ElevenLabs. Turn the whole thing off with one admin switch.
+- **Cost:** start only on a button press; hard cap per conversation (now 5 minutes (raised from 3 on 23 Oct 2026), enforced by ElevenLabs's own maximum-duration setting and by our server); a daily cap on total minutes; a per-visitor limit (IP and a cookie); a spend alert in Azure Cost Management and a monthly budget in ElevenLabs. Turn the whole thing off with one admin switch.
 - **Accuracy:** the prompt says "answer only from the facts below; if you do not know, say so and offer to take their email". It never invents prices, features or promises; prices are stated only as the free months and "published prices on the site".
 - **Capture:** at the end offer to leave an email so a person follows up (sends us a message), and log the conversation start/length in the Activity Log (no audio).
 - **Privacy:** notice on the panel; no personal data in the prompt other than the first name they typed; no keys in the browser (CLAUDE.md section 0).
@@ -58,7 +58,7 @@ Recommendation: **B**. It gives the Spatius-like feel in days. Option A can stil
 
 1. Create **one blank agent** (Agents, then create), for example "TIC site guide". Pick a calm, clear voice and a fast, cheap language model.
 2. In its security / overrides settings, **allow overrides** for the system prompt and the first message.
-3. Set a **maximum conversation duration** of about 3 minutes and the output audio format to PCM 24 kHz if offered.
+3. Set a **maximum conversation duration** of 5 minutes (300 seconds) and the output audio format to PCM 24 kHz if offered.
 4. Copy the **agent id** (not secret) and give it to Claude. Claude sets `SiteAgent__AgentId`.
 5. Check whether the pending grant's credits cover Agents minutes or only voice generation, and set a monthly spend limit.
 
