@@ -67,7 +67,7 @@ export default function DevSiteAgent() {
       const session = await res.json().catch(() => ({})) as { signedUrl?: string; maxSeconds?: number; dynamicVariables?: Record<string, string>; error?: string };
       if (!res.ok || !session.signedUrl) throw new Error(session.error ?? `Could not start the guide (${res.status}).`);
       // 3) The conversation. The SDK is loaded only now, so nobody downloads it unless they use this page.
-      const { Conversation } = await import('@elevenlabs/client');
+      const { Conversation, stripAudioTags } = await import('@elevenlabs/client');
       const conv = await Conversation.startSession({
         signedUrl: session.signedUrl,
         connectionType: 'websocket',
@@ -85,7 +85,13 @@ export default function DevSiteAgent() {
           if (mode !== 'speaking' && speakingRef.current) { speakingRef.current = false; spatius.feed(silence(FACE_RATE, 20), true); }
         },
         onInterruption: () => { speakingRef.current = false; spatius.interrupt(); },   // the visitor spoke over the agent
-        onMessage: m => setLines(l => [...l, { who: m.source === 'user' ? 'you' : 'guide', text: m.message }]),
+        // The agent's words can carry delivery tags such as [warm] that tell its voice how to sound; they are not for reading, so they are taken out of the transcript. A silent
+        // moment arrives as "..." and is not shown either.
+        onMessage: m => {
+          const text = stripAudioTags(m.message).trim();
+          if (!text || /^\.{2,}$/.test(text)) return;
+          setLines(l => [...l, { who: m.source === 'user' ? 'you' : 'guide', text }]);
+        },
         onDisconnect: () => { void stop(); },
         onError: msg => { setError(String(msg)); },
       });
