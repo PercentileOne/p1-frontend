@@ -90,14 +90,47 @@
           t.style.cssText = 'max-width:440px;text-align:center;line-height:1.6;font-size:15px;color:rgba(240,244,255,0.9);padding:0 20px';
           t.innerHTML = (old
             ? '<b style="font-size:19px;color:#fff">Your browser is too old for TheInterviewChair.com</b><br>This computer\'s browser can\'t run the interview. It takes two minutes to fix, and it\'s free: install one of these, then open this page again.'
-            : '<b style="font-size:19px;color:#fff">This is taking longer than it should</b><br>If this screen stays, your browser may be too old for the interview. Try again, or open this page in one of these (free):')
+            : '<b style="font-size:19px;color:#fff">This is taking longer than it should</b><br>Please refresh the page. If this screen stays, your browser may be too old for the interview, so try one of these (free):')
             + '<br><a href="https://www.google.com/chrome/" style="' + btn + '">Google Chrome</a><a href="https://www.mozilla.org/firefox/new/" style="' + btn + '">Firefox</a>'
-            + (old ? '' : '<br><a href="" onclick="location.reload();return false" style="color:#34D399;font-weight:700;display:inline-block;margin-top:14px">Try again</a>')
+            + (old ? '' : '<br><a href="" onclick="location.reload();return false" style="color:#34D399;font-weight:700;display:inline-block;margin-top:14px">Refresh the page</a>')
             + '<br><span style="display:inline-block;margin-top:14px;font-size:13px;color:rgba(240,244,255,0.55)">Still stuck? Email support@theinterviewchair.com</span>';
           return true;
         }
+        // A page loaded just before or during a deploy can ask for a file that has since been replaced (the files have new names every release), and on a slow connection the big
+        // main file can take longer than 12 seconds. Refresh once, automatically, when a script file fails to load or a later page's file has gone; never twice in a minute.
+        function reloadOnce() {
+          try {
+            var last = Number(sessionStorage.getItem('tic-boot-reload') || 0);
+            if (Date.now() - last < 60000) return false;
+            sessionStorage.setItem('tic-boot-reload', String(Date.now()));
+          } catch (e) { return false; }
+          location.reload();
+          return true;
+        }
+        window.addEventListener('error', function (e) {
+          var t = e && e.target;
+          if (t && t.tagName === 'SCRIPT' && t.src && /\/assets\//.test(t.src)) reloadOnce();
+        }, true);
+        window.addEventListener('vite:preloadError', function () { reloadOnce(); });
+        function showSlow() {
+          var t = document.getElementById('boot-text');
+          if (!t) return false;
+          t.style.cssText = 'max-width:440px;text-align:center;line-height:1.6;font-size:15px;color:rgba(240,244,255,0.9);padding:0 20px';
+          t.innerHTML = '<b style="font-size:19px;color:#fff">Still loading&hellip;</b><br>Your connection looks a little slow, so this is taking longer than usual. It should appear in a moment. If it does not, please refresh the page.'
+            + '<br><a href="" onclick="location.reload();return false" style="color:#34D399;font-weight:700;display:inline-block;margin-top:14px">Refresh the page</a>';
+          return true;
+        }
         if (tooOld()) { if (show(true)) tell('boot_too_old'); return; }
-        setTimeout(function () { if (show(false)) tell('boot_stuck'); }, 12000);
+        setTimeout(function () {
+          if (!document.getElementById('boot-text')) return;
+          // The main file has not even started running yet: it is still downloading. Say so, and only give up much later.
+          if (!window.__ticEntryRan) {
+            if (showSlow()) tell('boot_slow');
+            setTimeout(function () { if (show(false)) tell('boot_stuck'); }, 28000);
+            return;
+          }
+          if (show(false)) tell('boot_stuck');
+        }, 12000);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

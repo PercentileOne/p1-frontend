@@ -12,7 +12,10 @@ const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ??
 const DEV_SPATIUS_TOKEN_PATH = '/api/dev/spatius/session-token';
 const FACE_RATE = 24000;
 // How close the face is framed (1 = the room's automatic fit). The automatic fit left her too small in this wide tile; the size she is first drawn at looked right, about 30% closer.
-const FACE_ZOOM = 1.3;
+// The voice reaches us in pieces, and a piece that arrives late makes the face hold the sound while the lips catch up (a pause on the same word every time, 2026-10-23). So the
+// start of each answer is held back until this much has arrived (or the answer is over), and the rest then flows straight through.
+const PREBUFFER_MS = 800;
+const FACE_ZOOM = 1.15;
 
 type Audience = 'recruiter' | 'candidate';
 type Phase = 'idle' | 'starting' | 'live' | 'error';
@@ -41,6 +44,10 @@ export default function DevSiteAgent() {
   const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
   const rateRef = useRef(16000);
   const speakingRef = useRef(false);
+  const pendingRef = useRef<Uint8Array[]>([]);
+  const pendingBytesRef = useRef(0);
+  const turnStartedRef = useRef(false);
+  const prebufferTimerRef = useRef<number | undefined>(undefined);
   const timerRef = useRef<number | undefined>(undefined);
   const face = pickFace(roster, audience);
 
@@ -52,12 +59,32 @@ export default function DevSiteAgent() {
     try { await c?.endSession(); } catch { /* already closed */ }
     try { await spatius.disconnect(true); } catch { /* already closed */ }
     speakingRef.current = false;
+    resetTurn();
     setPhase(p => (p === 'error' ? p : 'idle'));
     setAgentMode('listening');
   }, [spatius]);
 
   // Never leave a billed conversation or face running when the page goes away.
   useEffect(() => () => { window.clearInterval(timerRef.current); void convRef.current?.endSession().catch(() => undefined); }, []);
+
+  // Hands the held-back start of an answer to the face (once), then everything after goes straight through.
+  function flushPending() {
+    window.clearTimeout(prebufferTimerRef.current);
+    const parts = pendingRef.current;
+    if (parts.length > 0) {
+      const all = new Uint8Array(pendingBytesRef.current);
+      let at = 0;
+      for (const part of parts) { all.set(part, at); at += part.length; }
+      spatius.feed(all.buffer as ArrayBuffer, false);
+    }
+    pendingRef.current = []; pendingBytesRef.current = 0;
+    turnStartedRef.current = true;
+  }
+  function resetTurn() {
+    window.clearTimeout(prebufferTimerRef.current);
+    pendingRef.current = []; pendingBytesRef.current = 0;
+    turnStartedRef.current = false;
+  }
 
   async function start() {
     if (!token) { setError('Please sign in as an admin first.'); setPhase('error'); return; }
@@ -82,14 +109,23 @@ export default function DevSiteAgent() {
           // The agent's voice arrives in small pieces at its own sample rate: bring each to the face's rate and hand it over.
           const bytes = resamplePcm16(base64ToBytes(b64), rateRef.current, FACE_RATE);
           speakingRef.current = true;
-          spatius.feed(bytes.slice().buffer as ArrayBuffer, false);
+          if (turnStartedRef.current) { spatius.feed(bytes.slice().buffer as ArrayBuffer, false); return; }
+          pendingRef.current.push(bytes.slice());
+          pendingBytesRef.current += bytes.length;
+          if (pendingBytesRef.current >= (FACE_RATE * 2 * PREBUFFER_MS) / 1000) flushPending();
+          else { window.clearTimeout(prebufferTimerRef.current); prebufferTimerRef.current = window.setTimeout(flushPending, PREBUFFER_MS + 400); }
         },
         onModeChange: ({ mode }) => {
           setAgentMode(mode === 'speaking' ? 'speaking' : 'listening');
           // The agent has finished its turn: tell the face this was the last piece.
-          if (mode !== 'speaking' && speakingRef.current) { speakingRef.current = false; spatius.feed(silence(FACE_RATE, 20), true); }
+          if (mode !== 'speaking' && speakingRef.current) {
+            speakingRef.current = false;
+            if (!turnStartedRef.current) flushPending();   // a short answer that never reached the held-back amount
+            spatius.feed(silence(FACE_RATE, 20), true);
+            resetTurn();
+          }
         },
-        onInterruption: () => { speakingRef.current = false; spatius.interrupt(); },   // the visitor spoke over the agent
+        onInterruption: () => { speakingRef.current = false; resetTurn(); spatius.interrupt(); },   // the visitor spoke over the agent
         // The agent's words can carry delivery tags such as [warm] that tell its voice how to sound; they are not for reading, so they are taken out of the transcript. A silent
         // moment arrives as "..." and is not shown either.
         onMessage: m => {
