@@ -19,6 +19,7 @@ import ActivityLog from './pages/ActivityLog'
 import CvAnalyzer from './pages/CvAnalyzer'
 import Subjects from './pages/Subjects'
 import FeedVideos from './pages/FeedVideos'
+import SiteGuide from './pages/SiteGuide'
 import FeedBooks from './pages/FeedBooks'
 import FeedCourses from './pages/FeedCourses'
 import Access from './pages/Access'
@@ -66,6 +67,7 @@ function AppRoutes() {
       <Route path="/question-packs" element={<RequireAuth><QuestionPackCaps /></RequireAuth>} />
       <Route path="/cv-analyzer" element={<RequireAuth><CvAnalyzer /></RequireAuth>} />
       <Route path="/subjects" element={<RequireAuth><Subjects /></RequireAuth>} />
+      <Route path="/site-guide" element={<RequireAuth><SiteGuide /></RequireAuth>} />
       <Route path="/feed-videos" element={<RequireAuth><FeedVideos /></RequireAuth>} />
       <Route path="/feed-books" element={<RequireAuth><FeedBooks /></RequireAuth>} />
       <Route path="/feed-courses" element={<RequireAuth><FeedCourses /></RequireAuth>} />
