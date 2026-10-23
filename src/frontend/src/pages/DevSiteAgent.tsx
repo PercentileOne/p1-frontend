@@ -16,7 +16,13 @@ const SiteAgentRulesCleanName = (raw: string) => raw.replace(/[^\p{L}\p{M} '-]/g
 // The voice reaches us in pieces, and a piece that arrives late makes the face hold the sound while the lips catch up (a pause on the same word every time, 2026-10-23). So the
 // start of each answer is held back until this much has arrived (or the answer is over), and the rest then flows straight through.
 // To try other amounts without a new release, add ?prebuffer=1500 (milliseconds) to the page address.
-const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.location.search).get('prebuffer')); return Number.isFinite(n) && n >= 0 && n <= 5000 && new URLSearchParams(window.location.search).has('prebuffer') ? n : 800; })();
+// Spatius's audio guide: its lip-sync service needs audio AHEAD of playback. A voice that arrives faster than it plays (a text-to-speech engine) can be passed straight through; a voice that
+// arrives at about the speed it plays (as a live agent's can) must be held back at the start of each answer, "enough audio buffered for Motion Server to stay ahead", or the face stalls.
+// So: once FAST_START_MS of voice has arrived, start at once if it is arriving at least FAST_RATE times faster than it plays; otherwise wait until PREBUFFER_MS has arrived.
+const FAST_START_MS = 800;
+const FAST_RATE = 2;
+const PREBUFFER_MS_DEFAULT = 2200;
+const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.location.search).get('prebuffer')); return Number.isFinite(n) && n >= 0 && n <= 5000 && new URLSearchParams(window.location.search).has('prebuffer') ? n : PREBUFFER_MS_DEFAULT; })();
 const FACE_ZOOM = 1.15;
 
 type Audience = 'recruiter' | 'candidate';
@@ -148,8 +154,13 @@ export default function DevSiteAgent() {
           if (turnStartedRef.current) { spatius.feed(bytes.slice().buffer as ArrayBuffer, false); return; }
           pendingRef.current.push(bytes.slice());
           pendingBytesRef.current += bytes.length;
-          if (pendingBytesRef.current >= (FACE_RATE * 2 * PREBUFFER_MS) / 1000) flushPending();
-          else { window.clearTimeout(prebufferTimerRef.current); prebufferTimerRef.current = window.setTimeout(flushPending, PREBUFFER_MS + 400); }
+          {
+            const heldMs = (pendingBytesRef.current / 2 / FACE_RATE) * 1000;
+            const waitedMs = Math.max(1, performance.now() - turnT0Ref.current);
+            const arrivingFast = heldMs / waitedMs >= FAST_RATE;   // audio held per millisecond that has passed: 2 or more means it comes in at least twice as fast as it plays
+            if (heldMs >= PREBUFFER_MS || (heldMs >= FAST_START_MS && arrivingFast)) { flushPending(); return; }
+          }
+          window.clearTimeout(prebufferTimerRef.current); prebufferTimerRef.current = window.setTimeout(flushPending, PREBUFFER_MS + 600);
         },
         onModeChange: ({ mode }) => {
           setAgentMode(mode === 'speaking' ? 'speaking' : 'listening');
@@ -159,7 +170,8 @@ export default function DevSiteAgent() {
             if (!turnStartedRef.current) flushPending();   // a short answer that never reached the held-back amount
             spatius.feed(silence(FACE_RATE, 20), true);
             const gaps = gapsRef.current;
-            setReport(`last answer: ${gaps.length + 1} pieces, longest wait between pieces ${gaps.length ? Math.max(...gaps) : 0} ms, hold-back ${PREBUFFER_MS} ms`);
+            const spanMs = Math.max(1, lastPieceAtRef.current - turnT0Ref.current);
+            setReport(`last answer: ${gaps.length + 1} pieces, ${Math.round(fedMsRef.current)} ms of voice arrived over ${Math.round(spanMs)} ms (${(fedMsRef.current / spanMs).toFixed(1)}x playing speed), longest wait between pieces ${gaps.length ? Math.max(...gaps) : 0} ms, hold-back up to ${PREBUFFER_MS} ms`);
             resetTurn();
           }
         },
