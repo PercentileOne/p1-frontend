@@ -11,6 +11,8 @@ import { base64ToBytes, pcmRateOf, resamplePcm16, silence } from '../lib/pcmAudi
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const DEV_SPATIUS_TOKEN_PATH = '/api/dev/spatius/session-token';
 const FACE_RATE = 24000;
+// How close the face is framed (1 = the room's automatic fit). The automatic fit left her too small in this wide tile; the size she is first drawn at looked right, about 30% closer.
+const FACE_ZOOM = 1.3;
 
 type Audience = 'recruiter' | 'candidate';
 type Phase = 'idle' | 'starting' | 'live' | 'error';
@@ -64,7 +66,7 @@ export default function DevSiteAgent() {
     setSpatiusStarvationMode(keepVoiceFlowing ? 'audioIndependent' : 'strictSync');
     try {
       // 1) The face, first: it needs a click to start its sound, and this is the click.
-      await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, 1);
+      await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, FACE_ZOOM);
       // 2) A signed link for the conversation, from our server.
       const res = await fetch(`${API_BASE}/api/dev/site-agent/session`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ audience, name }) });
       const session = await res.json().catch(() => ({})) as { signedUrl?: string; maxSeconds?: number; dynamicVariables?: Record<string, string>; error?: string };
