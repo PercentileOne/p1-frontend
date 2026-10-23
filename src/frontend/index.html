@@ -79,7 +79,7 @@
           try {
             fetch('https://api.theinterviewchair.com/api/events', {
               method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
-              body: JSON.stringify({ sessionId: 'boot-' + Math.random().toString(36).slice(2) + Date.now().toString(36), eventType: kind, page: location.pathname, portal: 'candidate', metadata: {} })
+              body: JSON.stringify({ sessionId: 'boot-' + Math.random().toString(36).slice(2) + Date.now().toString(36), eventType: kind, page: location.pathname, portal: 'candidate', metadata: { entryRan: !!window.__ticEntryRan, failedFile: window.__ticFailedFile || '', afterMs: Math.round(performance.now()) } })
             });
           } catch (e) { /* nothing more to do */ }
         }
@@ -109,7 +109,7 @@
         }
         window.addEventListener('error', function (e) {
           var t = e && e.target;
-          if (t && t.tagName === 'SCRIPT' && t.src && /\/assets\//.test(t.src)) reloadOnce();
+          if (t && t.tagName === 'SCRIPT' && t.src && /\/assets\//.test(t.src)) { window.__ticFailedFile = t.src.split('/').pop(); reloadOnce(); }
         }, true);
         window.addEventListener('vite:preloadError', function () { reloadOnce(); });
         function showSlow() {
