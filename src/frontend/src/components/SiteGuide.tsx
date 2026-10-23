@@ -31,6 +31,10 @@ const WHOLE_IDLE_MS = 350;
 const WHOLE_MAX_MS = 14000;
 const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.location.search).get('prebuffer')); return Number.isFinite(n) && n >= 0 && n <= 5000 && new URLSearchParams(window.location.search).has('prebuffer') ? n : PREBUFFER_MS_DEFAULT; })();
 const FACE_ZOOM = 1.15;
+// The guide has no clock, so "wrap up at four and a half minutes" in its prompt is only a guess, and ElevenLabs closes the line at its hard limit mid-word (Francis, 2026-10-24: cut off
+// at "email suppo..."). So the page tells it, WRAP_UP_BEFORE_S seconds before the limit, to say its closing words now. The note is not shown in the transcript.
+const WRAP_UP_BEFORE_S = 35;
+const WRAP_UP_NOTE = '[The time limit is almost up. Finish your current sentence, then say your closing words now, in one or two short sentences, and stop.]';
 
 type Audience = 'recruiter' | 'candidate';
 type Phase = 'idle' | 'starting' | 'live' | 'ended' | 'error';
@@ -61,7 +65,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   const [frameOnce, setFrameOnce] = useState(true);
   const [wholeClip, setWholeClip] = useState(true);   // each answer goes to the face as one clip: Francis found this completely smooth (2026-10-23), so it is the default; the box turns it off to compare
   const [faceTest, setFaceTest] = useState(false);
-  const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
+  const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void; sendUserMessage: (text: string) => void } | null>(null);
   const rateRef = useRef(16000);
   const speakingRef = useRef(false);
   const pendingRef = useRef<Uint8Array[]>([]);
@@ -256,7 +260,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
         // moment arrives as "..." and is not shown either.
         onMessage: m => {
           const text = stripAudioTags(m.message).trim();
-          if (!text || /^\.{2,}$/.test(text)) return;
+          if (!text || /^\.{2,}$/.test(text) || (m.source === 'user' && text === WRAP_UP_NOTE)) return;
           setLines(l => [...l, { who: m.source === 'user' ? 'you' : 'guide', text }]);
         },
         onDisconnect: () => { void finish(); },
@@ -268,12 +272,13 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
       const limit = session.maxSeconds ?? 300;
       setSecondsLeft(limit);
       // ElevenLabs enforces the limit itself and has the guide say goodbye, then closes the line (which calls finish()). This clock only counts down for the display, and is a
-      // safety net: if the line has not closed 20 seconds after the limit, finish anyway.
+      // safety net: if the line has not closed 40 seconds after the limit, finish anyway.
       let elapsed = 0;
       timerRef.current = window.setInterval(() => {
         elapsed += 1;
         setSecondsLeft(Math.max(0, limit - elapsed));
-        if (elapsed >= limit + 20) void finish();
+        if (elapsed === limit - WRAP_UP_BEFORE_S) { try { convRef.current?.sendUserMessage(WRAP_UP_NOTE); } catch { /* the line has already closed */ } }
+        if (elapsed >= limit + 40) void finish();
       }, 1000);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
