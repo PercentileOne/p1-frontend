@@ -5,11 +5,12 @@ import { useAuthStore } from '../auth/authStore';
 // A friendly heads-up for people who open the signed-in portal on a phone (Francis, 2026-10-11): the portal and the full interview room were built for
 // a laptop or tablet, and on a phone some pages scroll sideways. A proper phone experience is being designed, so until then we say so instead of
 // letting people think the product is broken. Never shown on the public pages (the free demo at /try works well on a phone) or inside a live
-// interview/talk room (it would sit on top of the controls). Dismissal is remembered for two weeks on this device.
+// interview/talk room (it would sit on top of the controls), nor in the small frames the marketing homepage shows (/hello, /guide): a frame is narrow on a laptop too, and a
+// touch-screen laptop would be told its phone version is being built (Francis, 2026-10-23). Dismissal is remembered for two weeks on this device.
 
 const KEY = 'tic.phoneHeadsUp.dismissedAt';
 const HIDE_DAYS = 14;
-const QUIET_PREFIXES = ['/try', '/login', '/register', '/forgot-password', '/reset-password', '/auth', '/hello', '/learn-anything', '/questions', '/shared', '/interview/', '/talk/', '/interview-pack', '/talk-pack', '/staff', '/dev'];
+const QUIET_PREFIXES = ['/try', '/login', '/register', '/forgot-password', '/reset-password', '/auth', '/hello', '/guide', '/learn-anything', '/questions', '/shared', '/interview/', '/talk/', '/interview-pack', '/talk-pack', '/staff', '/dev'];
 
 function onAPhone(): boolean {
   if (typeof window === 'undefined') return false;

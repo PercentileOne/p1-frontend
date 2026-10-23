@@ -26,7 +26,9 @@ describe('PhoneHeadsUp', () => {
     setDevice(false); at('/dashboard'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
     setDevice(true); auth.token = null; at('/dashboard'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
     auth.token = 'abc'; at('/try'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
-    at('/interview/abc123'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull();
+    at('/interview/abc123'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
+    at('/guide'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull(); cleanup();
+    at('/hello'); expect(screen.queryByText(/Your phone version is being built/)).toBeNull();
   });
 
   it('can be dismissed and then stays away on this device', () => {

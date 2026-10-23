@@ -294,7 +294,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
         </div>
 
         <div ref={stageRef} style={{
-          position: 'relative', width: '100%', aspectRatio: '16 / 9', borderRadius: 16, overflow: 'hidden', marginBottom: 0, border: '1px solid rgba(255,255,255,0.12)',
+          position: 'relative', width: '100%', aspectRatio: '4 / 3', flex: 'none', minHeight: 0, contain: 'size paint', borderRadius: 14, overflow: 'hidden', marginBottom: 0, border: '1px solid rgba(255,255,255,0.12)',
           background: face?.backgroundUrl ? `center / cover no-repeat url(${face.backgroundUrl})` : '#0b1220',
         }}>
           {phase === 'idle' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}

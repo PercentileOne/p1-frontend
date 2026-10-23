@@ -1359,7 +1359,7 @@
     window.addEventListener('message', function (e) {
       var d = e.data;
       if (e.origin !== GUIDE_ORIGIN || !d || d.type !== 'site-guide-height' || !slot.firstChild) return;
-      slot.firstChild.style.height = Math.min(900, Math.max(320, Number(d.height) || 560)) + 'px';
+      slot.firstChild.style.height = Math.min(760, Math.max(320, Number(d.height) || 560)) + 'px';
     });
     try {
       fetch('https://api.theinterviewchair.com/api/site-agent/status').then(function (r) { return r.ok ? r.json() : null; }).then(function (b) {
