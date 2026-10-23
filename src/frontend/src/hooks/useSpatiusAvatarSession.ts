@@ -23,6 +23,11 @@ type Sdk = typeof import('@spatius/avatarkit');
 
 let sdkInitialised = false;
 
+// How the face treats a moment when the lip animation is late. "strictSync" (the default everywhere) holds the sound until the lips catch up, so the voice never runs ahead of the
+// mouth; "audioIndependent" keeps the sound flowing and lets the lips lag. The live talking guide can choose either, to compare (a stall on one word in every answer, 2026-10-23).
+let starvationMode: 'strictSync' | 'audioIndependent' = 'strictSync';
+export function setSpatiusStarvationMode(mode: 'strictSync' | 'audioIndependent'): void { starvationMode = mode; }
+
 export const DEMO_TOKEN_PATH = '/api/tryout/spatius-token';
 export const INTERVIEW_TOKEN_PATH = '/interviews/spatius-token';
 export const HELLO_TOKEN_PATH = '/api/hello/spatius-token';
@@ -127,6 +132,8 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   const [poster, setPoster] = useState<string | null>(null);
   // True once the face has drawn its first frame (not merely connected); the room uses it to bring the background in together with the face.
   const [rendered, setRendered] = useState(false);
+  // How many times the face has held the voice to wait for the lips (diagnostic; shown on the talking-guide test page).
+  const [heldCount, setHeldCount] = useState(0);
   const viewRef = useRef<AvatarView | null>(null);
   const ctrlRef = useRef<AvatarController | null>(null);
   // While speak() is waiting for the clip to finish playing: the resolver, and whether playback has actually started yet
@@ -229,10 +236,11 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
         // the audio playing when the lip animation hasn't arrived from the service yet ("audioIndependent"). "strictSync" instead holds the sound until the animation frames
         // are there, and resumes it as they arrive, so the voice can never get ahead of the mouth. If the animation never comes at all, the sound simply never starts and the
         // callers' "speech did not start" watchdogs fall back to the plain voice, as they always have.
-        try { ctrl.frameStarvationMode = sdk.FrameStarvationMode.strictSync; } catch { /* an SDK without the setting keeps its default */ }
+        try { ctrl.frameStarvationMode = starvationMode === 'audioIndependent' ? sdk.FrameStarvationMode.audioIndependent : sdk.FrameStarvationMode.strictSync; } catch { /* an SDK without the setting keeps its default */ }
         let stalls = 0;
         ctrl.onPlaybackStall = stalled => {
           console.info('[Spatius] playback', stalled ? 'held for the lips' : 'resumed');
+          if (stalled) setHeldCount(n => n + 1);
           if (stalled && ++stalls === 1) logFlowEvent('SPATIUS_PLAYBACK_HELD', { avatar: avatarId.slice(0, 8) });
         };
         let errorsLogged = 0;
@@ -386,5 +394,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, speaking, poster, rendered, connect, speak, feed, interrupt, disconnect, unlockAudio };
+  return { status, speaking, poster, rendered, heldCount, connect, speak, feed, interrupt, disconnect, unlockAudio };
 }

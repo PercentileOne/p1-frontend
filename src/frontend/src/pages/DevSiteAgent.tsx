@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../auth/authStore';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
-import { useSpatiusAvatarSession } from '../hooks/useSpatiusAvatarSession';
+import { useSpatiusAvatarSession, setSpatiusStarvationMode } from '../hooks/useSpatiusAvatarSession';
 import { base64ToBytes, pcmRateOf, resamplePcm16, silence } from '../lib/pcmAudio';
 
 // Prototype of the homepage talking guide (Francis, 2026-10-22; plan in docs/specs/site-agents-plan.md). Admin-only and not linked from anywhere, so the cost and the quality can
@@ -34,6 +34,8 @@ export default function DevSiteAgent() {
   const [agentMode, setAgentMode] = useState<'listening' | 'speaking'>('listening');
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [roster, setRoster] = useState<PublicInterviewer[]>([]);
+  // Test switch for the pause-on-one-word problem: keep the voice flowing even if the lips are late.
+  const [keepVoiceFlowing, setKeepVoiceFlowing] = useState(false);
   const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
   const rateRef = useRef(16000);
   const speakingRef = useRef(false);
@@ -59,6 +61,7 @@ export default function DevSiteAgent() {
     if (!token) { setError('Please sign in as an admin first.'); setPhase('error'); return; }
     if (!face) { setError('No face found for this guide (check Admin > Interviewers).'); setPhase('error'); return; }
     setPhase('starting'); setError(''); setLines([]);
+    setSpatiusStarvationMode(keepVoiceFlowing ? 'audioIndependent' : 'strictSync');
     try {
       // 1) The face, first: it needs a click to start its sound, and this is the click.
       await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, 1);
@@ -142,8 +145,12 @@ export default function DevSiteAgent() {
             : <button type="button" onClick={() => void start()} style={{ ...btn, background: 'linear-gradient(135deg,#34D399,#047857)', border: 'none', color: '#fff' }}>
                 {audience === 'recruiter' ? 'How does it work for Recruiters' : 'How does it work for Candidates'}
               </button>}
-          {phase === 'live' && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{agentMode === 'speaking' ? 'Speaking…' : 'Listening…'} · {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left</span>}
+          {phase === 'live' && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{agentMode === 'speaking' ? 'Speaking…' : 'Listening…'} · {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left · voice held for the lips {spatius.heldCount}×</span>}
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>
+          <input type="checkbox" checked={keepVoiceFlowing} disabled={live} onChange={e => setKeepVoiceFlowing(e.target.checked)} />
+          Keep the voice flowing even if the lips are late (test, takes effect on the next start)
+        </label>
 
         {error && <div role="alert" style={{ fontSize: 13, color: '#F59E0B', marginBottom: 12 }}>{error}</div>}
 
