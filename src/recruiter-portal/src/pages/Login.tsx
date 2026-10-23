@@ -206,6 +206,13 @@ export default function Login() {
                 {phase === 'loading' ? <Spinner /> : 'Sign In →'}
               </motion.button>
 
+              <p style={{ textAlign: 'center', fontSize: 12, marginTop: 10 }}>
+                <a href="https://candidate.theinterviewchair.com/forgot-password" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
+                  Forgot your password?
+                </a>
+                <span style={{ color: '#475569' }}> One password works on every TheInterviewChair.com portal.</span>
+              </p>
+
               <p style={{ textAlign: 'center', fontSize: 12, color: '#334155', marginTop: 6 }}>
                 New recruiter?{' '}
                 <a href="/register" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>
