@@ -31,7 +31,7 @@ public record StartResult(bool Allowed, bool Enforced, string Source, string Cod
 /// </summary>
 public class EntitlementService(AppDbContext db, SessionPassService passes, IConfiguration config, ILogger<EntitlementService> logger, CosmosService? cosmos = null)
 {
-    // A recruiter pays 99p per interview-prep link (Francis, 2026-09-22 — was £1.99) and the candidate gets up to this many free practice sessions on it.
+    // A recruiter pays £1.99 per interview-prep link (Francis, 2026-10-23; it was 99p from 2026-09-22 and £1.99 before that) and the candidate gets up to this many free practice sessions on it.
     public const int PrepSessionsPerLink = 3;
     private static readonly TimeZoneInfo Uk = FindUk();
     private static TimeZoneInfo FindUk()

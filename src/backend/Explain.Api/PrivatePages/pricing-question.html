@@ -91,7 +91,7 @@
   <p class="note"><strong>Amber labels are estimates or examples, not measured facts.</strong> The user counts below (500 candidates, 5 recruiter seats, 300 demos, 100 new users a month) and the share who go on to pay are placeholders for numbers still to be measured. Green labels are real figures from the platform's bills and measurements.</p>
 
   <div class="presets" role="group" aria-label="Pricing scenarios">
-    <button type="button" data-preset="today" aria-pressed="true">Today: £3.99 and £49 seat</button>
+    <button type="button" data-preset="today" aria-pressed="true">Today: £3.99 and £19.99 seat</button>
     <button type="button" data-preset="three" aria-pressed="false">£3 for everyone</button>
     <button type="button" data-preset="one" aria-pressed="false">£1 for candidates, £3 seat</button>
     <button type="button" data-preset="free" aria-pressed="false">Free</button>
@@ -209,10 +209,10 @@
 <script>
 (function () {
   var PRESETS = {
-    today: { candPrice: 3.99, payingPct: 15, seatPrice: 49, linkFee: 0.99, interviews: 4, freeInterviews: 0.5, cap: 10 },
-    three: { candPrice: 3, payingPct: 100, seatPrice: 3, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 6 },
-    one:   { candPrice: 1, payingPct: 100, seatPrice: 3, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 4 },
-    free:  { candPrice: 0, payingPct: 100, seatPrice: 0, linkFee: 0.99, interviews: 3, freeInterviews: 0.5, cap: 3 }
+    today: { candPrice: 3.99, payingPct: 15, seatPrice: 19.99, linkFee: 1.99, interviews: 4, freeInterviews: 0.5, cap: 10 },
+    three: { candPrice: 3, payingPct: 100, seatPrice: 3, linkFee: 1.99, interviews: 3, freeInterviews: 0.5, cap: 6 },
+    one:   { candPrice: 1, payingPct: 100, seatPrice: 3, linkFee: 1.99, interviews: 3, freeInterviews: 0.5, cap: 4 },
+    free:  { candPrice: 0, payingPct: 100, seatPrice: 0, linkFee: 1.99, interviews: 3, freeInterviews: 0.5, cap: 3 }
   };
   var COMMON = { candidates: 500, seats: 5, demos: 300, affiliate: 0, linksPerSeat: 4, sessionsPerLink: 2,
                  cAvatar: 0.05, cVoice: 0.15, cStt: 0.05, cText: 0.02, cOther: 0.10, cDemo: 0.09,

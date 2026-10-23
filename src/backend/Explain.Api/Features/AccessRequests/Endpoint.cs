@@ -21,7 +21,7 @@ namespace Explain.Api.Features.AccessRequests;
 /// </summary>
 public static class Endpoint
 {
-    public const decimal RecruiterSeatGbp = 49m;   // was £299 -> £99 (2026-09-22) -> £49 (Francis, 2026-09-28, after talking it through with Mike Petrie — his
+    public const decimal RecruiterSeatGbp = 19.99m;   // was £299 -> £99 (2026-09-22) -> £49 (2026-09-28) -> £19.99 (Francis, 2026-10-23: lower seat price, prep links up to £1.99 each). Earlier note, 2026-09-28: after talking it through with Mike Petrie — his
                                                     // own company would take ~18 seats, and this price makes it an easy internal sell). Per individual consultant,
                                                     // not per agency; an agency with 15 consultants is 15 seats — deliberately priced for volume, not deal size.
     public const decimal EmployerSeatGbp = 399m;   // unchanged — not part of this pricing decision
