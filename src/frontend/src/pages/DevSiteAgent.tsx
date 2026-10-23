@@ -56,7 +56,7 @@ export default function DevSiteAgent() {
   // Francis's test 2026-10-23: with both of these on the guide speaks smoothly; with either alone she still paused once per answer. So both are on by default.
   const [keepVoiceFlowing, setKeepVoiceFlowing] = useState(true);
   const [frameOnce, setFrameOnce] = useState(true);
-  const [wholeClip, setWholeClip] = useState(false);   // sending each answer as one clip is kept as an option, off by default (it adds a short wait)
+  const [wholeClip, setWholeClip] = useState(true);   // each answer goes to the face as one clip: Francis found this completely smooth (2026-10-23), so it is the default; the box turns it off to compare
   const [faceTest, setFaceTest] = useState(false);
   const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
   const rateRef = useRef(16000);
@@ -320,7 +320,7 @@ export default function DevSiteAgent() {
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
           <input type="checkbox" checked={wholeClip} disabled={live} onChange={e => setWholeClip(e.target.checked)} />
-          Send each answer as one clip, like the interview room (test, takes effect on the next start)
+          Send each answer as one clip, like the interview room (recommended; takes effect on the next start)
         </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
           <input type="checkbox" checked={frameOnce} disabled={live} onChange={e => setFrameOnce(e.target.checked)} />
