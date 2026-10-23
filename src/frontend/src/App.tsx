@@ -34,6 +34,7 @@ import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileVideoPage from "./pages/ProfileVideoPage";
 const DevSpatiusTest = lazy(() => import("./pages/DevSpatiusTest")); // lazy: pulls in the Spatius WASM renderer only when opened
+const DevSiteAgent = lazy(() => import("./pages/DevSiteAgent")); // lazy: the talking-guide prototype (ElevenLabs SDK + Spatius face), admin only
 import CandidateDashboard from "./pages/CandidateDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import GoalsPage from "./pages/GoalsPage";
@@ -239,6 +240,7 @@ export default function App() {
       <Route path="/dashboard" element={<RequirePermission permission="CAN_START_INTERVIEW"><CandidateDashboard /></RequirePermission>} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dev/spatius-test" element={<RequirePermission permission="CAN_VIEW_SYSTEM_SETTINGS"><Suspense fallback={null}><DevSpatiusTest /></Suspense></RequirePermission>} />
+      <Route path="/dev/site-agent" element={<RequirePermission permission="CAN_VIEW_SYSTEM_SETTINGS"><Suspense fallback={null}><DevSiteAgent /></Suspense></RequirePermission>} />
       <Route path="/profile/video" element={<RequirePermission permission="CAN_START_INTERVIEW"><ProfileVideoPage /></RequirePermission>} />
       <Route path="/profile/:userId" element={<ProfilePage />} />
       <Route path="/awards" element={<AwardsPage />} />

@@ -361,6 +361,14 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
 
   const interrupt = useCallback(() => { speakSeqRef.current++; try { ctrlRef.current?.interrupt(); } catch { /* nothing playing */ } }, []);
 
+  // Live conversation (the homepage talking guide): the audio is not made by us line by line but arrives in pieces from the conversation service as the agent speaks.
+  // Each piece (PCM16 mono 24 kHz) is handed to the face as it comes; `last` marks the end of the agent's turn. Quietly does nothing when the face is not connected.
+  const feed = useCallback((pcm24k: ArrayBuffer, last: boolean) => {
+    const ctrl = ctrlRef.current;
+    if (!ctrl || !serviceOpenRef.current) return false;
+    try { ctrl.send(pcm24k, last); return true; } catch { return false; }
+  }, []);
+
   // Default: close only the billed connection and leave the face on screen. disconnect(true) tears the whole face down.
   const disconnect = useCallback(async (full = false) => {
     attemptRef.current++; // cancels any connect() still in flight
@@ -378,5 +386,5 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
   // Always release the (billed) session if the page goes away.
   useEffect(() => release, [release]);
 
-  return { status, speaking, poster, rendered, connect, speak, interrupt, disconnect, unlockAudio };
+  return { status, speaking, poster, rendered, connect, speak, feed, interrupt, disconnect, unlockAudio };
 }

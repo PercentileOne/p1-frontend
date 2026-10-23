@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@elevenlabs/client": "^1.30.0",
     "@heygen/liveavatar-web-sdk": "^0.0.18",
     "@spatius/avatarkit": "^1.3.9",
     "events": "3.3.0",

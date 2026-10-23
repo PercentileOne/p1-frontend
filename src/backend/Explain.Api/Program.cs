@@ -381,6 +381,7 @@ Explain.Api.Features.FeedBooks.Endpoint.Map(app);
 Explain.Api.Features.FeedCourses.Endpoint.Map(app);
 Explain.Api.Features.PrivatePages.Endpoint.Map(app);
 Explain.Api.Features.RecruiterAccess.Endpoint.Map(app);
+Explain.Api.Features.SiteAgents.Endpoint.Map(app);
 Explain.Api.Features.Follows.Endpoint.Map(app);
 Explain.Api.Features.Events.Endpoint.Map(app);
 Explain.Api.Features.Events.Admin.Endpoint.Map(app);
