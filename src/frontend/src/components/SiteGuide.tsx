@@ -48,7 +48,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   const stageRef = useRef<HTMLDivElement>(null);
   const spatius = useSpatiusAvatarSession(stageRef);
   const [audience, setAudience] = useState<Audience>('recruiter');
-  const [name, setName] = useState('Francis');
+  const [name, setName] = useState(publicMode ? '' : 'Francis');   // a visitor has to type their own first name; the admin test page keeps a default
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
@@ -83,6 +83,8 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   useEffect(() => { faceSpeakingRef.current = spatius.speaking; }, [spatius.speaking]);
 
   useEffect(() => { void fetchInterviewers().then(setRoster); }, []);
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { const el = transcriptRef.current; if (el) el.scrollTop = el.scrollHeight; }, [lines]);
 
   const stop = useCallback(async () => {
     window.clearInterval(timerRef.current);
@@ -277,7 +279,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   }
 
   const live = phase === 'live' || phase === 'starting';
-  const shown = lines.slice(-3);
+  const nameOk = name.replace(/[^\p{L}]/gu, '').length >= 2;   // the guide greets them by name, so the button waits for one
   if (publicMode) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: '#e8ecf8', fontFamily: 'inherit' }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -313,21 +315,23 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 0 }}>
-          <input value={name} onChange={e => setName(e.target.value)} maxLength={30} disabled={live} placeholder="Your first name" aria-label="Your first name"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', color: '#e8ecf8', fontSize: 14, fontFamily: 'inherit', minWidth: 160 }} />
+          <label htmlFor="guide-name" style={{ fontSize: 14, fontWeight: 700, color: '#e8ecf8' }}>Name:</label>
+          <input id="guide-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && nameOk && !live) void start(); }} maxLength={30} disabled={live} placeholder="Type your first name" aria-label="Your first name" autoComplete="given-name"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '10px 14px', color: '#e8ecf8', fontSize: 14, fontFamily: 'inherit', minWidth: 160, flex: '1 1 160px', maxWidth: 260 }} />
           {live
             ? <button type="button" onClick={() => void stop()} style={{ ...btn, color: '#EF4444', borderColor: 'rgba(239,68,68,0.4)' }}>End</button>
-            : <button type="button" onClick={() => void start()} style={{ ...btn, background: 'linear-gradient(135deg,#34D399,#047857)', border: 'none', color: '#fff' }}>
+            : <button type="button" disabled={!nameOk} title={nameOk ? undefined : 'Type your first name first'} onClick={() => void start()} style={{ ...btn, background: 'linear-gradient(135deg,#34D399,#047857)', border: 'none', color: '#fff', opacity: nameOk ? 1 : 0.45, cursor: nameOk ? 'pointer' : 'not-allowed' }}>
                 {audience === 'recruiter' ? 'How does it work for Recruiters' : 'How does it work for Candidates'}
               </button>}
           {phase === 'live' && <span style={{ fontSize: 13, color: 'rgba(232,236,248,0.6)' }}>{agentMode === 'speaking' ? 'Speaking…' : 'Listening…'} · {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left</span>}
         </div>
         {error && <div role="alert" style={{ fontSize: 13, color: '#F59E0B' }}>{error}</div>}
-        {shown.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13.5, lineHeight: 1.5, color: 'rgba(232,236,248,0.85)' }}>
-            {shown.map((l, i) => (<div key={i}><strong style={{ color: l.who === 'you' ? 'rgba(232,236,248,0.6)' : '#34D399' }}>{l.who === 'you' ? 'You' : face?.displayName ?? 'Guide'}: </strong>{l.text}</div>))}
-          </div>
-        )}
+        {/* The conversation, in a panel of fixed height that scrolls: a long chat stays reachable and the page below never jumps as lines arrive. */}
+        <div ref={transcriptRef} aria-live="polite" style={{ height: 150, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)', fontSize: 13.5, lineHeight: 1.5, color: 'rgba(232,236,248,0.85)' }}>
+          {lines.length === 0
+            ? <div style={{ color: 'rgba(232,236,248,0.45)' }}>Your conversation will appear here.</div>
+            : lines.map((l, i) => (<div key={i}><strong style={{ color: l.who === 'you' ? 'rgba(232,236,248,0.6)' : '#34D399' }}>{l.who === 'you' ? 'You' : face?.displayName ?? 'Guide'}: </strong>{l.text}</div>))}
+        </div>
       <div style={{ fontSize: 12, color: 'rgba(232,236,248,0.5)' }}>She listens through your microphone, so your browser will ask to use it. Headphones work best.</div>
     </div>
   );
