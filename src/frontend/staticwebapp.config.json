@@ -9,6 +9,13 @@
       "rewrite": "/api/share-meta/{token}"
     },
     {
+      "route": "/guide",
+      "headers": {
+        "X-Frame-Options": "",
+        "Content-Security-Policy": "frame-ancestors 'self' https://www.theinterviewchair.com https://theinterviewchair.com"
+      }
+    },
+    {
       "route": "/hello",
       "headers": {
         "X-Frame-Options": "",

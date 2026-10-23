@@ -34,6 +34,7 @@ import LearningEmployer from "./pages/LearningEmployer";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileVideoPage from "./pages/ProfileVideoPage";
 const DevSpatiusTest = lazy(() => import("./pages/DevSpatiusTest")); // lazy: pulls in the Spatius WASM renderer only when opened
+const GuidePage = lazy(() => import("./pages/GuidePage")); // lazy: the homepage's framed talking guide (ElevenLabs SDK + Spatius face)
 const DevSiteAgent = lazy(() => import("./pages/DevSiteAgent")); // lazy: the talking-guide prototype (ElevenLabs SDK + Spatius face), admin only
 import CandidateDashboard from "./pages/CandidateDashboard";
 import SettingsPage from "./pages/SettingsPage";
@@ -126,7 +127,7 @@ function usePageViewLogging() {
   useEffect(() => {
     // /hello is the homepage's framed "Say hi" preview: it loads by itself a moment after the homepage does, so counting it as a page view would add a phantom visit for
     // every desktop homepage visitor. Its real activity is logged by the page itself (hello_say_hi).
-    if (location.pathname === '/hello') return;
+    if (location.pathname === '/hello' || location.pathname === '/guide') return;
     // An admin testing a face provider adds ?force=spatius (or heygen) to ANY page of the visit; remember it for the tab now, so it also applies to the interview room reached later
     // by tapping around (typing a query string onto the room's own address on a phone is awkward). Only staff and admins are ever honoured server-side.
     void getForceProvider();
@@ -159,6 +160,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/staff/greetings" element={<StaffGreetingsPage />} />   {/* staff tool: record each interviewer's greeting clip */}
       <Route path="/hello" element={<HelloPage />} />   {/* the marketing homepage's "Say hi" preview, framed there (see pages/HelloPage.tsx) */}
+      <Route path="/guide" element={<Suspense fallback={null}><GuidePage /></Suspense>} />   {/* the marketing homepage's talking guide, framed there (see pages/GuidePage.tsx) */}
       <Route path="/try" element={<TryItLivePage />} />
       <Route path="/watch" element={<PublicWatchPage />} />   {/* public Watch page and the landing for a shared video link — no sign-in (see Features/FeedVideos) */}   {/* public "Try it live" — no sign-in (see Features/TryOut) */}
       <Route path="/questions" element={<QuestionPackPage />} />   {/* public "Printable Interview Questions" — no sign-in (see Features/QuestionPacks) */}
