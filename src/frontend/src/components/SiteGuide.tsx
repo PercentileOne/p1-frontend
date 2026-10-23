@@ -83,6 +83,10 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   useEffect(() => { faceSpeakingRef.current = spatius.speaking; }, [spatius.speaking]);
 
   useEffect(() => { void fetchInterviewers().then(setRoster); }, []);
+  // A still of the guide is always on show (Francis, 2026-10-23: no empty room, nobody appearing from nothing and vanishing at the end). It sits under the live face and goes away only
+  // once the face has really drawn; it is back after "Talk again", after an error, and while the face is being prepared. Same picture order as the interview room.
+  const [stillStep, setStillStep] = useState(0);
+  useEffect(() => { setStillStep(0); }, [face?.id]);
   const transcriptRef = useRef<HTMLDivElement>(null);
   useEffect(() => { const el = transcriptRef.current; if (el) el.scrollTop = el.scrollHeight; }, [lines]);
 
@@ -278,6 +282,13 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
     }
   }
 
+  const stillChain = face ? [face.portraitUrl, `/images/interviewers/${face.id}.jpg`, face.backgroundUrl].filter((u): u is string => !!u) : [];
+  const stillSrc = stillChain[stillStep];
+  const faceShowing = spatius.rendered && (phase === 'live' || phase === 'ended');
+  const still = stillSrc
+    ? <img src={stillSrc} alt={face ? `${face.displayName}, your guide` : ''} onError={() => setStillStep(n => n + 1)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%', opacity: faceShowing ? 0 : 1, transition: 'opacity 0.35s', pointerEvents: 'none' }} />
+    : null;
   const live = phase === 'live' || phase === 'starting';
   const nameOk = name.replace(/[^\p{L}]/gu, '').length >= 2;   // the guide greets them by name, so the button waits for one
   if (publicMode) return (
@@ -299,7 +310,8 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
           position: 'relative', width: '100%', aspectRatio: '4 / 3', flex: 'none', minHeight: 0, contain: 'size paint', borderRadius: 14, overflow: 'hidden', marginBottom: 0, border: '1px solid rgba(255,255,255,0.12)',
           background: face?.backgroundUrl ? `center / cover no-repeat url(${face.backgroundUrl})` : '#0b1220',
         }}>
-          {phase === 'idle' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}
+          {still}
+          {phase === 'idle' && <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '28px 16px 14px', textAlign: 'center', color: '#fff', fontSize: 14, fontWeight: 700, background: 'linear-gradient(to top, rgba(4,8,16,0.8), rgba(4,8,16,0))' }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}
           {phase === 'starting' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, background: 'rgba(0,0,0,0.35)' }}>Getting ready…</div>}
           {phase === 'ended' && (
             <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'linear-gradient(to top, rgba(4,8,16,0.92), rgba(4,8,16,0))' }}>
@@ -350,7 +362,8 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
           position: 'relative', width: '100%', aspectRatio: '16 / 9', borderRadius: 16, overflow: 'hidden', marginBottom: 14, border: '1px solid var(--border)',
           background: face?.backgroundUrl ? `center / cover no-repeat url(${face.backgroundUrl})` : '#0b1220',
         }}>
-          {phase === 'idle' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}
+          {still}
+          {phase === 'idle' && <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '28px 16px 14px', textAlign: 'center', color: '#fff', fontSize: 14, fontWeight: 700, background: 'linear-gradient(to top, rgba(4,8,16,0.8), rgba(4,8,16,0))' }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}
           {phase === 'starting' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, background: 'rgba(0,0,0,0.35)' }}>Getting ready…</div>}
           {phase === 'ended' && (
             <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'linear-gradient(to top, rgba(4,8,16,0.92), rgba(4,8,16,0))' }}>
