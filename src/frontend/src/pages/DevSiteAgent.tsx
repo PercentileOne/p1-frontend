@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../auth/authStore';
 import { fetchInterviewers, type PublicInterviewer } from '../api/interviewersApi';
-import { useSpatiusAvatarSession, setSpatiusStarvationMode } from '../hooks/useSpatiusAvatarSession';
+import { useSpatiusAvatarSession, setSpatiusStarvationMode, setSpatiusReapplyFraming } from '../hooks/useSpatiusAvatarSession';
 import { base64ToBytes, pcmRateOf, resamplePcm16, silence } from '../lib/pcmAudio';
 
 // Prototype of the homepage talking guide (Francis, 2026-10-22; plan in docs/specs/site-agents-plan.md). Admin-only and not linked from anywhere, so the cost and the quality can
@@ -11,6 +11,7 @@ import { base64ToBytes, pcmRateOf, resamplePcm16, silence } from '../lib/pcmAudi
 const API_BASE = (import.meta.env.VITE_EXPLAIN_API_URL as string | undefined) ?? 'https://api.theinterviewchair.com';
 const DEV_SPATIUS_TOKEN_PATH = '/api/dev/spatius/session-token';
 const FACE_RATE = 24000;
+const SiteAgentRulesCleanName = (raw: string) => raw.replace(/[^\p{L}\p{M} '-]/gu, '').trim().slice(0, 30) || 'there';
 // How close the face is framed (1 = the room's automatic fit). The automatic fit left her too small in this wide tile; the size she is first drawn at looked right, about 30% closer.
 // The voice reaches us in pieces, and a piece that arrives late makes the face hold the sound while the lips catch up (a pause on the same word every time, 2026-10-23). So the
 // start of each answer is held back until this much has arrived (or the answer is over), and the rest then flows straight through.
@@ -42,6 +43,8 @@ export default function DevSiteAgent() {
   const [roster, setRoster] = useState<PublicInterviewer[]>([]);
   // Test switch for the pause-on-one-word problem: keep the voice flowing even if the lips are late.
   const [keepVoiceFlowing, setKeepVoiceFlowing] = useState(false);
+  const [frameOnce, setFrameOnce] = useState(false);
+  const [faceTest, setFaceTest] = useState(false);
   const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
   const rateRef = useRef(16000);
   const speakingRef = useRef(false);
@@ -93,11 +96,27 @@ export default function DevSiteAgent() {
     turnStartedRef.current = false;
   }
 
+  // Test: the face alone, saying the same greeting with the interview room's own proven method (one complete clip, no streaming). Compare it with the live guide.
+  async function faceOnlyTest() {
+    if (!token || !face) return;
+    setFaceTest(true); setError(''); setPhase('starting');
+    setSpatiusStarvationMode(keepVoiceFlowing ? 'audioIndependent' : 'strictSync');
+    setSpatiusReapplyFraming(!frameOnce);
+    try {
+      await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, FACE_ZOOM);
+      setPhase('live');
+      await spatius.speak(`Hi ${SiteAgentRulesCleanName(name)}, what would you like to know about the TheInterviewChair.com recruiter portal?`, face.role === 'technical' ? 'technical' : 'hr', undefined, face.id);
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    try { await spatius.disconnect(true); } catch { /* already closed */ }
+    setFaceTest(false); setPhase('idle');
+  }
+
   async function start() {
     if (!token) { setError('Please sign in as an admin first.'); setPhase('error'); return; }
     if (!face) { setError('No face found for this guide (check Admin > Interviewers).'); setPhase('error'); return; }
     setPhase('starting'); setError(''); setLines([]);
     setSpatiusStarvationMode(keepVoiceFlowing ? 'audioIndependent' : 'strictSync');
+    setSpatiusReapplyFraming(!frameOnce);
     try {
       // 1) The face, first: it needs a click to start its sound, and this is the click.
       await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, FACE_ZOOM);
@@ -204,6 +223,13 @@ export default function DevSiteAgent() {
               </button>}
           {phase === 'live' && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{agentMode === 'speaking' ? 'Speaking…' : 'Listening…'} · {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left · voice held for the lips {spatius.heldCount}×</span>}
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
+          <input type="checkbox" checked={frameOnce} disabled={live} onChange={e => setFrameOnce(e.target.checked)} />
+          Frame once: do not keep re-adjusting her size (test, takes effect on the next start)
+        </label>
+        <button type="button" disabled={live || faceTest} onClick={() => void faceOnlyTest()} style={{ ...btn, marginBottom: 12, fontSize: 13, padding: '8px 14px' }}>
+          Test 1: face only, same greeting (no streaming)
+        </button>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>
           <input type="checkbox" checked={keepVoiceFlowing} disabled={live} onChange={e => setKeepVoiceFlowing(e.target.checked)} />
           Keep the voice flowing even if the lips are late (test, takes effect on the next start)

@@ -28,6 +28,11 @@ let sdkInitialised = false;
 let starvationMode: 'strictSync' | 'audioIndependent' = 'strictSync';
 export function setSpatiusStarvationMode(mode: 'strictSync' | 'audioIndependent'): void { starvationMode = mode; }
 
+// The face's framing is re-applied every 0.7 s for as long as the face is on screen (the SDK can drop it or reset it on a resize). For the talking-guide test page this can be
+// switched to "apply a few times at the start, then leave it alone", to see whether the repeated re-framing is what makes the picture hiccup mid-sentence (2026-10-23).
+let reapplyFraming = true;
+export function setSpatiusReapplyFraming(on: boolean): void { reapplyFraming = on; }
+
 export const DEMO_TOKEN_PATH = '/api/tryout/spatius-token';
 export const INTERVIEW_TOKEN_PATH = '/interviews/spatius-token';
 export const HELLO_TOKEN_PATH = '/api/hello/spatius-token';
@@ -291,7 +296,10 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
               view.avatarTransform = target;
             } catch { /* ignore */ }
           };
-          const timer = window.setInterval(apply, 700);
+          const timer = reapplyFraming
+            ? window.setInterval(apply, 700)
+            : 0;
+          if (!reapplyFraming) for (const ms of [150, 500, 1100, 2000]) window.setTimeout(apply, ms);   // frame it a few times while it settles, then stop touching it
           let resizeTimer = 0;
           const onResize = () => { window.clearTimeout(resizeTimer); resizeTimer = window.setTimeout(() => { fitted = null; apply(); }, 150); };
           window.addEventListener('resize', onResize);
@@ -304,7 +312,7 @@ export function useSpatiusAvatarSession(stageRef: React.RefObject<HTMLDivElement
             if (lastW > 0 && lastH > 0) { onResize(); scheduleStill(); }
           }) : null;
           ro?.observe(stage);
-          const cleanup = () => { window.clearInterval(timer); window.clearTimeout(resizeTimer); window.removeEventListener('resize', onResize); ro?.disconnect(); };
+          const cleanup = () => { if (timer) window.clearInterval(timer); window.clearTimeout(resizeTimer); window.removeEventListener('resize', onResize); ro?.disconnect(); };
           apply();
         }
         setStatus('connected');
