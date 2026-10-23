@@ -7,7 +7,7 @@ using Explain.Api.Infrastructure.Sql.Models;
 namespace Explain.Api.Features.Subscriptions;
 
 /// <summary>
-/// The £4.99/month candidate subscription (Francis, 2026-09-21). Stripe is the source of truth for whether someone is subscribed;
+/// The £3.99/month candidate subscription (Francis, 2026-09-21 at £4.99; changed to £3.99 on 2026-10-23 with a new Stripe price). Stripe is the source of truth for whether someone is subscribed;
 /// this keeps a local copy (the Subscriptions table) that the entitlement rules read, updated ONLY from Stripe webhooks — never
 /// from the browser's success redirect, which can be skipped, replayed or reached without paying.
 ///
@@ -15,7 +15,15 @@ namespace Explain.Api.Features.Subscriptions;
 /// </summary>
 public class CandidateSubscriptionService(AppDbContext db, ILogger<CandidateSubscriptionService> logger)
 {
-    public const decimal PriceGbp = 4.99m;
+    public const decimal PriceGbp = 3.99m;
+
+    /// <summary>
+    /// When a subscriber who is still inside their free months should first be charged: the end of the free months, so subscribing early never costs them the
+    /// months they were promised. Null (charge at once) when there are no free months left, or fewer than 49 hours: Stripe's checkout needs a trial end at
+    /// least 48 hours away, and a day or two is not worth failing the checkout for.
+    /// </summary>
+    public static DateTime? TrialEndFor(DateTime? freeUntilUtc, DateTime nowUtc) =>
+        freeUntilUtc is { } end && end > nowUtc.AddHours(49) ? DateTime.SpecifyKind(end, DateTimeKind.Utc) : null;
 
     // Stripe status -> ours. "cancelled" is only reached at the END of a paid period (Stripe keeps a cancelled-at-period-end
     // subscription "active" until then), so the entitlement rule can simply treat active/past_due as access.

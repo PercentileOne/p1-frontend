@@ -100,12 +100,12 @@ public static class EntitlementRules
         }
 
         if (f.FreePeriodEnded)
-            return new(false, "none", "free-period-ended", "Your free months have ended. Subscribe for £4.99 a month, or buy a one-off pass, to keep practicing.");
+            return new(false, "none", "free-period-ended", "Your free months have ended. Subscribe for £3.99 a month, or buy a one-off pass, to keep practicing.");
 
         if (f.TasterUsed)
-            return new(false, "none", "taster-used", "You've had your free interview. Subscribe for £4.99 a month, or buy a one-off pass, to keep practicing.");
+            return new(false, "none", "taster-used", "You've had your free interview. Subscribe for £3.99 a month, or buy a one-off pass, to keep practicing.");
 
-        return new(false, "none", "no-access", "Subscribe for £4.99 a month, or buy a one-off pass, to start an interview.");
+        return new(false, "none", "no-access", "Subscribe for £3.99 a month, or buy a one-off pass, to start an interview.");
     }
 }
 

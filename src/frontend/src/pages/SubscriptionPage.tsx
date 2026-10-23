@@ -91,8 +91,13 @@ export default function SubscriptionPage() {
               </button>
             ) : (
               <button disabled={busy || !canSubscribe} onClick={() => go(() => startSubscriptionCheckout(token ?? ''))} style={{ background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', border: 'none', borderRadius: 12, padding: 14, fontSize: 15, fontWeight: 800, cursor: canSubscribe ? 'pointer' : 'default', opacity: canSubscribe ? 1 : 0.55 }}>
-                {canSubscribe ? 'Subscribe — £4.99 / month' : 'Subscriptions launching very soon'}
+                {canSubscribe ? 'Subscribe — £3.99 / month' : 'Subscriptions launching very soon'}
               </button>
+            )}
+            {!(hasSubscription || status?.plan === 'subscriber') && status?.plan === 'free-period' && status.freeUntil && canSubscribe && (
+              <div style={{ fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.55 }}>
+                Subscribing now is optional. You won't be charged until your free months end on {fmtDate(new Date(status.freeUntil))}.
+              </div>
             )}
             {error && <div style={{ fontSize: 12, color: '#F59E0B' }}>{error}</div>}
           </div>

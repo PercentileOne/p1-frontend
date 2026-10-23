@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 using Stripe.Checkout;
+using Explain.Api.Features.Entitlements;
 using Explain.Api.Infrastructure.Sql;
 
 namespace Explain.Api.Features.Subscriptions;
@@ -28,7 +29,7 @@ public static class Endpoint
             return Results.Ok(s is null ? null : new { s.Status, s.Plan, s.PriceGbp, s.RenewsAt, s.CancelledAt });
         }).RequireAuthorization();
 
-        app.MapPost("/api/subscriptions/checkout", async (HttpContext ctx, AppDbContext db, IConfiguration config, ILogger<Program> logger) =>
+        app.MapPost("/api/subscriptions/checkout", async (HttpContext ctx, AppDbContext db, IConfiguration config, EntitlementService entitlements, ILogger<Program> logger) =>
         {
             var userId = ctx.User.FindFirst("sub")?.Value;
             var email = ctx.User.FindFirst("email")?.Value;
@@ -44,6 +45,11 @@ public static class Endpoint
                 (s.Status == "active" || s.Status == "past_due" || (s.Status == "cancelled" && s.RenewsAt != null && s.RenewsAt > now)));
             if (existing) return Results.Conflict(new { error = "You already have a subscription — use Manage subscription to change it." });
 
+            // Subscribing during the free months: the card is taken now but the first payment is on the day the free months end (a Stripe trial), so nobody pays for time that
+            // was free. Staff and complimentary accounts have no free-until date, so they are charged as normal.
+            var status = await entitlements.GetStatusAsync(userId, email);
+            var trialEnd = CandidateSubscriptionService.TrialEndFor(status.FreeUntil, now);
+
             var appUrl = config["CandidateAppUrl"] ?? "http://localhost:5173";
             var options = new SessionCreateOptions
             {
@@ -58,7 +64,7 @@ public static class Endpoint
                 Metadata = new Dictionary<string, string> { ["userId"] = userId, ["email"] = email },
                 // Also stamped on the Subscription itself, so renewal/cancellation events (which don't carry the checkout session)
                 // can still be tied back to the account.
-                SubscriptionData = new SessionSubscriptionDataOptions { Metadata = new Dictionary<string, string> { ["userId"] = userId } },
+                SubscriptionData = new SessionSubscriptionDataOptions { Metadata = new Dictionary<string, string> { ["userId"] = userId }, TrialEnd = trialEnd },
             };
 
             try

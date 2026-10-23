@@ -61,7 +61,7 @@ export function PhoneTabBar({ main, more, active, onNavigate, userName, needsPla
             <div style={{ display: 'flex', gap: 10, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
               <button onClick={() => { setSheet(false); onAccount(); }} style={{ flex: 1, minWidth: 0, minHeight: 48, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', padding: '8px 12px' }}>
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: needsPlan ? '#34D399' : 'var(--text-3)' }}>{needsPlan ? 'Subscribe · £4.99/mo →' : 'My Account'}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: needsPlan ? '#34D399' : 'var(--text-3)' }}>{needsPlan ? 'Subscribe · £3.99/mo →' : 'My Account'}</div>
               </button>
               <button onClick={() => { setSheet(false); onSignOut(); }} aria-label="Sign out" style={{ minWidth: 56, minHeight: 48, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <LogOut size={17} />

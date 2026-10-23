@@ -133,7 +133,7 @@ public class EntitlementRulesTests
     {
         var d = EntitlementRules.Decide(Facts(tasterUsed: true), S);
         Assert.False(d.Allowed);
-        Assert.Contains("£4.99", d.Message);
+        Assert.Contains("£3.99", d.Message);
     }
 
     [Fact]

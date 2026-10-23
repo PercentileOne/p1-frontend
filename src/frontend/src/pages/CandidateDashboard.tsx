@@ -877,7 +877,7 @@ export default function CandidateDashboard() {
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name ?? "Candidate"}</div>
               {needsPlan
-                ? <div style={{ fontSize: 10.5, fontWeight: 800, color: "#34D399", whiteSpace: "nowrap" }}>Subscribe · £4.99/mo →</div>
+                ? <div style={{ fontSize: 10.5, fontWeight: 800, color: "#34D399", whiteSpace: "nowrap" }}>Subscribe · £3.99/mo →</div>
                 : <div style={{ fontSize: 10, color: "var(--text-3)" }}>My Account</div>}
             </div>
           </button>

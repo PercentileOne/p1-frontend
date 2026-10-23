@@ -47,7 +47,7 @@ export function PaywallDialog({ result, onClose }: { result: StartInterviewResul
             onClick={() => go('sub')} disabled={busy !== null || !canSubscribe}
             style={{ width: '100%', background: 'linear-gradient(135deg,#34D399,#047857)', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 15, fontWeight: 800, cursor: busy || !canSubscribe ? 'default' : 'pointer', opacity: canSubscribe ? 1 : 0.55, marginBottom: 10 }}
           >
-            {busy === 'sub' ? 'Opening checkout…' : canSubscribe ? 'Subscribe — £4.99 / month' : 'Subscriptions launching very soon'}
+            {busy === 'sub' ? 'Opening checkout…' : canSubscribe ? 'Subscribe — £3.99 / month' : 'Subscriptions launching very soon'}
           </button>
         )}
         {!needsVerify && (
