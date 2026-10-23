@@ -31,7 +31,7 @@ const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.locati
 const FACE_ZOOM = 1.15;
 
 type Audience = 'recruiter' | 'candidate';
-type Phase = 'idle' | 'starting' | 'live' | 'error';
+type Phase = 'idle' | 'starting' | 'live' | 'ended' | 'error';
 type Line = { who: 'you' | 'guide'; text: string };
 
 // Recruiters are met by Amina (the HR interviewer), candidates by Michelle (the briefing consultant): faces people already know from the product.
@@ -74,7 +74,10 @@ export default function DevSiteAgent() {
   const gapsRef = useRef<number[]>([]);
   const [report, setReport] = useState('');
   const timerRef = useRef<number | undefined>(undefined);
+  const finishingRef = useRef(false);
+  const faceSpeakingRef = useRef(false);
   const face = pickFace(roster, audience);
+  useEffect(() => { faceSpeakingRef.current = spatius.speaking; }, [spatius.speaking]);
 
   useEffect(() => { void fetchInterviewers().then(setRoster); }, []);
 
@@ -88,6 +91,39 @@ export default function DevSiteAgent() {
     setPhase(p => (p === 'error' ? p : 'idle'));
     setAgentMode('listening');
   }, [spatius]);
+
+  // The conversation is over (the time limit, a long silence, or the agent hung up): let her finish the sentence she is in, then close the billed connection but leave her on screen,
+  // with a clear next step. Tearing the face down the moment the line closed made her vanish in the middle of "That's our time for now" (Francis, 2026-10-23).
+  const finish = useCallback(async () => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+    window.clearInterval(timerRef.current);
+    const c = convRef.current; convRef.current = null;
+    try { await c?.endSession(); } catch { /* already closed */ }
+    // Anything still held back (a short final answer) goes to the face now, with its end marker.
+    if (!turnStartedRef.current) flushPending();
+    if (!turnEndedRef.current) spatius.feed(silence(FACE_RATE, 20), true);
+    let quietSince = 0;
+    const t0 = performance.now();
+    while (performance.now() - t0 < 20000) {
+      const busy = faceSpeakingRef.current;
+      if (busy) quietSince = 0; else if (!quietSince) quietSince = performance.now();
+      if (quietSince && performance.now() - quietSince > 1500) break;
+      await new Promise(r => window.setTimeout(r, 200));
+    }
+    try { await spatius.disconnect(false); } catch { /* already closed */ }   // soft close: the billed connection ends, her picture stays
+    speakingRef.current = false;
+    resetTurn();
+    setAgentMode('listening');
+    setPhase(p => (p === 'error' ? p : 'ended'));
+    finishingRef.current = false;
+  }, [spatius]);
+
+  // After the end card: put the page back as it started.
+  async function talkAgain() {
+    try { await spatius.disconnect(true); } catch { /* already closed */ }
+    setPhase('idle'); setLines([]); setReport('');
+  }
 
   // Never leave a billed conversation or face running when the page goes away.
   useEffect(() => () => { window.clearInterval(timerRef.current); void convRef.current?.endSession().catch(() => undefined); }, []);
@@ -213,7 +249,7 @@ export default function DevSiteAgent() {
           if (!text || /^\.{2,}$/.test(text)) return;
           setLines(l => [...l, { who: m.source === 'user' ? 'you' : 'guide', text }]);
         },
-        onDisconnect: () => { void stop(); },
+        onDisconnect: () => { void finish(); },
         onError: msg => { setError(String(msg)); },
       });
       convRef.current = conv as unknown as typeof convRef.current;
@@ -221,7 +257,14 @@ export default function DevSiteAgent() {
       setPhase('live');
       const limit = session.maxSeconds ?? 180;
       setSecondsLeft(limit);
-      timerRef.current = window.setInterval(() => setSecondsLeft(s => { if (s <= 1) { void stop(); return 0; } return s - 1; }), 1000);
+      // ElevenLabs enforces the limit itself and has the guide say goodbye, then closes the line (which calls finish()). This clock only counts down for the display, and is a
+      // safety net: if the line has not closed 20 seconds after the limit, finish anyway.
+      let elapsed = 0;
+      timerRef.current = window.setInterval(() => {
+        elapsed += 1;
+        setSecondsLeft(Math.max(0, limit - elapsed));
+        if (elapsed >= limit + 20) void finish();
+      }, 1000);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setPhase('error');
@@ -253,6 +296,16 @@ export default function DevSiteAgent() {
         }}>
           {phase === 'idle' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{face ? `${face.displayName} will greet you` : 'Loading…'}</div>}
           {phase === 'starting' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, background: 'rgba(0,0,0,0.35)' }}>Getting ready…</div>}
+          {phase === 'ended' && (
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'linear-gradient(to top, rgba(4,8,16,0.92), rgba(4,8,16,0))' }}>
+              <div style={{ color: '#fff', fontSize: 15, fontWeight: 700, textAlign: 'center' }}>Thanks for talking, {SiteAgentRulesCleanName(name)}.</div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <a href={audience === 'recruiter' ? 'https://recruiter.theinterviewchair.com/register' : 'https://candidate.theinterviewchair.com/register'}
+                  style={{ ...btn, background: 'linear-gradient(135deg,#34D399,#047857)', border: 'none', color: '#fff', textDecoration: 'none' }}>Create a free account →</a>
+                <button type="button" onClick={() => void talkAgain()} style={btn}>Talk again</button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
