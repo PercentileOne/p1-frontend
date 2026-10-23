@@ -22,6 +22,11 @@ const SiteAgentRulesCleanName = (raw: string) => raw.replace(/[^\p{L}\p{M} '-]/g
 const FAST_START_MS = 800;
 const FAST_RATE = 2;
 const PREBUFFER_MS_DEFAULT = 2200;
+// Measured 2026-10-23: the agent's voice arrives 5 to 7 times faster than it plays, as 6 to 30 small pieces (some 95 ms long), and the face still stalled once per answer. The interview
+// room, where the face is smooth, sends each line as ONE complete clip. So by default the pieces of an answer are collected and sent as one clip once the pieces stop arriving.
+// An answer is taken to be complete when no new piece has arrived for WHOLE_IDLE_MS; a very long one is started after WHOLE_MAX_MS of voice has been collected, and the rest streams.
+const WHOLE_IDLE_MS = 350;
+const WHOLE_MAX_MS = 14000;
 const PREBUFFER_MS = (() => { const n = Number(new URLSearchParams(window.location.search).get('prebuffer')); return Number.isFinite(n) && n >= 0 && n <= 5000 && new URLSearchParams(window.location.search).has('prebuffer') ? n : PREBUFFER_MS_DEFAULT; })();
 const FACE_ZOOM = 1.15;
 
@@ -48,8 +53,10 @@ export default function DevSiteAgent() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [roster, setRoster] = useState<PublicInterviewer[]>([]);
   // Test switch for the pause-on-one-word problem: keep the voice flowing even if the lips are late.
-  const [keepVoiceFlowing, setKeepVoiceFlowing] = useState(false);
-  const [frameOnce, setFrameOnce] = useState(false);
+  // Francis's test 2026-10-23: with both of these on the guide speaks smoothly; with either alone she still paused once per answer. So both are on by default.
+  const [keepVoiceFlowing, setKeepVoiceFlowing] = useState(true);
+  const [frameOnce, setFrameOnce] = useState(true);
+  const [wholeClip, setWholeClip] = useState(false);   // sending each answer as one clip is kept as an option, off by default (it adds a short wait)
   const [faceTest, setFaceTest] = useState(false);
   const convRef = useRef<{ endSession: () => Promise<void>; setVolume: (o: { volume: number }) => void } | null>(null);
   const rateRef = useRef(16000);
@@ -57,6 +64,8 @@ export default function DevSiteAgent() {
   const pendingRef = useRef<Uint8Array[]>([]);
   const pendingBytesRef = useRef(0);
   const turnStartedRef = useRef(false);
+  const turnEndedRef = useRef(false);          // the whole answer has already been sent as one clip, with its end marker
+  const wholeClipRef = useRef(true);           // test switch: send each answer as one clip (like the interview room)
   const prebufferTimerRef = useRef<number | undefined>(undefined);
   // Measurements for finding why the face runs out of lip animation at the same word each time: when each piece of the agent's voice arrives, and how far ahead of playback we are.
   const turnT0Ref = useRef(0);       // when the first piece of the current answer arrived
@@ -96,10 +105,23 @@ export default function DevSiteAgent() {
     pendingRef.current = []; pendingBytesRef.current = 0;
     turnStartedRef.current = true;
   }
+  // Sends everything collected so far as ONE clip and marks the end of the answer (the way the interview room sends a line).
+  function flushWhole() {
+    window.clearTimeout(prebufferTimerRef.current);
+    const parts = pendingRef.current;
+    if (parts.length > 0) {
+      const all = new Uint8Array(pendingBytesRef.current);
+      let at = 0;
+      for (const part of parts) { all.set(part, at); at += part.length; }
+      spatius.feed(all.buffer as ArrayBuffer, true);
+    }
+    pendingRef.current = []; pendingBytesRef.current = 0;
+    turnStartedRef.current = true; turnEndedRef.current = true;
+  }
   function resetTurn() {
     window.clearTimeout(prebufferTimerRef.current);
     pendingRef.current = []; pendingBytesRef.current = 0;
-    turnStartedRef.current = false;
+    turnStartedRef.current = false; turnEndedRef.current = false;
   }
 
   // Test: the face alone, saying the same greeting with the interview room's own proven method (one complete clip, no streaming). Compare it with the live guide.
@@ -123,6 +145,7 @@ export default function DevSiteAgent() {
     setPhase('starting'); setError(''); setLines([]);
     setSpatiusStarvationMode(keepVoiceFlowing ? 'audioIndependent' : 'strictSync');
     setSpatiusReapplyFraming(!frameOnce);
+    wholeClipRef.current = wholeClip;
     try {
       // 1) The face, first: it needs a click to start its sound, and this is the click.
       await spatius.connect(face.avatarId, '', undefined, DEV_SPATIUS_TOKEN_PATH, FACE_ZOOM);
@@ -151,9 +174,16 @@ export default function DevSiteAgent() {
             console.info(`[guide] voice piece at +${Math.round(now - turnT0Ref.current)} ms, ${pieceMs} ms long, ${aheadMs} ms ahead of playback`);
           }
           speakingRef.current = true;
-          if (turnStartedRef.current) { spatius.feed(bytes.slice().buffer as ArrayBuffer, false); return; }
+          if (turnStartedRef.current) { if (!turnEndedRef.current) spatius.feed(bytes.slice().buffer as ArrayBuffer, false); return; }
           pendingRef.current.push(bytes.slice());
           pendingBytesRef.current += bytes.length;
+          if (wholeClipRef.current) {
+            const heldMs = (pendingBytesRef.current / 2 / FACE_RATE) * 1000;
+            window.clearTimeout(prebufferTimerRef.current);
+            if (heldMs >= WHOLE_MAX_MS) { flushPending(); return; }   // a very long answer: start it now, the rest streams
+            prebufferTimerRef.current = window.setTimeout(flushWhole, WHOLE_IDLE_MS);   // no new piece for a moment: the answer is complete
+            return;
+          }
           {
             const heldMs = (pendingBytesRef.current / 2 / FACE_RATE) * 1000;
             const waitedMs = Math.max(1, performance.now() - turnT0Ref.current);
@@ -168,7 +198,7 @@ export default function DevSiteAgent() {
           if (mode !== 'speaking' && speakingRef.current) {
             speakingRef.current = false;
             if (!turnStartedRef.current) flushPending();   // a short answer that never reached the held-back amount
-            spatius.feed(silence(FACE_RATE, 20), true);
+            if (!turnEndedRef.current) spatius.feed(silence(FACE_RATE, 20), true);
             const gaps = gapsRef.current;
             const spanMs = Math.max(1, lastPieceAtRef.current - turnT0Ref.current);
             setReport(`last answer: ${gaps.length + 1} pieces, ${Math.round(fedMsRef.current)} ms of voice arrived over ${Math.round(spanMs)} ms (${(fedMsRef.current / spanMs).toFixed(1)}x playing speed), longest wait between pieces ${gaps.length ? Math.max(...gaps) : 0} ms, hold-back up to ${PREBUFFER_MS} ms`);
@@ -235,6 +265,10 @@ export default function DevSiteAgent() {
               </button>}
           {phase === 'live' && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{agentMode === 'speaking' ? 'Speaking…' : 'Listening…'} · {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left · voice held for the lips {spatius.heldCount}×</span>}
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
+          <input type="checkbox" checked={wholeClip} disabled={live} onChange={e => setWholeClip(e.target.checked)} />
+          Send each answer as one clip, like the interview room (test, takes effect on the next start)
+        </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
           <input type="checkbox" checked={frameOnce} disabled={live} onChange={e => setFrameOnce(e.target.checked)} />
           Frame once: do not keep re-adjusting her size (test, takes effect on the next start)
