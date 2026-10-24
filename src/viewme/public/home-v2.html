@@ -271,8 +271,12 @@
   .rec li{padding:8px 0 8px 30px;position:relative;color:#cbd5e1}
   .rec li::before{content:"→";position:absolute;left:0;color:var(--blue);font-weight:900}
   .rec-cards{display:grid;gap:14px}
+  /* Price labels (Francis, 2026-10-24): each price block says plainly who it is for. */
+  .price-for{display:inline-block;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;border-radius:99px;padding:9px 22px}
+  .price-for.cand{color:var(--green);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.4)}
+  .price-for.rec{color:var(--blue);background:rgba(61,126,246,.1);border:1px solid rgba(61,126,246,.4);justify-self:start}
   .rc{background:var(--card);border:1px solid rgba(61,126,246,.3);border-radius:16px;padding:22px}
-  .rc h3{font-size:14px;color:var(--muted);letter-spacing:0;font-weight:700}
+  .rc h3{font-size:15px;color:var(--text);letter-spacing:0;font-weight:800}
   .rc .amt{font-size:2rem;margin:4px 0}
   .rc p{color:var(--muted);font-size:14px}
   @media(max-width:860px){.rec{grid-template-columns:1fr}}
@@ -1012,7 +1016,7 @@
 <section id="pricing">
   <div class="wrap">
     <div style="text-align:center">
-      <span class="eyebrow">Pricing</span>
+      <span class="price-for cand">Pricing for candidates</span>
       <h2 class="reveal">Try it free. Keep going for less than a coffee.</h2>
       <p class="lede reveal" style="margin:0 auto">Your first full interview is on us — and the mini interview above is free without an account.</p>
     </div>
@@ -1076,8 +1080,9 @@
       <p style="margin-top:12px;font-size:13px;color:var(--dim)">Recruiters: free for 3 months, and you create your own account in a minute. Employers: we set up each account personally (<a href="/request-access.html" style="color:var(--green)">request access</a>).</p>
     </div>
     <div class="rec-cards">
-      <div class="rc reveal"><h3>Recruiter</h3><div class="amt">£19.99 <small>/ seat / month</small></div><p>Full candidate search, talent alerts and interview recordings — per consultant. Interview-prep links £1.99 each, with 3 free practice sessions for the candidate.</p></div>
-      <div class="rc reveal"><h3>Employer</h3><div class="amt">£399 <small>/ month</small></div><p>Candidate search plus interview-question and feedback tools for your team. Learn access £14.99 per staff seat.</p></div>
+      <span class="price-for rec">Pricing for recruiters &amp; employers</span>
+      <div class="rc reveal"><h3>Recruiter pricing</h3><div class="amt">£19.99 <small>/ seat / month</small></div><p>Full candidate search, talent alerts and interview recordings — per consultant. Interview-prep links £1.99 each, with 3 free practice sessions for the candidate.</p></div>
+      <div class="rc reveal"><h3>Employer pricing</h3><div class="amt">£399 <small>/ month</small></div><p>Candidate search plus interview-question and feedback tools for your team. Learn access £14.99 per staff seat.</p></div>
     </div>
   </div>
 </section>
