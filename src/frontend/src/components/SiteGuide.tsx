@@ -298,9 +298,8 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   const nameOk = name.replace(/[^\p{L}]/gu, '').length >= 2;   // the guide greets them by name, so the button waits for one
   if (publicMode) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: '#e8ecf8', fontFamily: 'inherit' }}>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#34D399', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: 999, padding: '8px 16px' }}>Talk to a live guide</span>
-        <span style={{ fontSize: 13.5, color: 'rgba(232,236,248,0.65)' }}>Ask anything about how it works &middot; about 5 minutes &middot; no sign-up</span>
+      <div style={{ fontSize: 14.5, lineHeight: 1.5, color: 'rgba(232,236,248,0.8)' }}>
+        <strong style={{ color: '#e8ecf8' }}>Talk to a live guide.</strong> Ask anything about how it works &middot; about 5 minutes &middot; no sign-up.
       </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 0 }}>
           {(['recruiter', 'candidate'] as Audience[]).map(a => (
