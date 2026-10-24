@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Explain.Api.Features.Events;
 
 namespace Explain.Api.Features.PrivatePages;
 
@@ -25,6 +26,7 @@ public static class Endpoint
             if (TooManyFailures(ip))
             {
                 ctx.Response.Headers.RetryAfter = "900";
+                Record(ctx, "PRIVATE_PAGE_TOO_MANY_TRIES", ip);
                 return Results.Json(new { error = "Too many tries. Please wait a few minutes and try again." }, statusCode: 429);
             }
 
@@ -37,6 +39,7 @@ public static class Endpoint
             {
                 RecordFailure(ip);
                 logger.LogWarning("Private pages: wrong password from {Ip}", ip);
+                Record(ctx, "PRIVATE_PAGE_WRONG_PASSWORD", ip);   // never the password that was typed
                 var delayMs = int.TryParse(config["PrivatePages:FailureDelayMs"], out var ms) && ms >= 0 ? ms : 400;
                 if (delayMs > 0) await Task.Delay(delayMs, ctx.RequestAborted);   // slows guessing a little
                 return Results.Json(new { error = "That password is not right." }, statusCode: 401);
@@ -46,6 +49,7 @@ public static class Endpoint
             var expires = DateTimeOffset.UtcNow.AddDays(days);
             var entry = entries.First(a => a.Label == label);
             logger.LogInformation("Private pages: {Label} unlocked from {Ip}", label, ip);
+            Record(ctx, "PRIVATE_PAGE_UNLOCKED", ip, new() { ["label"] = label });
             return Results.Ok(new { token = PrivatePageAccess.MakeToken(entry, Key(config), expires), label, expiresAt = expires });
         }).AllowAnonymous();
 
@@ -57,18 +61,29 @@ public static class Endpoint
             var entries = PrivatePageAccess.ParsePasswords(config["PrivatePages:Passwords"]);
             var bearer = ctx.Request.Headers.Authorization.ToString();
             var token = bearer.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? bearer[7..].Trim() : null;
-            if (PrivatePageAccess.VerifyToken(token, entries, Key(config), DateTimeOffset.UtcNow) is null)
+            var who = PrivatePageAccess.VerifyToken(token, entries, Key(config), DateTimeOffset.UtcNow);
+            var from = ctx.Connection.RemoteIpAddress?.ToString();
+            if (who is null)
+            {
+                // Someone with no valid token (a forwarded link, an old unlock, or a password that has since been removed) reached for a locked page.
+                if (PrivatePageAccess.IsValidName(name)) Record(ctx, "PRIVATE_PAGE_REFUSED", from, new() { ["page"] = name });
                 return Results.Json(new { error = "Locked." }, statusCode: 401);
+            }
 
             if (!PrivatePageAccess.IsValidName(name)) return Results.NotFound();
             var file = Path.Combine(PagesDirectory(config), name + ".html");
             if (!File.Exists(file)) return Results.NotFound();
+            Record(ctx, "PRIVATE_PAGE_OPENED", from, new() { ["label"] = who, ["page"] = name });
 
             var origin = config["MarketingAppUrl"] ?? "https://www.theinterviewchair.com";
             var html = PrivatePageAccess.PrepareForEmbedding(await File.ReadAllTextAsync(file, ctx.RequestAborted), origin);
             return Results.Content(html, "text/html; charset=utf-8");
         }).AllowAnonymous();
     }
+
+    /// <summary>Writes an entry the Activity Log shows (Francis, 2026-10-24: see who unlocks the locked pages and who guesses wrong). Never throws and never holds up the request; absent in the small test host.</summary>
+    private static void Record(HttpContext ctx, string eventType, string? ip, Dictionary<string, object>? metadata = null) =>
+        _ = ctx.RequestServices.GetService<SecurityEventLogger>()?.LogAsync(eventType, null, null, ip, metadata, CancellationToken.None);
 
     private static readonly byte[] FallbackKey = PrivatePageAccess.DeriveKey(null);
     private static byte[] Key(IConfiguration config) => string.IsNullOrEmpty(config["Jwt:Secret"]) ? FallbackKey : PrivatePageAccess.DeriveKey(config["Jwt:Secret"]);

@@ -83,6 +83,12 @@ export function describeEvent(eventType: string, metadata: Record<string, unknow
       return max ? `${sec}s on page, ${max}% scrolled` : `${sec}s on page`;
     }
     case 'interaction': { const kind = s(m.kind); return kind ? `first action: ${kind}` : ''; }
+    // The password-locked pages (Francis, 2026-10-24). The label is the name an admin gave that password, never the password itself.
+    case 'PRIVATE_PAGE_UNLOCKED': { const l = s(m.label); return l ? `password “${l}” unlocked the locked pages` : 'unlocked the locked pages'; }
+    case 'PRIVATE_PAGE_OPENED': { const l = s(m.label); const pg = s(m.page); return `${l ? `“${l}”` : 'someone'} opened ${pg ?? 'a locked page'}`; }
+    case 'PRIVATE_PAGE_WRONG_PASSWORD': return 'wrong password typed on a locked page';
+    case 'PRIVATE_PAGE_TOO_MANY_TRIES': return 'blocked for a while after too many wrong passwords';
+    case 'PRIVATE_PAGE_REFUSED': { const pg = s(m.page); return `reached for ${pg ?? 'a locked page'} with no valid unlock`; }
     default: {
       // Unrecognised event type — show whatever's in the metadata rather than nothing, skipping the
       // always-present src/dev tracking fields that add no information here.
