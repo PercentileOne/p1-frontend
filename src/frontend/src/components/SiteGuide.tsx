@@ -297,11 +297,11 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
   const live = phase === 'live' || phase === 'starting';
   const nameOk = name.replace(/[^\p{L}]/gu, '').length >= 2;   // the guide greets them by name, so the button waits for one
   if (publicMode) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: '#e8ecf8', fontFamily: 'inherit' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: '#e8ecf8', fontFamily: 'inherit', minWidth: 0, overflowWrap: 'anywhere' }}>
       <div style={{ fontSize: 14.5, lineHeight: 1.5, color: 'rgba(232,236,248,0.8)' }}>
         <strong style={{ color: '#e8ecf8' }}>Talk to a live guide.</strong> Ask anything about how it works &middot; about 5 minutes &middot; no sign-up.
       </div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 0 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 0 }}>
           {(['recruiter', 'candidate'] as Audience[]).map(a => (
             <button key={a} type="button" disabled={live} onClick={() => setAudience(a)}
               style={{ ...btn, borderColor: audience === a ? '#34D399' : 'rgba(255,255,255,0.18)', color: audience === a ? '#34D399' : '#e8ecf8', opacity: live ? 0.6 : 1 }}>
@@ -333,7 +333,7 @@ export default function SiteGuide({ publicMode = false }: { publicMode?: boolean
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 0 }}>
           <label htmlFor="guide-name" style={{ fontSize: 14, fontWeight: 700, color: '#e8ecf8' }}>Name:</label>
           <input id="guide-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && nameOk && !live) void start(); }} maxLength={30} disabled={live} placeholder="Type your first name" aria-label="Your first name" autoComplete="given-name"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '10px 14px', color: '#e8ecf8', fontSize: 14, fontFamily: 'inherit', minWidth: 160, flex: '1 1 160px', maxWidth: 260 }} />
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '10px 14px', color: '#e8ecf8', fontSize: 14, fontFamily: 'inherit', minWidth: 0, flex: '1 1 120px', maxWidth: 260 }} />
           {live
             ? <button type="button" onClick={() => void stop()} style={{ ...btn, color: '#EF4444', borderColor: 'rgba(239,68,68,0.4)' }}>End</button>
             : <button type="button" disabled={!nameOk} title={nameOk ? undefined : 'Type your first name first'} onClick={() => void start()} style={{ ...btn, background: 'linear-gradient(135deg,#34D399,#047857)', border: 'none', color: '#fff', opacity: nameOk ? 1 : 0.45, cursor: nameOk ? 'pointer' : 'not-allowed' }}>
