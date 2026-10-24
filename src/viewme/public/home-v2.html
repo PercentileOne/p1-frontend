@@ -272,9 +272,9 @@
   .rec li::before{content:"→";position:absolute;left:0;color:var(--blue);font-weight:900}
   .rec-cards{display:grid;gap:14px}
   /* Price labels (Francis, 2026-10-24): each price block says plainly who it is for. */
-  .price-for{display:inline-block;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;border-radius:99px;padding:9px 22px}
-  .price-for.cand{color:var(--green);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.4)}
-  .price-for.rec{color:var(--blue);background:rgba(61,126,246,.1);border:1px solid rgba(61,126,246,.4);justify-self:start}
+  .price-for{display:inline-block;font-size:clamp(15px,1.6vw,19px);font-weight:900;letter-spacing:.12em;text-transform:uppercase;border-radius:99px;padding:13px 30px;margin-bottom:6px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+  .price-for.cand{color:#04120c;background:var(--green);border:0}
+  .price-for.rec{color:#fff;background:var(--blue);border:0;justify-self:start}
   .rc{background:var(--card);border:1px solid rgba(61,126,246,.3);border-radius:16px;padding:22px}
   .rc h3{font-size:15px;color:var(--text);letter-spacing:0;font-weight:800}
   .rc .amt{font-size:2rem;margin:4px 0}
